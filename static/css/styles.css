@@ -1,0 +1,18 @@
+body {
+    font-weight: 200;
+}
+h1 {
+    font-size: 30pt;
+}
+.masthead {
+    font-size: larger;
+    height: 30vh;
+    min-height: 400px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+.nounderline {
+    text-decoration: none !important;
+    color: black;
+  }

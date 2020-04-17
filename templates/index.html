@@ -1,0 +1,84 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Dixit</title>
+
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css')}}">
+  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+</head>
+
+<body>
+
+    <header class="masthead">
+        <div class="container h-100">
+          <div class="row h-100 align-items-center">
+            <div class="col-12 text-center">
+              <h1>Quarantine Dixit</h1>
+            </div>
+          </div>
+        </div>
+      </header>
+
+    <!-- Game Buttons -->
+    <div class="container">
+        <div class="accordion" id="accordionExample">
+            <!-- Join Game Button -->
+            <div class="card">
+            <div class="card-header" id="headingOne">
+                <h2 class="mb-0">
+                <button class="btn btn-link btn-lg btn-block collapsed nounderline" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                    Join a Game
+                </button>
+                </h2>
+            </div>
+            <!-- Join Game Collapse -->
+            <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
+                <div class="card-body text-center">
+                    <form method="post" action="/api/join-game">
+                        <div class="form-group">
+                            <input type="text" name="player_name" class="form-control" placeholder="Username" id="joinGameName">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" name="game_id" class="form-control" placeholder="Game ID" id="joinGameID">
+                        </div>
+                        <button type="submit" class="btn btn-dark">Let's Move It</button>
+                    </form>
+                </div>
+            </div>
+            <!-- Create Game Button -->
+            <div class="card">
+            <div class="card-header" id="headingTwo">
+                <h2 class="mb-0">
+                <button class="btn btn-link btn-lg btn-block collapsed nounderline" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                    Create a New Game
+                </button>
+                </h2>
+            </div>
+            <!-- Create Game Collapse -->
+            <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
+                <div class="card-body text-center">
+                    <form method="post" action="/api/create-game">
+                        <div class="form-group">
+                            <input type="text" name="player_name" class="form-control" placeholder="Username" id="createGameName">
+                        </div>
+                        <button type="submit" class="btn btn-dark">Let's Groove It</button>
+                    </form>
+                </div>
+            </div>
+            </div>
+        </div>
+        </div>
+
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>  <script src="https://js.pusher.com/5.1/pusher.min.js"></script>
+    <script src="{{ url_for('static', filename='js/scripts.js')}}"></script>
+
+</body>
+
+</html>
