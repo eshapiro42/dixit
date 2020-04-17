@@ -4,7 +4,7 @@
 
 <head>
   <meta charset="utf-8">
-  <title>Dixit</title>
+  <title>Quarantine Dixit</title>
 
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css')}}">
@@ -30,22 +30,22 @@
             <div class="card">
             <div class="card-header" id="headingOne">
                 <h2 class="mb-0">
-                <button class="btn btn-link btn-lg btn-block collapsed nounderline" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                <button class="btn btn-link btn-lg btn-block collapsed nounderline" type="button" data-toggle="collapse" data-target="#joinGameCollapse" aria-expanded="false">
                     Join a Game
                 </button>
                 </h2>
             </div>
             <!-- Join Game Collapse -->
-            <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
+            <div id="joinGameCollapse" class="collapse">
                 <div class="card-body text-center">
-                    <form method="post" action="/api/join-game">
+                    <form id="joinGameForm">
                         <div class="form-group">
                             <input type="text" name="player_name" class="form-control" placeholder="Username" id="joinGameName">
                         </div>
                         <div class="form-group">
                             <input type="text" name="game_id" class="form-control" placeholder="Game ID" id="joinGameID">
                         </div>
-                        <button type="submit" class="btn btn-dark">Let's Move It</button>
+                        <button id="joinGameSubmitButton" class="btn btn-dark">Let's Move It</button>
                     </form>
                 </div>
             </div>
@@ -53,19 +53,19 @@
             <div class="card">
             <div class="card-header" id="headingTwo">
                 <h2 class="mb-0">
-                <button class="btn btn-link btn-lg btn-block collapsed nounderline" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                <button class="btn btn-link btn-lg btn-block collapsed nounderline" type="button" data-toggle="collapse" data-target="#createGameCollapse" aria-expanded="false">
                     Create a New Game
                 </button>
                 </h2>
             </div>
             <!-- Create Game Collapse -->
-            <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
+            <div id="createGameCollapse" class="collapse">
                 <div class="card-body text-center">
-                    <form method="post" action="/api/create-game">
+                    <form id="createGameForm">
                         <div class="form-group">
                             <input type="text" name="player_name" class="form-control" placeholder="Username" id="createGameName">
                         </div>
-                        <button type="submit" class="btn btn-dark">Let's Groove It</button>
+                        <button id="createGameSubmitButton" class="btn btn-dark">Let's Groove It</button>
                     </form>
                 </div>
             </div>
@@ -73,8 +73,11 @@
         </div>
         </div>
 
+        <button id="testButton" class="btn btn-dark">TEST</button>
 
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>  <script src="https://js.pusher.com/5.1/pusher.min.js"></script>
     <script src="{{ url_for('static', filename='js/scripts.js')}}"></script>
