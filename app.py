@@ -49,10 +49,6 @@ def createGame():
     games[game_id] = game
     player_name = request.form['player_name']
     joinGame(player_name, game_id)
-    data = {
-        'message': 
-    }
-    pusher.trigger('dixit', 'createGame', data)
     return play(game_id)
 
 
@@ -63,7 +59,6 @@ def joinGame(player_name=None, game_id=None):
     if game_id is None:
         game_id = request.form['game_id']
     games[game_id].add_player(player_name)
-    show_hand(game_id, 0)
     return play(game_id)
 
 
@@ -81,8 +76,7 @@ def show_hand(game_id=None, player_num=None):
         'card5': '{}.jpg'.format(games[game_id].players[player_num].hand[4]),
         'message': 'Yo'
     }
-    pusher.trigger('dixit', 'show-hand', data)
-    print("pusher channgel show-hand triggered")
+    pusher.trigger('dixit', 'showHand', data)
     return jsonify(data)
 
 

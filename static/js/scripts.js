@@ -22,14 +22,6 @@ $('#joinGameSubmitButton').bind('click', function() {
     });
 });
 
-$('#testButton').bind('click', function() {
-    $.ajax({
-        type: 'POST',
-        url: '/api/test', 
-        data: '',
-    });
-});
-
-channel.bind('show-hand', data => {
+channel.bind('showHand', data => {
     alert('An event was triggered with message: ' + data.message);
 });
