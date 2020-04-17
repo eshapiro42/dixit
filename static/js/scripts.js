@@ -30,12 +30,6 @@ $('#testButton').bind('click', function() {
     });
 });
 
-channel.bind('show-hand', function(data) {
-    $("#card1").attr("src", '/static/cards/' + data.card1)
-    $("#card2").attr("src", data.card2)
-    $("#card3").attr("src", data.card3)
-    $("#card4").attr("src", data.card4)
-
-
+channel.bind('show-hand', data => {
     alert('An event was triggered with message: ' + data.message);
 });

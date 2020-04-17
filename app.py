@@ -7,7 +7,8 @@ from pusher import Pusher
 from flask import (
     Flask,
     render_template,
-    request
+    request,
+    jsonify,
 )
 
 from game import Game
@@ -48,32 +49,40 @@ def createGame():
     games[game_id] = game
     player_name = request.form['player_name']
     joinGame(player_name, game_id)
+    data = {
+        'message': 
+    }
+    pusher.trigger('dixit', 'createGame', data)
     return play(game_id)
 
 
 @app.route('/api/joinGame', methods=['POST'])
 def joinGame(player_name=None, game_id=None):
-    if not player_name:
+    if player_name is None:
         player_name = request.form['player_name']
-    if not game_id:
+    if game_id is None:
         game_id = request.form['game_id']
     games[game_id].add_player(player_name)
+    show_hand(game_id, 0)
     return play(game_id)
 
 
 @app.route('/api/show-hand', methods=['POST'])
-def show_hand():
-    req = request.args.to_dict()
-    game_id = req['game_id']
-    player_num = int(req['player_num'])
+def show_hand(game_id=None, player_num=None):
+    if game_id is None:
+        game_id = request.form['game_id']
+    if player_num is None:
+        player_num = request.form['player_num']
     data = {
-        'card1': '{}.jpg'.format(game.players[player_id].hand[0]),
-        'card2': '{}.jpg'.format(game.players[player_id].hand[1]),
-        'card3': '{}.jpg'.format(game.players[player_id].hand[2]),
-        'card4': '{}.jpg'.format(game.players[player_id].hand[3]),
-        'card5': '{}.jpg'.format(game.players[player_id].hand[4]),
+        'card1': '{}.jpg'.format(games[game_id].players[player_num].hand[0]),
+        'card2': '{}.jpg'.format(games[game_id].players[player_num].hand[1]),
+        'card3': '{}.jpg'.format(games[game_id].players[player_num].hand[2]),
+        'card4': '{}.jpg'.format(games[game_id].players[player_num].hand[3]),
+        'card5': '{}.jpg'.format(games[game_id].players[player_num].hand[4]),
+        'message': 'Yo'
     }
     pusher.trigger('dixit', 'show-hand', data)
+    print("pusher channgel show-hand triggered")
     return jsonify(data)
 
 
