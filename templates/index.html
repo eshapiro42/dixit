@@ -38,7 +38,7 @@
             <!-- Join Game Collapse -->
             <div id="joinGameCollapse" class="collapse">
                 <div class="card-body text-center">
-                    <form id="joinGameForm">
+                    <form id="joinGameForm" method="get">
                         <div class="form-group">
                             <input type="text" name="player_name" class="form-control" placeholder="Username" id="joinGameName">
                         </div>
@@ -61,11 +61,11 @@
             <!-- Create Game Collapse -->
             <div id="createGameCollapse" class="collapse">
                 <div class="card-body text-center">
-                    <form id="createGameForm">
+                    <form id="createGameForm" method="get" action="/play">
                         <div class="form-group">
                             <input type="text" name="player_name" class="form-control" placeholder="Username" id="createGameName">
                         </div>
-                        <button id="createGameSubmitButton" class="btn btn-dark">Let's Groove It</button>
+                        <button id="createGameSubmitButton" type="submit" class="btn btn-dark">Let's Groove It</button>
                     </form>
                 </div>
             </div>
@@ -76,7 +76,7 @@
     <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>  <script src="https://js.pusher.com/5.1/pusher.min.js"></script>
-    <script src="{{ url_for('static', filename='js/scripts.js')}}"></script>
+    <script src="{{ url_for('static', filename='js/index.js')}}"></script>
 
 </body>
 
