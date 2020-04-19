@@ -114,7 +114,7 @@ def joinGame():
     if player_name not in players or 'host' not in session:
         session['host'] = False
     print('JOINGAME Session data: {}'.format(session))
-    gameMessage(game_id, '{} has joined the game!'.format(player_name))
+    gameMessage(game_id, '{} has joined the game.'.format(player_name))
     return redirect(url_for('play'))
 
 
@@ -130,14 +130,14 @@ def startGame():
     #     gameMessage(game_id, 'You cannot start this game with less than four players.')
     #     return ''
     print('Game {} started'.format(game_id))
-    gameMessage(game_id, 'The game has started!')
+    gameMessage(game_id, 'The game has started.')
     for player_name in game.players.keys():
         showHand(game_id, player_name)
     data = {
         'started': True,
     }
     pusher.trigger('dixit-{}'.format(game_id), 'started', data)
-    startTurn(game_id, list(game.players.keys())[0])
+    hostTurn(game_id, list(game.players.keys())[0])
     return ''
 
 
@@ -169,16 +169,17 @@ def sendHostChoicesToServer():
     gameMessage(game_id, message)
     message = '''Other players, choose a card to match the prompt.'''.format(game.host, game.host_prompt)
     gameMessage(game_id, message)
+
     return ''
 
 
-def startTurn(game_id, host_name):
+def hostTurn(game_id, host_name):
     games[game_id].host = host_name
     gameMessage(game_id, "It is {}'s turn to give a prompt.".format(host_name))
     data = {
         'host': host_name,
     }
-    pusher.trigger('dixit-{}'.format(game_id), 'startTurn', data)
+    pusher.trigger('dixit-{}'.format(game_id), 'hostTurn', data)
 
 
 def showHand(game_id, player_name):
