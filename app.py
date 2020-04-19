@@ -159,10 +159,15 @@ def playerLeft():
 @app.route('/api/sendHostChoicesToServer', methods=['POST'])
 def sendHostChoicesToServer():
     game_id = session['game_id']
+    player_name = session['player_name']
     game = games[game_id]
-    game.host_card = request.form['hostCard']
+    game.host_card = int(request.form['hostCard'])
     game.host_prompt = request.form['hostPrompt']
+    card = players[player_name].play_card(game.host_card)
+    game.table.append(card)
     message = '''{}'s prompt: "{}"'''.format(game.host, game.host_prompt)
+    gameMessage(game_id, message)
+    message = '''Other players, choose a card to match the prompt.'''.format(game.host, game.host_prompt)
     gameMessage(game_id, message)
     return ''
 

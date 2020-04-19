@@ -83,6 +83,11 @@ class Player:
         self.hand.append(self.game.deck.draw_card())
         print(self.name, self.hand)
 
+    def play_card(self, card):
+        self.hand.remove(card)
+        self.draw_card()
+        return card
+
     def discard_card(self, card):
         self.hand.remove(card)
         self.game.deck.discard_card(card)
