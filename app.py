@@ -45,6 +45,7 @@ def index():
 @app.route('/play', methods=['GET', 'POST'])
 def play():
     print('PLAY Session data: {}'.format(session))
+    print('started={}'.format(games[session['game_id']].started))
     data = {
         'player_name': session['player_name'],
         'game_id': session['game_id'],
@@ -101,16 +102,49 @@ def joinGame():
 @app.route('/api/startGame', methods=['POST'])
 def startGame():
     game_id = session['game_id']
-    print('Game {} started'.format(game_id))
     game = games[game_id]
+    if game.started:
+        return ''
     game.started = True
+    print('Game {} started'.format(game_id))
     gameMessage(game_id, 'The game has started!')
     for player_name, player in game.players.items():
         showHand(game_id, player_name)
+    data = {
+        'started': True,
+    }
+    pusher.trigger('dixit-{}'.format(game_id), 'started', data)
+    startTurn(game_id, list(game.players.keys())[0])
     return ''
 
 
-@app.route('/api/showHand/<game_id>/<player_name>', methods=['GET'])
+@app.route('/api/onLoad', methods=['POST'])
+def onLoad():
+    game_id = session['game_id']
+    player_name = session['player_name']
+    game = games[game_id]
+    # Send started data
+    data = {
+        'started': game.started,
+    }
+    pusher.trigger('dixit-{}'.format(game_id), 'started', data)
+    # Show game messages
+    gameMessage(game_id, '')
+    # Show all player's hands
+    if game.started:
+        for player_name, player in game.players.items():
+            showHand(game_id, player_name)
+    return ''
+
+
+def startTurn(game_id, host_name):
+    gameMessage(game_id, "It is {}'s turn to give a prompt.".format(host_name))
+    data = {
+        'host': host_name,
+    }
+    pusher.trigger('dixit-{}'.format(game_id), 'startTurn', data)
+
+
 def showHand(game_id, player_name):
     print('showing hand of player {} in game {}'.format(player_name, game_id))
     game = games[game_id]
@@ -122,7 +156,6 @@ def showHand(game_id, player_name):
         'card4': '{}'.format(player_object.hand[3]),
         'card5': '{}'.format(player_object.hand[4]),
         'card6': '{}'.format(player_object.hand[5]),
-
     }
     pusher.trigger('dixit-{}-{}'.format(player_name, game_id), 'showHand', data)
     return jsonify(data)
@@ -133,6 +166,8 @@ def gameMessage(game_id, gameMessage):
     game = games[game_id]
     if messages[game_id] == '':
         messages[game_id] = gameMessage
+    elif gameMessage == '':
+        pass
     else:
         messages[game_id] += '<br>{}'.format(gameMessage)
     data = {
