@@ -26,7 +26,13 @@ h1 {
 #hand {
     padding: 25px 25px 25px 25px !important;
 }
+#table {
+    padding: 25px 25px 25px 25px !important;
+}
 #handlabel {
+    padding-top: 30px;
+}
+#tablelabel {
     padding-top: 30px;
 }
 #gameMessageContainer {
@@ -38,7 +44,9 @@ h1 {
     margin-top: 25px;
     margin-bottom: 25px;
 }
-#promptInputContainer {
-    padding-top: 25px;
+#promptContainer {
     padding-bottom: 25px;
+}
+.spacer {
+    margin: 25px 25px 25px 25px !important;
 }

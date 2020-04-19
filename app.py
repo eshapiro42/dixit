@@ -137,6 +137,27 @@ def onLoad():
     return ''
 
 
+@app.route('/api/sendHostChoicesToServer', methods=['POST'])
+def sendHostChoicesToServer():
+    game_id = session['game_id']
+    player_name = session['player_name']
+    game = games[game_id]
+    # Send started data
+    data = {
+        'started': game.started,
+    }
+    pusher.trigger('dixit-{}'.format(game_id), 'started', data)
+    # Show game messages
+    gameMessage(game_id, '')
+    # Show all player's hands
+    if game.started:
+        for player_name, player in game.players.items():
+            showHand(game_id, player_name)
+    return ''
+
+    
+
+
 def startTurn(game_id, host_name):
     gameMessage(game_id, "It is {}'s turn to give a prompt.".format(host_name))
     data = {
@@ -150,14 +171,26 @@ def showHand(game_id, player_name):
     game = games[game_id]
     player_object = players[player_name]
     data = {
-        'card1': '{}'.format(player_object.hand[0]),
-        'card2': '{}'.format(player_object.hand[1]),
-        'card3': '{}'.format(player_object.hand[2]),
-        'card4': '{}'.format(player_object.hand[3]),
-        'card5': '{}'.format(player_object.hand[4]),
-        'card6': '{}'.format(player_object.hand[5]),
+        'hand1': '{}'.format(player_object.hand[0]),
+        'hand2': '{}'.format(player_object.hand[1]),
+        'hand3': '{}'.format(player_object.hand[2]),
+        'hand4': '{}'.format(player_object.hand[3]),
+        'hand5': '{}'.format(player_object.hand[4]),
+        'hand6': '{}'.format(player_object.hand[5]),
     }
     pusher.trigger('dixit-{}-{}'.format(player_name, game_id), 'showHand', data)
+    return jsonify(data)
+
+
+def showTable(game_id):
+    print('showing table in game {}'.format(game_id))
+    game = games[game_id]
+    data = {}
+    cardnum = 0
+    for card in game.table:
+        data['table{}'.format(cardnum)] = card
+        cardnum += 1
+    pusher.trigger('dixit-{}'.format(game_id), 'showTable', data)
     return jsonify(data)
 
 

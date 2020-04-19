@@ -4,8 +4,10 @@ class Game:
     def __init__(self, game_id):
         self.id = game_id
         self.players = {}
+        self.current_host = None
         self.num_players = 0
         self.deck = Deck()
+        self.table = []
         self.playable = False
         self.started = False
         print('Created game {}'.format(self.id))
@@ -36,9 +38,9 @@ class Game:
     def round_loop(self):
         while all([player.score < 30 for player in self.players.values()]):
             for num in range(len(self.players)):
-                host_player = self.players.values()[num]
+                self.current_host = self.players.values()[num]
                 other_players = self.players.values()[:num] + self.players.values()[num + 1:]
-                round = Round(self, host_player, other_players)
+                round = Round(self, self.current_host, other_players)
                 round.start()
 
 
