@@ -3,17 +3,28 @@ import random
 class Game:
     def __init__(self, game_id):
         self.id = game_id
-        self.players = []
+        self.players = {}
+        self.num_players = 0
         self.deck = Deck()
         self.playable = False
         self.started = False
         print('Created game {}'.format(self.id))
 
     def add_player(self, name):
-        self.players.append(Player(name, self))
-        if len(self.players) >= 4:
-            self.playable = True
+        # If the game has already started, new players can't be added
+        if self.started:
+            print('Game {} has already started and new players cannot be added'.format(self.id))
+            return None
+        # Otherwise, create a new player object and add it to the game
+        player = Player(name, self)
+        self.players[name] = player
         print('Added player {} to game {}'.format(name, self.id))
+        # If the game has four or more players, it is playable
+        self.num_players += 1
+        if self.num_players >= 4:
+            self.playable = True
+            print('Game {} now has four players and is playable'.format(self.id))
+        return player
         
     def start_game(self):
         if self.playable:
@@ -23,10 +34,10 @@ class Game:
             print("You need at least four players to play.")
 
     def round_loop(self):
-        while all([player.score < 30 for player in self.players]):
+        while all([player.score < 30 for player in self.players.values()]):
             for num in range(len(self.players)):
-                host_player = self.players[num]
-                other_players = self.players[:num] + self.players[num + 1:]
+                host_player = self.players.values()[num]
+                other_players = self.players.values()[:num] + self.players.values()[num + 1:]
                 round = Round(self, host_player, other_players)
                 round.start()
 
@@ -42,10 +53,10 @@ class Round:
         # host player chooses a card and creates a prompt
         # other players receive the prompt and choose a card 
         # round gets scored
-        for player in self.game.players:
+        for player in self.game.players.values():
             player.score += 5
         # all players draw a card
-        for player in self.game.players:
+        for player in self.game.players.values():
             player.draw_card()
             player.discard_card(player.hand[0])
 
@@ -53,12 +64,12 @@ class Round:
 class Player:
     def __init__(self, name, game):
         self.name = name
+        self.num = len(game.players)
         self.game = game
         self.score = 0
         self.hand = []
-        for pick in range(5):
+        for pick in range(6):
             self.draw_card()
-        print(self.name, self.hand)
 
     def __repr__(self):
         return self.name

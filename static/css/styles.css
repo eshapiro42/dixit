@@ -7,7 +7,14 @@ h1 {
 .masthead {
     font-size: larger;
     height: 30vh;
-    min-height: 400px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+.title {
+    padding: 15px;
+    font-size: larger;
+    height: 10vh;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -15,4 +22,19 @@ h1 {
 .nounderline {
     text-decoration: none !important;
     color: black;
-  }
+}
+#hand {
+    padding: 25px 25px 25px 25px !important;
+}
+#handlabel {
+    padding-top: 30px;
+}
+#gameMessageContainer {
+    height: 15vh;
+    color: white;
+    overflow: auto;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    margin-top: 25px;
+    margin-bottom: 25px;
+}

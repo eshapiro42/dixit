@@ -15,13 +15,13 @@
 
     <header class="masthead">
         <div class="container h-100">
-          <div class="row h-100 align-items-center">
-            <div class="col-12 text-center">
-              <h1>Quarantine Dixit</h1>
+            <div class="row h-100 align-items-center">
+                <div class="col-12 text-center">
+                    <h1>Quarantine Dixit</h1>
+                </div>
             </div>
-          </div>
         </div>
-      </header>
+    </header>
 
     <!-- Game Buttons -->
     <div class="container">
@@ -38,9 +38,10 @@
             <!-- Join Game Collapse -->
             <div id="joinGameCollapse" class="collapse">
                 <div class="card-body text-center">
-                    <form id="joinGameForm" method="get">
+                    <form id="joinGameForm" action="{{ url_for('joinGame') }}" method="POST">
+                    <!-- <form id="joinGameForm"> -->
                         <div class="form-group">
-                            <input type="text" name="player_name" class="form-control" placeholder="Username" id="joinGameName">
+                            <input type="text" name="player_name" class="form-control" placeholder="Your Name" id="joinGameName">
                         </div>
                         <div class="form-group">
                             <input type="text" name="game_id" class="form-control" placeholder="Game ID" id="joinGameID">
@@ -61,11 +62,12 @@
             <!-- Create Game Collapse -->
             <div id="createGameCollapse" class="collapse">
                 <div class="card-body text-center">
-                    <form id="createGameForm" method="get" action="/play">
+                    <form id="createGameForm" action="{{ url_for('createGame') }}" method="POST">
+                    <!-- <form id="createGameForm"> -->
                         <div class="form-group">
-                            <input type="text" name="player_name" class="form-control" placeholder="Username" id="createGameName">
+                            <input type="text" name="player_name" class="form-control" placeholder="Your Name" id="createGameName">
                         </div>
-                        <button id="createGameSubmitButton" type="submit" class="btn btn-dark">Let's Groove It</button>
+                        <button id="createGameSubmitButton" class="btn btn-dark">Let's Groove It</button>
                     </form>
                 </div>
             </div>
