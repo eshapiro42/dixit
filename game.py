@@ -33,9 +33,10 @@ class Game:
     def start_game(self):
         if self.playable:
             self.started = True
-            self.round_loop()
+            return 'started'
         else:
             print("You need at least four players to play.")
+            return None
 
     def round_loop(self):
         while all([player.score < 30 for player in self.players.values()]):
@@ -72,7 +73,7 @@ class Player:
         self.game = game
         self.score = 0
         self.hand = []
-        for pick in range(6):
+        for _ in range(6):
             self.draw_card()
 
     def __repr__(self):

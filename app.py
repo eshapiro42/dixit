@@ -34,6 +34,29 @@ pusher = Pusher(
 )
 
 
+class AppError(Exception):
+    status_code = 400
+
+    def __init__(self, message, status_code=None, payload=None):
+        Exception.__init__(self)
+        self.message = message
+        if status_code is not None:
+            self.status_code = status_code
+        self.payload = payload
+
+    def to_dict(self):
+        rv = dict(self.payload or ())
+        rv['Error'] = self.message
+        return rv
+
+
+@app.errorhandler(AppError)
+def handle_app_error(error):
+    response = jsonify(error.to_dict())
+    response.status_code = error.status_code
+    return response
+
+
 @app.route('/')
 def index():
     if 'player_name' in session:
@@ -85,11 +108,12 @@ def joinGame():
     # If this player is not already in the game, add them
     if player_name not in players:
         player_object = games[game_id].add_player(player_name)
+        if player_object is None:
+            raise AppError('Could not add player. Game {} has already started.'.format(game_id))
         players[player_name] = player_object
     if player_name not in players or 'host' not in session:
         session['host'] = False
     print('JOINGAME Session data: {}'.format(session))
-    game = games[game_id]
     gameMessage(game_id, '{} has joined the game!'.format(player_name))
     return redirect(url_for('play'))
 
@@ -100,10 +124,14 @@ def startGame():
     game = games[game_id]
     if game.started:
         return ''
-    game.started = True
+    ret = game.start_game()
+    # TODO: uncomment this to make the game require four players
+    # if ret is None:
+    #     gameMessage(game_id, 'You cannot start this game with less than four players.')
+    #     return ''
     print('Game {} started'.format(game_id))
     gameMessage(game_id, 'The game has started!')
-    for player_name, player in game.players.items():
+    for player_name in game.players.keys():
         showHand(game_id, player_name)
     data = {
         'started': True,

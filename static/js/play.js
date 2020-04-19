@@ -17,8 +17,10 @@ gameChannel.bind('gameMessage', data => {
 
 gameChannel.bind('started', data => {
     started = data.started;
+    $("#startGameButton").hide();
     clearTable();
     $("#tablecontainer").show();
+    $("#handcontainer").show();
 });
 
 gameChannel.bind('startTurn', data => {
@@ -51,7 +53,6 @@ $('.table-card').bind('click', function() {
 });
 
 myChannel.bind('showHand', data => {
-    $("#handcontainer").show();
     $("#hand1").attr('src', `/static/cards/${data.hand1}.jpg`);
     $("#hand2").attr('src', `/static/cards/${data.hand2}.jpg`);
     $("#hand3").attr('src', `/static/cards/${data.hand3}.jpg`);    
@@ -67,7 +68,6 @@ myChannel.bind('showHand', data => {
 });
 
 gameChannel.bind('showTable', data => {
-    $("#tablecontainer").show();
     $(".table-card").show();
     $("#table1").attr('src', `/static/cards/${data.table1}.jpg`);
     $("#table2").attr('src', `/static/cards/${data.table2}.jpg`);
@@ -110,7 +110,6 @@ $(window).bind("load", function() {
 });
 
 $("#startGameButton").bind("click", function() {
-    $("#startGameButton").hide();
     $.ajax({
         type: 'POST',
         url: '/api/startGame',
