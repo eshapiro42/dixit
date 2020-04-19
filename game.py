@@ -5,6 +5,8 @@ class Game:
         self.id = game_id
         self.players = {}
         self.current_host = None
+        self.host_card = None
+        self.host_prompt = None
         self.num_players = 0
         self.deck = Deck()
         self.table = []

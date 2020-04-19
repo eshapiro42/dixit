@@ -55,11 +55,6 @@ def play():
     return render_template('play.html', data=data)
 
 
-@app.route('/api/test')
-def test():
-    return 'success'
-
-
 @app.route('/api/createGame', methods=['POST'])
 def createGame():
     global games
@@ -118,47 +113,34 @@ def startGame():
     return ''
 
 
-@app.route('/api/onLoad', methods=['POST'])
-def onLoad():
+@app.route('/api/getMessages')
+def getMessages():
     game_id = session['game_id']
+    gameMessage(game_id, None)
+    return ''
+
+
+@app.route('/api/playerLeft', methods=['POST'])
+def playerLeft():
     player_name = session['player_name']
-    game = games[game_id]
-    # Send started data
-    data = {
-        'started': game.started,
-    }
-    pusher.trigger('dixit-{}'.format(game_id), 'started', data)
-    # Show game messages
-    gameMessage(game_id, '')
-    # Show all player's hands
-    if game.started:
-        for player_name, player in game.players.items():
-            showHand(game_id, player_name)
+    game_id = session['game_id']
+    print("Player {} left game {}".format(player_name, game_id))
     return ''
 
 
 @app.route('/api/sendHostChoicesToServer', methods=['POST'])
 def sendHostChoicesToServer():
     game_id = session['game_id']
-    player_name = session['player_name']
     game = games[game_id]
-    # Send started data
-    data = {
-        'started': game.started,
-    }
-    pusher.trigger('dixit-{}'.format(game_id), 'started', data)
-    # Show game messages
-    gameMessage(game_id, '')
-    # Show all player's hands
-    if game.started:
-        for player_name, player in game.players.items():
-            showHand(game_id, player_name)
+    game.host_card = request.form['hostCard']
+    game.host_prompt = request.form['hostPrompt']
+    message = '''{}'s prompt: "{}"'''.format(game.host, game.host_prompt)
+    gameMessage(game_id, message)
     return ''
-
-    
 
 
 def startTurn(game_id, host_name):
+    games[game_id].host = host_name
     gameMessage(game_id, "It is {}'s turn to give a prompt.".format(host_name))
     data = {
         'host': host_name,
@@ -179,7 +161,6 @@ def showHand(game_id, player_name):
         'hand6': '{}'.format(player_object.hand[5]),
     }
     pusher.trigger('dixit-{}-{}'.format(player_name, game_id), 'showHand', data)
-    return jsonify(data)
 
 
 def showTable(game_id):
@@ -191,7 +172,6 @@ def showTable(game_id):
         data['table{}'.format(cardnum)] = card
         cardnum += 1
     pusher.trigger('dixit-{}'.format(game_id), 'showTable', data)
-    return jsonify(data)
 
 
 def gameMessage(game_id, gameMessage):
@@ -199,7 +179,7 @@ def gameMessage(game_id, gameMessage):
     game = games[game_id]
     if messages[game_id] == '':
         messages[game_id] = gameMessage
-    elif gameMessage == '':
+    elif gameMessage == None:
         pass
     else:
         messages[game_id] += '<br>{}'.format(gameMessage)
@@ -207,7 +187,6 @@ def gameMessage(game_id, gameMessage):
         'gameMessage': messages[game_id],
     }
     pusher.trigger('dixit-{}'.format(game_id), 'gameMessage', data)
-    return jsonify(data)
 
 
 app.run(host='0.0.0.0', debug=True)

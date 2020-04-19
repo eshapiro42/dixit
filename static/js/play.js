@@ -17,6 +17,8 @@ gameChannel.bind('gameMessage', data => {
 
 gameChannel.bind('started', data => {
     started = data.started;
+    clearTable();
+    $("#tablecontainer").show();
 });
 
 gameChannel.bind('startTurn', data => {
@@ -25,7 +27,7 @@ gameChannel.bind('startTurn', data => {
     }
 });
 
-gameChannel.bind('hostChoicesReceivedByClient', data => {
+gameChannel.bind('hostPromptReceivedByClient', data => {
     promptText = `${data.host}'s prompt: "${data.prompt}"`
     $("#promptContainer").html(promptText);
     $("#promptContainer").show();
@@ -85,19 +87,10 @@ function clearTable() {
     $(".table-card").hide();
 }
 
-function startGame() {
-    clearTable();
-    $("#tablecontainer").show();
+function getMessages() {
     $.ajax({
-        type: 'POST',
-        url: '/api/startGame',
-    });
-}
-
-function onLoad() {
-    $.ajax({
-        type: 'POST',
-        url: '/api/onLoad',
+        type: 'GET',
+        url: '/api/getMessages',
     });
 }
 
@@ -113,10 +106,20 @@ $(window).bind("load", function() {
     if (host == "True" && !started) {
         $("#startGameButton").show();
     }
-    onLoad();
+    getMessages();
 });
 
 $("#startGameButton").bind("click", function() {
     $("#startGameButton").hide();
-    startGame();
+    $.ajax({
+        type: 'POST',
+        url: '/api/startGame',
+    });
+});
+
+$(window).bind("unload", function(){
+    $.ajax({
+        type: 'POST',
+        url: '/api/playerLeft',
+    });
 });

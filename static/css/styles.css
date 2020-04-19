@@ -44,6 +44,12 @@ h1 {
     margin-top: 25px;
     margin-bottom: 25px;
 }
+#handcontainer {
+    min-height: 20vh;
+}
+#tablecontainer {
+    min-height: 20vh;
+}
 #promptContainer {
     padding-bottom: 25px;
 }
