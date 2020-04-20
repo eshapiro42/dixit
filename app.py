@@ -74,6 +74,7 @@ def play():
         'game_id': session['game_id'],
         'creator': session['creator'],
         'started': games[session['game_id']].started,
+        'random_number': random.randint(10000000, 99999999),
     }
     return render_template('play.html', data=data)
 
