@@ -85,7 +85,7 @@ class Player:
 class Deck:
     def __init__(self):
         card_files = os.listdir('static/cards/')
-        self.deck = [int(card_file.strip('.jpg')) for card_file in card_files]
+        self.deck = card_files
         self.num_cards = len(self.deck)
         self.discard = []
         random.shuffle(self.deck)

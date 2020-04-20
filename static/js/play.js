@@ -122,12 +122,13 @@ gameChannel.bind('hostPromptReceivedByClient', data => {
 });
 
 myChannel.bind('showHand', data => {
-    $("#hand1").attr('src', `/static/cards/${data.hand1}.jpg`);
-    $("#hand2").attr('src', `/static/cards/${data.hand2}.jpg`);
-    $("#hand3").attr('src', `/static/cards/${data.hand3}.jpg`);    
-    $("#hand4").attr('src', `/static/cards/${data.hand4}.jpg`);
-    $("#hand5").attr('src', `/static/cards/${data.hand5}.jpg`);
-    $("#hand6").attr('src', `/static/cards/${data.hand6}.jpg`);
+    $("#hand1").attr('src', `/static/cards/${data.hand1}`);
+    $("#hand2").attr('src', `/static/cards/${data.hand2}`);
+    $("#hand3").attr('src', `/static/cards/${data.hand3}`);
+    $("#hand4").attr('src', `/static/cards/${data.hand4}`);
+    $("#hand5").attr('src', `/static/cards/${data.hand5}`);
+    $("#hand6").attr('src', `/static/cards/${data.hand6}`);
+
     $("#hand1").attr('cardnum', data.hand1);
     $("#hand2").attr('cardnum', data.hand2);
     $("#hand3").attr('cardnum', data.hand3);
@@ -140,12 +141,12 @@ gameChannel.bind('showTable', data => {
     $(".card-body").hide();
     $(".card-title").css('color', 'black');
     $(".table-card").show();
-    $("#table1").attr('src', `/static/cards/${data.table1}.jpg`);
-    $("#table2").attr('src', `/static/cards/${data.table2}.jpg`);
-    $("#table3").attr('src', `/static/cards/${data.table3}.jpg`);    
-    $("#table4").attr('src', `/static/cards/${data.table4}.jpg`);
-    $("#table5").attr('src', `/static/cards/${data.table5}.jpg`);
-    $("#table6").attr('src', `/static/cards/${data.table6}.jpg`);
+    $("#table1").attr('src', `/static/cards/${data.table1}`);
+    $("#table2").attr('src', `/static/cards/${data.table2}`);
+    $("#table3").attr('src', `/static/cards/${data.table3}`);    
+    $("#table4").attr('src', `/static/cards/${data.table4}`);
+    $("#table5").attr('src', `/static/cards/${data.table5}`);
+    $("#table6").attr('src', `/static/cards/${data.table6}`);
     $("#table1").attr('cardnum', data.table1);
     $("#table2").attr('cardnum', data.table2);
     $("#table3").attr('cardnum', data.table3);

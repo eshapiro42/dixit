@@ -164,7 +164,7 @@ def sendHostChoicesToServer():
     game_id = session['game_id']
     player_name = session['player_name']
     game = games[game_id]
-    game.host_card = int(request.form['hostCard'])
+    game.host_card = request.form['hostCard']
     game.host_prompt = request.form['hostPrompt']
     card = players[player_name].play_card(game.host_card)
     showHand(game_id, player_name)
@@ -180,7 +180,7 @@ def sendOthersChoicesToServer():
     game_id = session['game_id']
     player_name = session['player_name']
     game = games[game_id]
-    others_card = int(request.form['othersCard'])
+    others_card = request.form['othersCard']
     card = players[player_name].play_card(others_card)
     showHand(game_id, player_name)
     game.table[player_name] = card
@@ -195,7 +195,7 @@ def sendOthersVotesToServer():
     game_id = session['game_id']
     player_name = session['player_name']
     game = games[game_id]
-    others_card = int(request.form['othersCard'])
+    others_card = request.form['othersCard']
     game.votes[player_name] = others_card
     print('Player {} voted for card {}'.format(player_name, others_card))
     if len(game.votes) == game.num_players - 1:
