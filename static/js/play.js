@@ -62,7 +62,10 @@ gameChannel.bind('started', data => {
             hostWent = true;
             choosing = false;
             var hostCard = $(this).children($('img')).attr('cardnum');
-            var hostPrompt = prompt("Please enter your prompt", "");
+            var hostPrompt;
+            do {
+                hostPrompt = prompt("Please enter your prompt", "");
+            } while(hostPrompt == null || hostPrompt == "" );
             sendHostChoices(hostCard, hostPrompt);
         }
         if (choosing && youAreOther && !otherWent) {
@@ -98,6 +101,7 @@ gameChannel.bind('hostTurn', data => {
         youAreHost = true;
         hostWent = false;
         choosing = true;
+        alert('It is your turn!');
     } else {
         youAreHost = false;
     }
