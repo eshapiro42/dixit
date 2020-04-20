@@ -27,6 +27,7 @@ gameChannel.bind('sendOutcomes', data => {
     var host = data.host;
     var cardPlayersList = Object.entries(cardPlayers)
     var cardVotersList = Object.entries(cardVoters)
+    $(".table-card").removeClass("border-info");
     for ([player, card] of cardPlayersList) {
         if (player == host) {
             $(`[cardnum="${card}"]`).siblings(".card-body").children(".card-title").html(`${player}'s card`);
@@ -77,6 +78,7 @@ gameChannel.bind('started', data => {
             otherWent = true;
             voting = false;
             var otherCard = $(this).children($('img')).attr('cardnum');
+            $(this).addClass("border-info");
             sendOthersVotes(otherCard, player_name);
             // Reset all state variables
             youAreHost = false;
@@ -86,7 +88,7 @@ gameChannel.bind('started', data => {
             choosing = false;
             voting = false;
             // Alert
-            alert("Your vote has been recorded!")
+            // alert("Your vote has been recorded!")
         }
     });
 });
