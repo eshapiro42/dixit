@@ -14,7 +14,7 @@ h1 {
 .title {
     padding: 15px;
     font-size: larger;
-    height: 10vh;
+    min-height: 10vh;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -35,13 +35,16 @@ h1 {
 #tablelabel {
     padding-top: 30px;
 }
+#scorelabel {
+    padding-top: 30px;
+    padding-bottom: 30px;
+}
 #gameMessageContainer {
     height: 15vh;
     color: white;
     overflow: auto;
     padding-top: 10px;
     padding-bottom: 10px;
-    margin-top: 25px;
     margin-bottom: 25px;
 }
 #handcontainer {
@@ -50,9 +53,21 @@ h1 {
 #tablecontainer {
     min-height: 20vh;
 }
+#scorecontainer {
+    min-height: 10vh;
+    margin-bottom: 25px;
+    padding-bottom: 25px;
+}
 #promptContainer {
     padding-bottom: 25px;
 }
 .spacer {
     margin: 25px 25px 25px 25px !important;
+}
+.col-centered {
+    float: none;
+    margin: 0 auto;
+}
+.table {
+    margin: auto;
 }

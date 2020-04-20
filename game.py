@@ -1,15 +1,19 @@
+import itertools
+import os
 import random
 
 class Game:
     def __init__(self, game_id):
         self.id = game_id
         self.players = {}
+        self.players_cycle = None
         self.current_host = None
         self.host_card = None
         self.host_prompt = None
         self.num_players = 0
         self.deck = Deck()
-        self.table = []
+        self.table = {}
+        self.votes = {}
         self.playable = False
         self.started = False
         print('Created game {}'.format(self.id))
@@ -25,45 +29,30 @@ class Game:
         print('Added player {} to game {}'.format(name, self.id))
         # If the game has four or more players, it is playable
         self.num_players += 1
-        if self.num_players >= 4:
-            self.playable = True
-            print('Game {} now has four players and is playable'.format(self.id))
+        # TODO: UNCOMMENT THIS
+        # if self.num_players >= 4:
+        #     self.playable = True
+        #     print('Game {} now has four players and is playable'.format(self.id))
+        self.playable = True
         return player
         
     def start_game(self):
         if self.playable:
             self.started = True
+            players_list = list(self.players.values())
+            random.shuffle(players_list)
+            self.players_cycle = itertools.cycle(players_list)
             return 'started'
         else:
             print("You need at least four players to play.")
             return None
 
-    def round_loop(self):
-        while all([player.score < 30 for player in self.players.values()]):
-            for num in range(len(self.players)):
-                self.current_host = self.players.values()[num]
-                other_players = self.players.values()[:num] + self.players.values()[num + 1:]
-                round = Round(self, self.current_host, other_players)
-                round.start()
-
-
-class Round:
-    def __init__(self, game, host_player, other_players):
-        self.game = game
-        self.host_player = host_player
-        self.other_players = other_players
-
-    def start(self):
-        print('Host: {}'.format(self.host_player))
-        # host player chooses a card and creates a prompt
-        # other players receive the prompt and choose a card 
-        # round gets scored
-        for player in self.game.players.values():
-            player.score += 5
-        # all players draw a card
-        for player in self.game.players.values():
-            player.draw_card()
-            player.discard_card(player.hand[0])
+    def new_round(self):
+        self.host_card = None
+        self.host_prompt = None
+        self.table = {}
+        self.votes = {}
+        self.current_host = next(self.players_cycle)
 
 
 class Player:
@@ -95,8 +84,9 @@ class Player:
 
 class Deck:
     def __init__(self):
-        self.num_cards = 108
-        self.deck = list(range(108))
+        card_files = os.listdir('static/cards/')
+        self.deck = [int(card_file.strip('.jpg')) for card_file in card_files]
+        self.num_cards = len(self.deck)
         self.discard = []
         random.shuffle(self.deck)
 

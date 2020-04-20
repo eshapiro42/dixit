@@ -72,7 +72,7 @@ def play():
     data = {
         'player_name': session['player_name'],
         'game_id': session['game_id'],
-        'host': session['host'],
+        'creator': session['creator'],
         'started': games[session['game_id']].started,
     }
     return render_template('play.html', data=data)
@@ -91,7 +91,7 @@ def createGame():
     session['player_name'] = player_name
     player_object = games[game_id].add_player(player_name)
     players[player_name] = player_object
-    session['host'] = True
+    session['creator'] = True
     print('CREATEGAME Session data: {}'.format(session))
     messages[game_id] = ''
     gameMessage(game_id, 'Waiting for players.')
@@ -111,8 +111,8 @@ def joinGame():
         if player_object is None:
             raise AppError('Could not add player. Game {} has already started.'.format(game_id))
         players[player_name] = player_object
-    if player_name not in players or 'host' not in session:
-        session['host'] = False
+    if player_name not in players or 'creator' not in session:
+        session['creator'] = False
     print('JOINGAME Session data: {}'.format(session))
     gameMessage(game_id, '{} has joined the game.'.format(player_name))
     return redirect(url_for('play'))
@@ -135,9 +135,12 @@ def startGame():
         showHand(game_id, player_name)
     data = {
         'started': True,
+        'num_players': game.num_players,
     }
     pusher.trigger('dixit-{}'.format(game_id), 'started', data)
-    hostTurn(game_id, list(game.players.keys())[0])
+    game.new_round()
+    scoreUpdate(game_id)
+    hostTurn(game_id, game.current_host.name)
     return ''
 
 
@@ -164,36 +167,127 @@ def sendHostChoicesToServer():
     game.host_card = int(request.form['hostCard'])
     game.host_prompt = request.form['hostPrompt']
     card = players[player_name].play_card(game.host_card)
-    game.table.append(card)
+    showHand(game_id, player_name)
+    game.table[player_name] = card
     message = '''{}'s prompt: "{}"'''.format(game.host, game.host_prompt)
-    gameMessage(game_id, message)
-    message = '''Other players, choose a card to match the prompt.'''.format(game.host, game.host_prompt)
-    gameMessage(game_id, message)
+    gameMessage(game_id, message, bold=True)
+    othersTurn(game_id)
+    return ''
 
+
+@app.route('/api/sendOthersChoicesToServer', methods=['POST'])
+def sendOthersChoicesToServer():
+    game_id = session['game_id']
+    player_name = session['player_name']
+    game = games[game_id]
+    others_card = int(request.form['othersCard'])
+    card = players[player_name].play_card(others_card)
+    showHand(game_id, player_name)
+    game.table[player_name] = card
+    if len(game.table) == game.num_players:
+        showTable(game_id)
+        othersVote(game_id)
+    return ''
+
+
+@app.route('/api/sendOthersVotesToServer', methods=['POST'])
+def sendOthersVotesToServer():
+    game_id = session['game_id']
+    player_name = session['player_name']
+    game = games[game_id]
+    others_card = int(request.form['othersCard'])
+    game.votes[player_name] = others_card
+    print('Player {} voted for card {}'.format(player_name, others_card))
+    if len(game.votes) == game.num_players - 1:
+        gameMessage(game_id, 'Everyone has voted and the results are in.')
+        print('table: {}'.format(game.table))
+        print('votes: {}'.format(game.votes))
+        # Scoring logic
+        correct_card = game.table[game.current_host.name]
+        correct_count = list(game.votes.values()).count(correct_card)
+        if correct_count == game.num_players - 1:
+            print('Everyone guessed correctly')
+            all_correct = True
+            none_correct = False
+        elif correct_count == 0:
+            print('Nobody guessed correctly')
+            all_correct = False
+            none_correct = True
+        else:
+            print('The host won')
+            all_correct = False
+            none_correct = False
+        for player_name, player_object in game.players.items():
+            print(player_object, game.current_host)
+            if player_object == game.current_host:
+                # The host gets three points if some but not all of the other players voted for his choice
+                if 0 < correct_count < game.num_players - 1:
+                    player_object.score += 3
+                    print('The host {} gets 3 points for a new score of {}'.format(player_name, player_object.score))
+                    host_won = True
+            elif all_correct:
+                # If everyone guesses the host's choice, all other players get two points
+                player_object.score += 2
+                print('Everybody guessed correctly so {} gets 2 points for a new score of {}'.format(player_name, player_object.score))
+            elif none_correct:
+                # If no one guesses the host's choice, all other players get two points
+                player_object.score += 2
+                print('Nobody guessed correctly so {} gets 2 points for a new score of {}'.format(player_name, player_object.score))
+                # Other players get one point if another player voted for their card
+                player_card = game.table[player_name]
+                votes_for_player = list(game.votes.values()).count(player_card)
+                if votes_for_player > 0:
+                    player_object.score += votes_for_player
+                    print("Player {}'s card got {} votes for a new score of {}".format(player_name, votes_for_player, player_object.score))
+            else:
+                # If the host won, other players get three points for voting for the correct card
+                if game.votes[player_name] == correct_card:
+                    player_object.score += 3
+                    print('Player {} gets 3 points for voting for the correct card for a new score of {}'.format(player_name, player_object.score))
+                # Other players get one point if another player voted for their card
+                player_card = game.table[player_name]
+                votes_for_player = list(game.votes.values()).count(player_card)
+                if votes_for_player > 0:
+                    player_object.score += votes_for_player
+                    print("Player {}'s card got {} votes for a new score of {}".format(player_name, votes_for_player, player_object.score))
+        sendOutcomes(game_id)
+        scoreUpdate(game_id)
+        # Scoring is complete, so start the next round!
+        game.new_round()
+        hostTurn(game_id, game.current_host.name)
     return ''
 
 
 def hostTurn(game_id, host_name):
     games[game_id].host = host_name
-    gameMessage(game_id, "It is {}'s turn to give a prompt.".format(host_name))
+    gameMessage(game_id, "It is {}'s turn to choose a card and give a prompt.".format(host_name))
     data = {
         'host': host_name,
     }
     pusher.trigger('dixit-{}'.format(game_id), 'hostTurn', data)
 
 
+def othersTurn(game_id):
+    message = "Other players, choose a card to match the prompt."
+    gameMessage(game_id, message)
+    pusher.trigger('dixit-{}'.format(game_id), 'othersTurn', None)
+
+
+def othersVote(game_id):
+    message = "Other players, vote for which card you think matches the prompt."
+    gameMessage(game_id, message)
+    pusher.trigger('dixit-{}'.format(game_id), 'othersVote', None)
+
+
 def showHand(game_id, player_name):
     print('showing hand of player {} in game {}'.format(player_name, game_id))
     game = games[game_id]
     player_object = players[player_name]
-    data = {
-        'hand1': '{}'.format(player_object.hand[0]),
-        'hand2': '{}'.format(player_object.hand[1]),
-        'hand3': '{}'.format(player_object.hand[2]),
-        'hand4': '{}'.format(player_object.hand[3]),
-        'hand5': '{}'.format(player_object.hand[4]),
-        'hand6': '{}'.format(player_object.hand[5]),
-    }
+    data = {}
+    cardnum = 1
+    for card in player_object.hand:
+        data['hand{}'.format(cardnum)] = card
+        cardnum += 1
     pusher.trigger('dixit-{}-{}'.format(player_name, game_id), 'showHand', data)
 
 
@@ -201,14 +295,16 @@ def showTable(game_id):
     print('showing table in game {}'.format(game_id))
     game = games[game_id]
     data = {}
-    cardnum = 0
-    for card in game.table:
+    cardnum = 1
+    table_list = list(game.table.values())
+    random.shuffle(table_list)
+    for card in table_list:
         data['table{}'.format(cardnum)] = card
         cardnum += 1
     pusher.trigger('dixit-{}'.format(game_id), 'showTable', data)
 
 
-def gameMessage(game_id, gameMessage):
+def gameMessage(game_id, gameMessage, bold=False):
     print('Sending message to all players in game {}'.format(game_id))
     game = games[game_id]
     if messages[game_id] == '':
@@ -216,11 +312,41 @@ def gameMessage(game_id, gameMessage):
     elif gameMessage == None:
         pass
     else:
-        messages[game_id] += '<br>{}'.format(gameMessage)
+        if bold:
+            messages[game_id] += '<br><b>{}</b>'.format(gameMessage)
+        else:
+            messages[game_id] += '<br>{}'.format(gameMessage)
     data = {
         'gameMessage': messages[game_id],
     }
     pusher.trigger('dixit-{}'.format(game_id), 'gameMessage', data)
+
+
+def sendOutcomes(game_id):
+    print('Sending outcomes to all players in game {}'.format(game_id))
+    game = games[game_id]
+    data = {
+        'cardPlayers': game.table,
+        'cardVoters': game.votes,
+        'host': game.current_host.name,
+    }
+    pusher.trigger('dixit-{}'.format(game_id), 'sendOutcomes', data)
+
+
+def scoreUpdate(game_id):
+    print('Sending scores to all players in game {}'.format(game_id))
+    game = games[game_id]
+    score_html = '<tr>'
+    for player_object in game.players.values():
+        score_html += '\n<td> {} </td>'.format(player_object.name)
+    score_html += '\n</tr>\n<tr>'
+    for player_object in game.players.values():
+        score_html += '\n<td> {} </td>'.format(player_object.score)
+    score_html += '\n</tr>'
+    data = {
+        'scores': score_html,
+    }
+    pusher.trigger('dixit-{}'.format(game_id), 'scoreUpdate', data)
 
 
 app.run(host='0.0.0.0', debug=True)

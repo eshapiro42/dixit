@@ -9,47 +9,116 @@ var gameChannel = pusher.subscribe(`dixit-${game_id}`);
 
 var youAreHost = false;
 var hostWent = false;
+var youAreOther = false;
+var otherWent = false;
+var choosing = false;
+var voting = false;
+
+var num_players;
 
 gameChannel.bind('gameMessage', data => {
     $('#gameMessage').html(data.gameMessage);
     $('#gameMessageContainer').scrollTop($('#gameMessageContainer')[0].scrollHeight);
 });
 
-gameChannel.bind('started', data => {
-    started = data.started;
-    $("#startGameButton").hide();
-    clearTable();
-    $("#tablecontainer").show();
-    $("#handcontainer").show();
+gameChannel.bind('sendOutcomes', data => {
+    var cardPlayers = data.cardPlayers;
+    var cardVoters = data.cardVoters;
+    var host = data.host;
+    var cardPlayersList = Object.entries(cardPlayers)
+    var cardVotersList = Object.entries(cardVoters)
+    for ([player, card] of cardPlayersList) {
+        if (player == host) {
+            $(`[cardnum="${card}"]`).siblings(".card-body").children(".card-title").html(`${player}'s card`);
+            $(`[cardnum="${card}"]`).siblings(".card-body").children(".card-title").css('color', 'red');
+        } else {
+            $(`[cardnum="${card}"]`).siblings(".card-body").children(".card-title").html(`${player}'s card`);
+        }
+    }
+    $(".card-text").html('');
+    for ([voter, card] of cardVotersList) {
+        $(`[cardnum="${card}"]`).siblings(".card-body").children(".card-text").append(`${voter}'s vote<br>`);
+    }
+    $(".card-body").show();
 });
 
-gameChannel.bind('startTurn', data => {
+gameChannel.bind('scoreUpdate', data => {
+    $('#scores').html(data.scores);
+});
+
+gameChannel.bind('started', data => {
+    started = data.started;
+    num_players = data.num_players;
+    $("#startGameButton").hide();
+    clearTable();
+    createTable(num_players);
+    $("#tablecontainer").show();
+    $("#handcontainer").show();
+    $("#scorecontainer").show();
+
+    $('.hand-card').bind('click', function() {
+        if (choosing && youAreHost && !hostWent) {
+            hostWent = true;
+            choosing = false;
+            var hostCard = $(this).children($('img')).attr('cardnum');
+            var hostPrompt = prompt("Please enter your prompt", "");
+            sendHostChoices(hostCard, hostPrompt);
+        }
+        if (choosing && youAreOther && !otherWent) {
+            otherWent = true;
+            choosing = false;
+            var otherCard = $(this).children($('img')).attr('cardnum');
+            sendOthersChoices(otherCard, player_name);
+        }
+    });
+    
+    $('.table-card').bind('click', function() {
+        if (voting && youAreOther && !otherWent) {
+            otherWent = true;
+            voting = false;
+            var otherCard = $(this).children($('img')).attr('cardnum');
+            sendOthersVotes(otherCard, player_name);
+            // Reset all state variables
+            youAreHost = false;
+            hostWent = false;
+            youAreOther = false;
+            otherWent = false;
+            choosing = false;
+            voting = false;
+            // Alert
+            alert("Your vote has been recorded!")
+        }
+    });
+});
+
+gameChannel.bind('hostTurn', data => {
     if (data.host == player_name) {
         youAreHost = true;
+        hostWent = false;
+        choosing = true;
+    } else {
+        youAreHost = false;
+    }
+});
+
+gameChannel.bind('othersTurn', function() {
+    if (!youAreHost) {
+        youAreOther = true;
+        otherWent = false;
+        choosing = true;
+    }
+});
+
+gameChannel.bind('othersVote', function() {
+    if (!youAreHost) {
+        youAreOther = true;
+        otherWent = false;
+        voting = true;
     }
 });
 
 gameChannel.bind('hostPromptReceivedByClient', data => {
     promptText = `${data.host}'s prompt: "${data.prompt}"`
-    $("#promptContainer").html(promptText);
-    $("#promptContainer").show();
-});
-
-$('.hand-card').bind('click', function() {
-    if (youAreHost && !hostWent) {
-        youAreHost = false;
-        hostWent = true;
-        var hostCard = $(this).children($('img')).attr('cardnum');
-        var hostPrompt = prompt("Please enter your prompt", "");
-        sendHostChoices(hostCard, hostPrompt);
-    }
-});
-
-$('.table-card').bind('click', function() {
-    if (selectCardFromTable) {
-        alert($(this).children($('img')).attr('cardnum'));
-        selectCardFromTable = false;
-    }
 });
 
 myChannel.bind('showHand', data => {
@@ -68,6 +137,8 @@ myChannel.bind('showHand', data => {
 });
 
 gameChannel.bind('showTable', data => {
+    $(".card-body").hide();
+    $(".card-title").css('color', 'black');
     $(".table-card").show();
     $("#table1").attr('src', `/static/cards/${data.table1}.jpg`);
     $("#table2").attr('src', `/static/cards/${data.table2}.jpg`);
@@ -82,6 +153,23 @@ gameChannel.bind('showTable', data => {
     $("#table5").attr('cardnum', data.table5);
     $("#table6").attr('cardnum', data.table6);
 });
+
+function createTable(num_players) {
+    for (num = 1; num <= num_players; num++) {
+        var card_element = `
+            <div class="col-sm-6 col-md-4 col-lg-2 col-centered">
+                <div class="card table-card" style="display: none;">
+                    <img src="" class="card-img-top" id="table${num}">
+                    <div class="card-body" style="display: none;">
+                        <h5 class="card-title"></h5>
+                        <p class="card-text"></p>
+                    </div>
+                </div>
+            </div>
+        `;
+        $("#table").append(card_element);
+    }
+}
 
 function clearTable() {
     $(".table-card").hide();
@@ -102,8 +190,24 @@ function sendHostChoices(hostCard, hostPrompt) {
     });
 }
 
+function sendOthersChoices(othersCard, playerName) {
+    $.ajax({
+        type: 'POST',
+        url: '/api/sendOthersChoicesToServer',
+        data: {'othersCard': othersCard, 'playerName': playerName},
+    });
+}
+
+function sendOthersVotes(othersCard, playerName) {
+    $.ajax({
+        type: 'POST',
+        url: '/api/sendOthersVotesToServer',
+        data: {'othersCard': othersCard, 'playerName': playerName},
+    });
+}
+
 $(window).bind("load", function() {
-    if (host == "True" && !started) {
+    if (creator == "True" && started == "False") {
         $("#startGameButton").show();
     }
     getMessages();
