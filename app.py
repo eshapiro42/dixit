@@ -89,7 +89,7 @@ def createGame():
     # Add the game object to the global dictionary of games
     games[game_id] = game
     session['game_id'] = game_id
-    player_name = str(request.form['player_name'])
+    player_name = str(request.form['player_name']).replace(" ", "")
     session['player_name'] = player_name
     # Add the player to the game
     player_object = game.add_player(player_name)
@@ -105,7 +105,7 @@ def createGame():
 def joinGame():
     # print('Received form: {}'.format(request.form))
     game_id = str(request.form['game_id']).upper()
-    player_name = str(request.form['player_name'])
+    player_name = str(request.form['player_name']).replace(" ", "")
     session['player_name'] = player_name
     session['game_id'] = game_id
     try:
