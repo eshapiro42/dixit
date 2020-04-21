@@ -89,7 +89,7 @@ def createGame():
     # Add the game object to the global dictionary of games
     games[game_id] = game
     session['game_id'] = game_id
-    player_name = str(request.form['player_name']).replace(" ", "").strip()
+    player_name = str(request.form['player_name']).strip()
     session['player_name'] = player_name
     # Add the player to the game
     player_object = game.add_player(player_name)
@@ -105,7 +105,7 @@ def createGame():
 def joinGame():
     print('Received form: {}'.format(request.form))
     game_id = str(request.form['game_id']).upper().strip()
-    player_name = str(request.form['player_name']).replace(" ", "")
+    player_name = str(request.form['player_name']).strip()
     session['player_name'] = player_name
     session['game_id'] = game_id
     try:
@@ -156,14 +156,6 @@ def startGame():
 def getMessages():
     game_id = session['game_id']
     gameMessage(game_id, None)
-    return ''
-
-
-@app.route('/api/playerLeft', methods=['POST'])
-def playerLeft():
-    player_name = session['player_name']
-    game_id = session['game_id']
-    print("Player {} left game {}".format(player_name, game_id))
     return ''
 
 
@@ -298,7 +290,7 @@ def showHand(game_id, player_name):
     for card in player_object.hand:
         data['hand{}'.format(cardnum)] = card
         cardnum += 1
-    pusher.trigger('dixit-{}-{}'.format(player_name, game_id), 'showHand', data)
+    pusher.trigger('dixit-{}-{}'.format(player_name.replace(" ", "_"), game_id), 'showHand', data)
 
 
 def showTable(game_id):

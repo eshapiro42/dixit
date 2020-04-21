@@ -79,3 +79,6 @@ h1 {
     transform: scale(1.7);
     z-index: 5;
 }
+.border-info {
+    border-width: 2px !important;
+}
