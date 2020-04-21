@@ -103,7 +103,10 @@ def joinGame():
     game_id = str(request.form['game_id']).upper()
     player_name = str(request.form['player_name'])
     session['player_name'] = player_name
-    session['game_id'] = game_id
+    try:
+        session['game_id'] = game_id
+    except KeyError:
+        AppError('Game ID {} was not found.'.format(game_id))
     game = games[game_id]
     # If this player is not already in the game, add them
     if player_name not in players:
