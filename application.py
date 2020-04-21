@@ -65,8 +65,8 @@ def index():
 
 @application.route('/play', methods=['GET', 'POST'])
 def play():
-    print('PLAY Session data: {}'.format(session))
-    print('started={}'.format(games[session['game_id']].started))
+    # print('PLAY Session data: {}'.format(session))
+    # print('started={}'.format(games[session['game_id']].started))
     data = {
         'player_name': session['player_name'],
         'game_id': session['game_id'],
@@ -80,7 +80,7 @@ def play():
 @application.route('/api/createGame', methods=['POST'])
 def createGame():
     global games
-    print('Received form: {}'.format(request.form))
+    # print('Received form: {}'.format(request.form))
     characters = string.ascii_uppercase + string.digits
     game_id = ''.join(random.choice(characters) for i in range(4))
     game = Game(game_id)
@@ -91,7 +91,7 @@ def createGame():
     player_object = games[game_id].add_player(player_name)
     players[player_name] = player_object
     session['creator'] = True
-    print('CREATEGAME Session data: {}'.format(session))
+    # print('CREATEGAME Session data: {}'.format(session))
     messages[game_id] = ''
     gameMessage(game_id, 'Waiting for players.')
     return redirect(url_for('play'))
@@ -99,7 +99,7 @@ def createGame():
 
 @application.route('/api/joinGame', methods=['POST'])
 def joinGame():
-    print('Received form: {}'.format(request.form))
+    # print('Received form: {}'.format(request.form))
     game_id = str(request.form['game_id']).upper()
     player_name = str(request.form['player_name'])
     session['player_name'] = player_name
@@ -113,7 +113,7 @@ def joinGame():
         players[player_name] = player_object
     if player_name not in players or 'creator' not in session:
         session['creator'] = False
-    print('JOINGAME Session data: {}'.format(session))
+    # print('JOINGAME Session data: {}'.format(session))
     gameMessage(game_id, '{} has joined the game.'.format(player_name))
     if game.playable:
         gamePlayable(game_id)
@@ -127,7 +127,7 @@ def startGame():
     if game.started:
         return ''
     ret = game.start_game()
-    print('Game {} started'.format(game_id))
+    # print('Game {} started'.format(game_id))
     gameMessage(game_id, 'The game has started.')
     for player_name in game.players.keys():
         showHand(game_id, player_name)
@@ -153,7 +153,7 @@ def getMessages():
 def playerLeft():
     player_name = session['player_name']
     game_id = session['game_id']
-    print("Player {} left game {}".format(player_name, game_id))
+    # print("Player {} left game {}".format(player_name, game_id))
     return ''
 
 
@@ -164,7 +164,7 @@ def sendHostChoicesToServer():
     game = games[game_id]
     game.host_card = request.form['hostCard']
     game.host_prompt = request.form['hostPrompt']
-    print('Host {} chose card {}'.format(player_name, game.host_card))
+    # print('Host {} chose card {}'.format(player_name, game.host_card))
     card = players[player_name].play_card(game.host_card)
     showHand(game_id, player_name)
     game.table[player_name] = card
@@ -196,59 +196,59 @@ def sendOthersVotesToServer():
     game = games[game_id]
     others_card = request.form['othersCard']
     game.votes[player_name] = others_card
-    print('Player {} voted for card {}'.format(player_name, others_card))
+    # print('Player {} voted for card {}'.format(player_name, others_card))
     if len(game.votes) == game.num_players - 1:
         gameMessage(game_id, 'Everyone has voted and the results are in.')
-        print('table: {}'.format(game.table))
-        print('votes: {}'.format(game.votes))
+        # print('table: {}'.format(game.table))
+        # print('votes: {}'.format(game.votes))
         # Scoring logic
         correct_card = game.table[game.current_host.name]
         correct_count = list(game.votes.values()).count(correct_card)
         if correct_count == game.num_players - 1:
-            print('Everyone guessed correctly')
+            # print('Everyone guessed correctly')
             all_correct = True
             none_correct = False
         elif correct_count == 0:
-            print('Nobody guessed correctly')
+            # print('Nobody guessed correctly')
             all_correct = False
             none_correct = True
         else:
-            print('The host won')
+            # print('The host won')
             all_correct = False
             none_correct = False
         for player_name, player_object in game.players.items():
-            print(player_object, game.current_host)
+            # print(player_object, game.current_host)
             if player_object == game.current_host:
                 # The host gets three points if some but not all of the other players voted for his choice
                 if 0 < correct_count < game.num_players - 1:
                     player_object.score += 3
-                    print('The host {} gets 3 points for a new score of {}'.format(player_name, player_object.score))
+                    # print('The host {} gets 3 points for a new score of {}'.format(player_name, player_object.score))
                     host_won = True
             elif all_correct:
                 # If everyone guesses the host's choice, all other players get two points
                 player_object.score += 2
-                print('Everybody guessed correctly so {} gets 2 points for a new score of {}'.format(player_name, player_object.score))
+                # print('Everybody guessed correctly so {} gets 2 points for a new score of {}'.format(player_name, player_object.score))
             elif none_correct:
                 # If no one guesses the host's choice, all other players get two points
                 player_object.score += 2
-                print('Nobody guessed correctly so {} gets 2 points for a new score of {}'.format(player_name, player_object.score))
+                # print('Nobody guessed correctly so {} gets 2 points for a new score of {}'.format(player_name, player_object.score))
                 # Other players get one point if another player voted for their card
                 player_card = game.table[player_name]
                 votes_for_player = list(game.votes.values()).count(player_card)
                 if votes_for_player > 0:
                     player_object.score += votes_for_player
-                    print("Player {}'s card got {} votes for a new score of {}".format(player_name, votes_for_player, player_object.score))
+                    # print("Player {}'s card got {} votes for a new score of {}".format(player_name, votes_for_player, player_object.score))
             else:
                 # If the host won, other players get three points for voting for the correct card
                 if game.votes[player_name] == correct_card:
                     player_object.score += 3
-                    print('Player {} gets 3 points for voting for the correct card for a new score of {}'.format(player_name, player_object.score))
+                    # print('Player {} gets 3 points for voting for the correct card for a new score of {}'.format(player_name, player_object.score))
                 # Other players get one point if another player voted for their card
                 player_card = game.table[player_name]
                 votes_for_player = list(game.votes.values()).count(player_card)
                 if votes_for_player > 0:
                     player_object.score += votes_for_player
-                    print("Player {}'s card got {} votes for a new score of {}".format(player_name, votes_for_player, player_object.score))
+                    # print("Player {}'s card got {} votes for a new score of {}".format(player_name, votes_for_player, player_object.score))
         sendOutcomes(game_id)
         scoreUpdate(game_id)
         # Scoring is complete, so start the next round!
@@ -279,7 +279,7 @@ def othersVote(game_id):
 
 
 def showHand(game_id, player_name):
-    print('showing hand of player {} in game {}'.format(player_name, game_id))
+    # print('showing hand of player {} in game {}'.format(player_name, game_id))
     game = games[game_id]
     player_object = players[player_name]
     data = {}
@@ -291,7 +291,7 @@ def showHand(game_id, player_name):
 
 
 def showTable(game_id):
-    print('showing table in game {}'.format(game_id))
+    # print('showing table in game {}'.format(game_id))
     game = games[game_id]
     data = {}
     cardnum = 1
@@ -304,7 +304,7 @@ def showTable(game_id):
 
 
 def gameMessage(game_id, gameMessage, bold=False):
-    print('Sending message to all players in game {}'.format(game_id))
+    # print('Sending message to all players in game {}'.format(game_id))
     game = games[game_id]
     if messages[game_id] == '':
         messages[game_id] = gameMessage
@@ -322,7 +322,7 @@ def gameMessage(game_id, gameMessage, bold=False):
 
 
 def sendOutcomes(game_id):
-    print('Sending outcomes to all players in game {}'.format(game_id))
+    # print('Sending outcomes to all players in game {}'.format(game_id))
     game = games[game_id]
     data = {
         'cardPlayers': game.table,
@@ -333,13 +333,13 @@ def sendOutcomes(game_id):
 
 
 def gamePlayable(game_id):
-    print('Sending playable data to game {}'.format(game_id))
+    # print('Sending playable data to game {}'.format(game_id))
     game = games[game_id]
     pusher.trigger('dixit-{}'.format(game_id), 'gamePlayable', None)
 
 
 def scoreUpdate(game_id):
-    print('Sending scores to all players in game {}'.format(game_id))
+    # print('Sending scores to all players in game {}'.format(game_id))
     game = games[game_id]
     score_html = '<tr>'
     for player_object in game.players.values():
