@@ -354,4 +354,5 @@ def scoreUpdate(game_id):
     pusher.trigger('dixit-{}'.format(game_id), 'scoreUpdate', data)
 
 
-app.run()
+if __name__ == '__main__':
+    app.run()
