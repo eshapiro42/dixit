@@ -19,9 +19,7 @@ from game import Game
 
 
 app = Flask(__name__)
-app.config.update(
-    SECRET_KEY=bytes(os.environ['SECRET_KEY'], "utf-8").decode('unicode_escape')
-)
+app.config['SECRET_KEY'] = bytes(os.environ['SECRET_KEY'], "utf-8").decode('unicode_escape')
 random.seed()
 games = {}
 players = {}
@@ -107,7 +105,7 @@ def joinGame():
     try:
         game = games[game_id]
     except KeyError:
-        AppError('Game ID {} was not found.'.format(game_id))
+        raise AppError('Game ID {} was not found.'.format(game_id))
     # If this player is not already in the game, add them
     if player_name not in players:
         player_object = game.add_player(player_name)
