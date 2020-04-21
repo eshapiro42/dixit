@@ -59,13 +59,16 @@ gameChannel.bind('started', data => {
 
     $('.hand-card').bind('click', function() {
         if (choosing && youAreHost && !hostWent) {
-            hostWent = true;
-            choosing = false;
             var hostCard = $(this).children($('img')).attr('cardnum');
             var hostPrompt;
             do {
                 hostPrompt = prompt("Please enter your prompt", "");
-            } while(hostPrompt == null || hostPrompt == "" );
+            } while(hostPrompt == "");
+            if (hostPrompt == null) {
+                return;
+            }
+            hostWent = true;
+            choosing = false;
             sendHostChoices(hostCard, hostPrompt);
         }
         if (choosing && youAreOther && !otherWent) {
