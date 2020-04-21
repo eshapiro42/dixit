@@ -41,10 +41,10 @@
                     <form id="joinGameForm" action="{{ url_for('joinGame') }}" method="POST">
                     <!-- <form id="joinGameForm"> -->
                         <div class="form-group">
-                            <input type="text" name="player_name" class="form-control" placeholder="Your Name" id="joinGameName">
+                            <input type="text" name="player_name" class="form-control" placeholder="Your Name" id="joinGameName" required>
                         </div>
                         <div class="form-group">
-                            <input type="text" name="game_id" class="form-control" placeholder="Game ID" id="joinGameID">
+                            <input type="text" name="game_id" class="form-control" placeholder="Game ID" id="joinGameID" required>
                         </div>
                         <button id="joinGameSubmitButton" class="btn btn-dark">Let's Move It</button>
                     </form>
@@ -65,7 +65,7 @@
                     <form id="createGameForm" action="{{ url_for('createGame') }}" method="POST">
                     <!-- <form id="createGameForm"> -->
                         <div class="form-group">
-                            <input type="text" name="player_name" class="form-control" placeholder="Your Name" id="createGameName">
+                            <input type="text" name="player_name" class="form-control" placeholder="Your Name" id="createGameName" required>
                         </div>
                         <button id="createGameSubmitButton" class="btn btn-dark">Let's Groove It</button>
                     </form>
