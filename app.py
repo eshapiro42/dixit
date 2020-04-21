@@ -20,7 +20,7 @@ from game import Game
 
 app = Flask(__name__)
 app.config.update(
-    SECRET_KEY=os.urandom(24),
+    SECRET_KEY=bytes(os.environ['SECRET_KEY'], "utf-8").decode('unicode_escape')
 )
 random.seed()
 games = {}
