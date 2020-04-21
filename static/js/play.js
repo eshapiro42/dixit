@@ -239,5 +239,8 @@ $(window).bind("load", function() {
         $("#table6").attr('cardnum', data.table6);
     });
 
-    getMessages();
+    gameChannel.bind('pusher:subscription_succeeded', function() {
+        getMessages();
+    });
+
 });

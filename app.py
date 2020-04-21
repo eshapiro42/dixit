@@ -97,6 +97,7 @@ def createGame():
     session['creator'] = True
     print('CREATEGAME Session data: {}'.format(session))
     messages[game_id] = ''
+    gameMessage(game_id, '{} created the game room.'.format(player_name))
     gameMessage(game_id, 'Waiting for players.')
     return redirect(url_for('play'))
 
