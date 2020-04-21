@@ -89,7 +89,7 @@ def createGame():
     # Add the game object to the global dictionary of games
     games[game_id] = game
     session['game_id'] = game_id
-    player_name = str(request.form['player_name']).replace(" ", "")
+    player_name = str(request.form['player_name']).replace(" ", "").strip()
     session['player_name'] = player_name
     # Add the player to the game
     player_object = game.add_player(player_name)
@@ -104,7 +104,7 @@ def createGame():
 @app.route('/api/joinGame', methods=['POST'])
 def joinGame():
     print('Received form: {}'.format(request.form))
-    game_id = str(request.form['game_id']).upper()
+    game_id = str(request.form['game_id']).upper().strip()
     player_name = str(request.form['player_name']).replace(" ", "")
     session['player_name'] = player_name
     session['game_id'] = game_id
@@ -190,6 +190,7 @@ def sendOthersChoicesToServer():
     player_name = session['player_name']
     game = games[game_id]
     others_card = request.form['othersCard']
+    print('Player {} chose card {}'.format(player_name, others_card))
     card = players[(player_name, game_id)].play_card(others_card)
     showHand(game_id, player_name)
     game.table[player_name] = card
