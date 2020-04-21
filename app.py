@@ -18,8 +18,8 @@ from flask import (
 from game import Game
 
 
-application = Flask(__name__)
-application.config.update(
+app = Flask(__name__)
+app.config.update(
     SECRET_KEY=os.urandom(24),
 )
 random.seed()
@@ -50,20 +50,20 @@ class AppError(Exception):
         return rv
 
 
-@application.errorhandler(AppError)
+@app.errorhandler(AppError)
 def handle_app_error(error):
     response = jsonify(error.to_dict())
     response.status_code = error.status_code
     return response
 
 
-@application.route('/')
+@app.route('/')
 def index():
     session.clear()
     return render_template('index.html')
 
 
-@application.route('/play', methods=['GET', 'POST'])
+@app.route('/play', methods=['GET', 'POST'])
 def play():
     # print('PLAY Session data: {}'.format(session))
     # print('started={}'.format(games[session['game_id']].started))
@@ -77,7 +77,7 @@ def play():
     return render_template('play.html', data=data)
 
 
-@application.route('/api/createGame', methods=['POST'])
+@app.route('/api/createGame', methods=['POST'])
 def createGame():
     global games
     # print('Received form: {}'.format(request.form))
@@ -97,7 +97,7 @@ def createGame():
     return redirect(url_for('play'))
 
 
-@application.route('/api/joinGame', methods=['POST'])
+@app.route('/api/joinGame', methods=['POST'])
 def joinGame():
     # print('Received form: {}'.format(request.form))
     game_id = str(request.form['game_id']).upper()
@@ -120,7 +120,7 @@ def joinGame():
     return redirect(url_for('play'))
 
 
-@application.route('/api/startGame', methods=['POST'])
+@app.route('/api/startGame', methods=['POST'])
 def startGame():
     game_id = session['game_id']
     game = games[game_id]
@@ -142,14 +142,14 @@ def startGame():
     return ''
 
 
-@application.route('/api/getMessages')
+@app.route('/api/getMessages')
 def getMessages():
     game_id = session['game_id']
     gameMessage(game_id, None)
     return ''
 
 
-@application.route('/api/playerLeft', methods=['POST'])
+@app.route('/api/playerLeft', methods=['POST'])
 def playerLeft():
     player_name = session['player_name']
     game_id = session['game_id']
@@ -157,7 +157,7 @@ def playerLeft():
     return ''
 
 
-@application.route('/api/sendHostChoicesToServer', methods=['POST'])
+@app.route('/api/sendHostChoicesToServer', methods=['POST'])
 def sendHostChoicesToServer():
     game_id = session['game_id']
     player_name = session['player_name']
@@ -174,7 +174,7 @@ def sendHostChoicesToServer():
     return ''
 
 
-@application.route('/api/sendOthersChoicesToServer', methods=['POST'])
+@app.route('/api/sendOthersChoicesToServer', methods=['POST'])
 def sendOthersChoicesToServer():
     game_id = session['game_id']
     player_name = session['player_name']
@@ -189,7 +189,7 @@ def sendOthersChoicesToServer():
     return ''
 
 
-@application.route('/api/sendOthersVotesToServer', methods=['POST'])
+@app.route('/api/sendOthersVotesToServer', methods=['POST'])
 def sendOthersVotesToServer():
     game_id = session['game_id']
     player_name = session['player_name']
@@ -354,4 +354,4 @@ def scoreUpdate(game_id):
     pusher.trigger('dixit-{}'.format(game_id), 'scoreUpdate', data)
 
 
-application.run()
+app.run()
