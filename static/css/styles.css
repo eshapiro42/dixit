@@ -71,3 +71,11 @@ h1 {
 .table {
     margin: auto;
 }
+.hand-card:hover {
+    transform: scale(1.5);
+    z-index: 5;
+}
+.table-card:hover {
+    transform: scale(1.5);
+    z-index: 5;
+}
