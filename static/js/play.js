@@ -16,6 +16,12 @@ var voting = false;
 
 var num_players;
 
+gameChannel.bind('gamePlayable', data => {
+    if (creator == "True" && started == "False") {
+        $("#startGameButton").show();
+    }
+});
+
 gameChannel.bind('gameMessage', data => {
     $('#gameMessage').html(data.gameMessage);
     $('#gameMessageContainer').scrollTop($('#gameMessageContainer')[0].scrollHeight);
@@ -72,9 +78,9 @@ gameChannel.bind('started', data => {
             sendHostChoices(hostCard, hostPrompt);
         }
         if (choosing && youAreOther && !otherWent) {
+            var otherCard = $(this).children($('img')).attr('cardnum');
             otherWent = true;
             choosing = false;
-            var otherCard = $(this).children($('img')).attr('cardnum');
             sendOthersChoices(otherCard, player_name);
         }
     });
@@ -217,9 +223,6 @@ function sendOthersVotes(othersCard, playerName) {
 }
 
 $(window).bind("load", function() {
-    if (creator == "True" && started == "False") {
-        $("#startGameButton").show();
-    }
     getMessages();
 });
 

@@ -29,11 +29,9 @@ class Game:
         print('Added player {} to game {}'.format(name, self.id))
         # If the game has four or more players, it is playable
         self.num_players += 1
-        # TODO: UNCOMMENT THIS
-        # if self.num_players >= 4:
-        #     self.playable = True
-        #     print('Game {} now has four players and is playable'.format(self.id))
-        self.playable = True
+        if self.num_players >= 4:
+            self.playable = True
+            print('Game {} now has four players and is playable'.format(self.id))
         return player
         
     def start_game(self):

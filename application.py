@@ -18,8 +18,8 @@ from flask import (
 from game import Game
 
 
-app = Flask(__name__)
-app.config.update(
+application = Flask(__name__)
+application.config.update(
     SECRET_KEY=os.urandom(24),
 )
 random.seed()
@@ -50,22 +50,20 @@ class AppError(Exception):
         return rv
 
 
-@app.errorhandler(AppError)
+@application.errorhandler(AppError)
 def handle_app_error(error):
     response = jsonify(error.to_dict())
     response.status_code = error.status_code
     return response
 
 
-@app.route('/')
+@application.route('/')
 def index():
-    if 'player_name' in session:
-        players.pop(session['player_name'], None)
     session.clear()
     return render_template('index.html')
 
 
-@app.route('/play', methods=['GET', 'POST'])
+@application.route('/play', methods=['GET', 'POST'])
 def play():
     print('PLAY Session data: {}'.format(session))
     print('started={}'.format(games[session['game_id']].started))
@@ -79,16 +77,16 @@ def play():
     return render_template('play.html', data=data)
 
 
-@app.route('/api/createGame', methods=['POST'])
+@application.route('/api/createGame', methods=['POST'])
 def createGame():
     global games
     print('Received form: {}'.format(request.form))
     characters = string.ascii_uppercase + string.digits
-    game_id = ''.join(random.choice(characters) for i in range(2))
+    game_id = ''.join(random.choice(characters) for i in range(4))
     game = Game(game_id)
     games[game_id] = game
     session['game_id'] = game_id
-    player_name = request.form['player_name']
+    player_name = str(request.form['player_name'])
     session['player_name'] = player_name
     player_object = games[game_id].add_player(player_name)
     players[player_name] = player_object
@@ -99,16 +97,17 @@ def createGame():
     return redirect(url_for('play'))
 
 
-@app.route('/api/joinGame', methods=['POST'])
+@application.route('/api/joinGame', methods=['POST'])
 def joinGame():
     print('Received form: {}'.format(request.form))
-    game_id = request.form['game_id']
-    player_name = request.form['player_name']
+    game_id = str(request.form['game_id']).upper()
+    player_name = str(request.form['player_name'])
     session['player_name'] = player_name
     session['game_id'] = game_id
+    game = games[game_id]
     # If this player is not already in the game, add them
     if player_name not in players:
-        player_object = games[game_id].add_player(player_name)
+        player_object = game.add_player(player_name)
         if player_object is None:
             raise AppError('Could not add player. Game {} has already started.'.format(game_id))
         players[player_name] = player_object
@@ -116,20 +115,18 @@ def joinGame():
         session['creator'] = False
     print('JOINGAME Session data: {}'.format(session))
     gameMessage(game_id, '{} has joined the game.'.format(player_name))
+    if game.playable:
+        gamePlayable(game_id)
     return redirect(url_for('play'))
 
 
-@app.route('/api/startGame', methods=['POST'])
+@application.route('/api/startGame', methods=['POST'])
 def startGame():
     game_id = session['game_id']
     game = games[game_id]
     if game.started:
         return ''
     ret = game.start_game()
-    # TODO: uncomment this to make the game require four players
-    # if ret is None:
-    #     gameMessage(game_id, 'You cannot start this game with less than four players.')
-    #     return ''
     print('Game {} started'.format(game_id))
     gameMessage(game_id, 'The game has started.')
     for player_name in game.players.keys():
@@ -145,14 +142,14 @@ def startGame():
     return ''
 
 
-@app.route('/api/getMessages')
+@application.route('/api/getMessages')
 def getMessages():
     game_id = session['game_id']
     gameMessage(game_id, None)
     return ''
 
 
-@app.route('/api/playerLeft', methods=['POST'])
+@application.route('/api/playerLeft', methods=['POST'])
 def playerLeft():
     player_name = session['player_name']
     game_id = session['game_id']
@@ -160,13 +157,14 @@ def playerLeft():
     return ''
 
 
-@app.route('/api/sendHostChoicesToServer', methods=['POST'])
+@application.route('/api/sendHostChoicesToServer', methods=['POST'])
 def sendHostChoicesToServer():
     game_id = session['game_id']
     player_name = session['player_name']
     game = games[game_id]
     game.host_card = request.form['hostCard']
     game.host_prompt = request.form['hostPrompt']
+    print('Host {} chose card {}'.format(player_name, game.host_card))
     card = players[player_name].play_card(game.host_card)
     showHand(game_id, player_name)
     game.table[player_name] = card
@@ -176,7 +174,7 @@ def sendHostChoicesToServer():
     return ''
 
 
-@app.route('/api/sendOthersChoicesToServer', methods=['POST'])
+@application.route('/api/sendOthersChoicesToServer', methods=['POST'])
 def sendOthersChoicesToServer():
     game_id = session['game_id']
     player_name = session['player_name']
@@ -191,7 +189,7 @@ def sendOthersChoicesToServer():
     return ''
 
 
-@app.route('/api/sendOthersVotesToServer', methods=['POST'])
+@application.route('/api/sendOthersVotesToServer', methods=['POST'])
 def sendOthersVotesToServer():
     game_id = session['game_id']
     player_name = session['player_name']
@@ -334,6 +332,12 @@ def sendOutcomes(game_id):
     pusher.trigger('dixit-{}'.format(game_id), 'sendOutcomes', data)
 
 
+def gamePlayable(game_id):
+    print('Sending playable data to game {}'.format(game_id))
+    game = games[game_id]
+    pusher.trigger('dixit-{}'.format(game_id), 'gamePlayable', None)
+
+
 def scoreUpdate(game_id):
     print('Sending scores to all players in game {}'.format(game_id))
     game = games[game_id]
@@ -350,4 +354,4 @@ def scoreUpdate(game_id):
     pusher.trigger('dixit-{}'.format(game_id), 'scoreUpdate', data)
 
 
-app.run(host='0.0.0.0', debug=True)
+application.run()
