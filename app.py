@@ -80,14 +80,20 @@ def createGame():
     global games
     # print('Received form: {}'.format(request.form))
     characters = string.ascii_uppercase + string.digits
+    # Create a unique Game ID
     game_id = ''.join(random.choice(characters) for i in range(4))
+    while game_id in games:
+        game_id = ''.join(random.choice(characters) for i in range(4))
+    # Create the game object
     game = Game(game_id)
+    # Add the game object to the global dictionary of games
     games[game_id] = game
     session['game_id'] = game_id
     player_name = str(request.form['player_name'])
     session['player_name'] = player_name
-    player_object = games[game_id].add_player(player_name)
-    players[player_name] = player_object
+    # Add the player to the game
+    player_object = game.add_player(player_name)
+    players[(player_name, game_id)] = player_object
     session['creator'] = True
     # print('CREATEGAME Session data: {}'.format(session))
     messages[game_id] = ''
@@ -106,13 +112,14 @@ def joinGame():
         game = games[game_id]
     except KeyError:
         raise AppError('Game ID {} was not found.'.format(game_id))
+    # TODO: If this player is already in the game, readd them
     # If this player is not already in the game, add them
-    if player_name not in players:
+    if (player_name, game_id) not in players:
         player_object = game.add_player(player_name)
         if player_object is None:
             raise AppError('Could not add player. Game {} has already started.'.format(game_id))
-        players[player_name] = player_object
-    if player_name not in players or 'creator' not in session:
+        players[(player_name, game_id)] = player_object
+    if (player_name, game_id) not in players or 'creator' not in session:
         session['creator'] = False
     # print('JOINGAME Session data: {}'.format(session))
     gameMessage(game_id, '{} has joined the game.'.format(player_name))
@@ -128,6 +135,8 @@ def startGame():
     if game.started:
         return ''
     ret = game.start_game()
+    if ret is None:
+        raise AppError('You cannot start a game with less than four players')
     # print('Game {} started'.format(game_id))
     gameMessage(game_id, 'The game has started.')
     for player_name in game.players.keys():
@@ -166,7 +175,7 @@ def sendHostChoicesToServer():
     game.host_card = request.form['hostCard']
     game.host_prompt = request.form['hostPrompt']
     # print('Host {} chose card {}'.format(player_name, game.host_card))
-    card = players[player_name].play_card(game.host_card)
+    card = players[(player_name, game_id)].play_card(game.host_card)
     showHand(game_id, player_name)
     game.table[player_name] = card
     message = '''{}'s prompt: "{}"'''.format(game.host, game.host_prompt)
@@ -181,7 +190,7 @@ def sendOthersChoicesToServer():
     player_name = session['player_name']
     game = games[game_id]
     others_card = request.form['othersCard']
-    card = players[player_name].play_card(others_card)
+    card = players[(player_name, game_id)].play_card(others_card)
     showHand(game_id, player_name)
     game.table[player_name] = card
     if len(game.table) == game.num_players:
@@ -282,7 +291,7 @@ def othersVote(game_id):
 def showHand(game_id, player_name):
     # print('showing hand of player {} in game {}'.format(player_name, game_id))
     game = games[game_id]
-    player_object = players[player_name]
+    player_object = players[(player_name, game_id)]
     data = {}
     cardnum = 1
     for card in player_object.hand:
