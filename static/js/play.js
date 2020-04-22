@@ -4,15 +4,8 @@ var pusher = new Pusher('aac926d8b7731623a59a', {
     cluster: 'us3'
 });
 
-var myChannelName;
 var myChannel;
 var gameChannel;
-var youAreHost;
-var hostWent;
-var youAreOther;
-var otherWent;
-var choosing;
-var voting;
 var num_players;
 
 function createTable(num_players) {
@@ -43,27 +36,27 @@ function getMessages() {
     });
 }
 
-function sendHostChoices(hostCard, hostPrompt) {
+function sendHostChoice(hostCard, hostPrompt) {
     $.ajax({
         type: 'POST',
-        url: '/api/sendHostChoicesToServer',
+        url: '/api/sendHostChoice',
         data: {'hostCard': hostCard, 'hostPrompt': hostPrompt},
     });
 }
 
-function sendOthersChoices(othersCard, playerName) {
+function sendOtherChoice(othersCard) {
     $.ajax({
         type: 'POST',
-        url: '/api/sendOthersChoicesToServer',
-        data: {'othersCard': othersCard, 'playerName': playerName},
+        url: '/api/sendOtherChoice',
+        data: {'card': othersCard},
     });
 }
 
-function sendOthersVotes(othersCard, playerName) {
+function sendVote(othersCard) {
     $.ajax({
         type: 'POST',
-        url: '/api/sendOthersVotesToServer',
-        data: {'othersCard': othersCard, 'playerName': playerName},
+        url: '/api/sendVote',
+        data: {'card': othersCard},
     });
 }
 
@@ -75,18 +68,12 @@ $("#startGameButton").bind("click", function() {
 });
 
 $(window).bind("load", function() {
-    myChannelName = player_name.replace(/ /g,"_");
+    var myChannelName = player_name.replace(/ /g,"_");
     myChannel = pusher.subscribe(`dixit-${myChannelName}-${game_id}`);
     gameChannel = pusher.subscribe(`dixit-${game_id}`);
-    youAreHost = false;
-    hostWent = false;
-    youAreOther = false;
-    otherWent = false;
-    choosing = false;
-    voting = false;
 
     gameChannel.bind('gamePlayable', data => {
-        if (creator == "True" && started == "False") {
+        if (creator == player_name && started == "False") {
             $("#startGameButton").show();
         }
     });
@@ -131,9 +118,11 @@ $(window).bind("load", function() {
         $("#tablecontainer").show();
         $("#handcontainer").show();
         $("#scorecontainer").show();
+    });
     
-        $('.hand-card').bind('click', function() {
-            if (choosing && youAreHost && !hostWent) {
+    gameChannel.bind('startHostTurn', data => {
+        if (data.host == player_name) {
+            $('.hand-card').bind('click.hostTurn', function() {
                 var hostCard = $(this).children($('img')).attr('cardnum');
                 var hostPrompt;
                 do {
@@ -142,62 +131,31 @@ $(window).bind("load", function() {
                 if (hostPrompt == null) {
                     return;
                 }
-                hostWent = true;
-                choosing = false;
-                sendHostChoices(hostCard, hostPrompt);
-            }
-            if (choosing && youAreOther && !otherWent) {
-                var otherCard = $(this).children($('img')).attr('cardnum');
-                otherWent = true;
-                choosing = false;
-                sendOthersChoices(otherCard, player_name);
-            }
-        });
-        
-        $('.table-card').bind('click', function() {
-            if (voting && youAreOther && !otherWent) {
-                otherWent = true;
-                voting = false;
-                var otherCard = $(this).children($('img')).attr('cardnum');
-                $(this).addClass("border-info");
-                sendOthersVotes(otherCard, player_name);
-                // Reset all state variables
-                youAreHost = false;
-                hostWent = false;
-                youAreOther = false;
-                otherWent = false;
-                choosing = false;
-                voting = false;
-                // Alert
-                // alert("Your vote has been recorded!")
-            }
-        });
-    });
-    
-    gameChannel.bind('hostTurn', data => {
-        if (data.host == player_name) {
-            youAreHost = true;
-            hostWent = false;
-            choosing = true;
+                sendHostChoice(hostCard, hostPrompt);
+                $('.hand-card').unbind('.hostTurn');
+            });
             alert('It is your turn!');
-        } else {
-            youAreHost = false;
         }
     });
     
-    gameChannel.bind('othersTurn', function() {
-        if (!youAreHost) {
-            youAreOther = true;
-            otherWent = false;
-            choosing = true;
+    gameChannel.bind('startOtherTurn', data => {
+        if (data.host != player_name) {
+            $('.hand-card').bind('click.otherTurn', function() {
+                var card = $(this).children($('img')).attr('cardnum');
+                sendOtherChoice(card);
+                $('.hand-card').unbind('.otherTurn');
+            });
         }
     });
     
-    gameChannel.bind('othersVote', function() {
-        if (!youAreHost) {
-            youAreOther = true;
-            otherWent = false;
-            voting = true;
+    gameChannel.bind('startVoting', data => {
+        if (data.host != player_name) {
+            $('.table-card').bind('click.voting', function() {
+                var vote = $(this).children($('img')).attr('cardnum');
+                $(this).addClass("border-info");
+                sendVote(vote);
+                $('.table-card').unbind('.voting');
+            });
         }
     });
     
