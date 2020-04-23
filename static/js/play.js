@@ -98,6 +98,11 @@ $("#startGameButton").bind("click", function() {
     });
 });
 
+window.addEventListener('beforeunload', function (e) { 
+    e.preventDefault(); 
+    e.returnValue = ''; 
+}); 
+
 $(window).bind("load", function() {
     var myChannelName = player_name.replace(/ /g,"_");
     myChannel = pusher.subscribe(`dixit-${myChannelName}-${game_id}`);
