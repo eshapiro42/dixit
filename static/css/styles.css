@@ -71,13 +71,15 @@ h1 {
 .table {
     margin: auto;
 }
-.hand-card:hover {
-    transform: scale(1.7);
-    z-index: 5;
-}
-.table-card:hover {
-    transform: scale(1.7);
-    z-index: 5;
+@media only screen and (min-width: 992px) {
+    .hand-card:hover {
+        transform: scale(1.7);
+        z-index: 5;
+    }
+    .table-card:hover {
+        transform: scale(1.7);
+        z-index: 5;
+    }
 }
 .border-info {
     border-width: 2px !important;
