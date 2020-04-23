@@ -72,6 +72,12 @@ h1 {
     margin: auto;
 }
 @media (min-width: 768px) {
+    .hand-card {
+        transition: transform .2s;
+    }
+    .table-card {
+        transition: transform .2s;
+    }
     .hand-card:hover {
         transform: scale(1.7);
         z-index: 5;
