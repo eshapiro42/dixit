@@ -192,37 +192,25 @@ $(window).bind("load", function() {
     });
     
     myChannel.bind('showHand', data => {
-        $("#hand1").attr('src', `/static/cards/${data.hand1}`);
-        $("#hand2").attr('src', `/static/cards/${data.hand2}`);
-        $("#hand3").attr('src', `/static/cards/${data.hand3}`);
-        $("#hand4").attr('src', `/static/cards/${data.hand4}`);
-        $("#hand5").attr('src', `/static/cards/${data.hand5}`);
-        $("#hand6").attr('src', `/static/cards/${data.hand6}`);
-    
-        $("#hand1").attr('cardnum', data.hand1);
-        $("#hand2").attr('cardnum', data.hand2);
-        $("#hand3").attr('cardnum', data.hand3);
-        $("#hand4").attr('cardnum', data.hand4);
-        $("#hand5").attr('cardnum', data.hand5);
-        $("#hand6").attr('cardnum', data.hand6);
+        for (num = 1; num <= 6; num++) {
+            var handCardID = `#hand${num}`;
+            var cardNum = data[num - 1];
+            $(handCardID).attr('src', `/static/cards/${cardNum}`);
+            $(handCardID).attr('cardnum', cardNum);
+        }
     });
     
     gameChannel.bind('showTable', data => {
         $(".card-body").hide();
         $(".card-title").css('color', 'black');
         $(".table-card").show();
-        $("#table1").attr('src', `/static/cards/${data.table1}`);
-        $("#table2").attr('src', `/static/cards/${data.table2}`);
-        $("#table3").attr('src', `/static/cards/${data.table3}`);    
-        $("#table4").attr('src', `/static/cards/${data.table4}`);
-        $("#table5").attr('src', `/static/cards/${data.table5}`);
-        $("#table6").attr('src', `/static/cards/${data.table6}`);
-        $("#table1").attr('cardnum', data.table1);
-        $("#table2").attr('cardnum', data.table2);
-        $("#table3").attr('cardnum', data.table3);
-        $("#table4").attr('cardnum', data.table4);
-        $("#table5").attr('cardnum', data.table5);
-        $("#table6").attr('cardnum', data.table6);
+
+        for (num = 1; num <= num_players; num++) {
+            var tableCardID = `#table${num}`;
+            var cardNum = data[num - 1];
+            $(tableCardID).attr('src', `/static/cards/${cardNum}`);
+            $(tableCardID).attr('cardnum', cardNum);
+        }
     });
 
     gameChannel.bind('pusher:subscription_succeeded', function() {

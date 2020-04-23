@@ -288,12 +288,7 @@ def startVoting(game_id):
 def showHand(game_id, player_name):
     print('showing hand of player {} in game {}'.format(player_name, game_id))
     player = players[(player_name, game_id)]
-    data = {}
-    cardnum = 1
-    for card in player.hand:
-        data['hand{}'.format(cardnum)] = card
-        cardnum += 1
-    pusher.trigger(playerChannel(player_name, game_id), 'showHand', data)
+    pusher.trigger(playerChannel(player_name, game_id), 'showHand', player.hand)
 
 
 def showHands(game_id):
@@ -305,14 +300,10 @@ def showHands(game_id):
 def showTable(game_id):
     print('showing table in game {}'.format(game_id))
     game = games[game_id]
-    data = {}
     cardnum = 1
     table_list = list(game.table.values())
     random.shuffle(table_list)
-    for card in table_list:
-        data['table{}'.format(cardnum)] = card
-        cardnum += 1
-    pusher.trigger(gameChannel(game_id), 'showTable', data)
+    pusher.trigger(gameChannel(game_id), 'showTable', table_list)
 
 
 def gameMessage(game_id, gameMessage, bold=False):
