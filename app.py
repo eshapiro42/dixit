@@ -125,6 +125,7 @@ def joinGame():
     player_name = str(request.form['player_name']).strip()
     session['player_name'] = player_name
     session['game_id'] = game_id
+    session.modified = True
     try:
         game = games[game_id]
     except KeyError:
@@ -140,8 +141,8 @@ def joinGame():
         if player_object is None:
             raise AppError('Could not add player. Game {} has already started.'.format(game_id))
         players[(player_name, game_id)] = player_object
+        gameMessage(game_id, '{} has joined the game.'.format(player_name))
     print('JOINGAME Session data: {}'.format(session))
-    gameMessage(game_id, '{} has joined the game.'.format(player_name))
     if game.playable:
         gamePlayable(game_id)
     if rejoin:
@@ -149,6 +150,28 @@ def joinGame():
     else:
         return redirect(url_for('play'))
 
+
+@app.route('/api/rejoin', methods=['POST'])
+def rejoin():
+    game_id = session['game_id']
+    player_name = session['player_name']
+    game = games[game_id]
+    player = players[(player_name, game_id)]
+    data = {
+        'started': game.started,
+        'num_players': game.num_players,
+    }
+    pusher.trigger(playerChannel(player_name, game_id), 'rejoin', data)
+    showHand(game_id, player_name)
+    if game.state == State.HOST_CHOOSING and player == game.host:
+        startHostTurn(game_id)
+    elif game.state == State.OTHERS_CHOOSING and player != game.host:
+        startOtherTurn(game_id)
+    elif game.state == State.VOTING and player != game.host:
+        startVoting(game_id)
+    else:
+        sendOutcomes(game_id)
+    return ''
 
 @app.route('/api/startGame', methods=['POST'])
 def startGame():

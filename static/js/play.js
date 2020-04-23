@@ -8,6 +8,17 @@ var myChannel;
 var gameChannel;
 var num_players;
 
+function gameStarted(data) {
+    started = data.started;
+    num_players = data.num_players;
+    $("#startGameButton").hide();
+    clearTable();
+    createTable(num_players);
+    $("#tablecontainer").show();
+    $("#handcontainer").show();
+    $("#scorecontainer").show();
+}
+
 function createTable(num_players) {
     for (num = 1; num <= num_players; num++) {
         var card_element = `
@@ -60,6 +71,26 @@ function sendVote(othersCard) {
     });
 }
 
+function rejoin() {
+    $.ajax({
+        type: 'POST',
+        url: '/api/rejoin',
+    });
+}
+
+function rejoinActions(data) {
+    started = data.started;
+    if (started) {
+        num_players = data.num_players;
+        $("#startGameButton").hide();
+        clearTable();
+        createTable(num_players);
+        $("#tablecontainer").show();
+        $("#handcontainer").show();
+        $("#scorecontainer").show();
+    }
+}
+
 $("#startGameButton").bind("click", function() {
     $.ajax({
         type: 'POST',
@@ -110,14 +141,11 @@ $(window).bind("load", function() {
     });
     
     gameChannel.bind('started', data => {
-        started = data.started;
-        num_players = data.num_players;
-        $("#startGameButton").hide();
-        clearTable();
-        createTable(num_players);
-        $("#tablecontainer").show();
-        $("#handcontainer").show();
-        $("#scorecontainer").show();
+        gameStarted(data);
+    });
+
+    myChannel.bind('rejoin', data => {
+        rejoinActions(data);
     });
     
     gameChannel.bind('startHostTurn', data => {
@@ -199,6 +227,9 @@ $(window).bind("load", function() {
 
     gameChannel.bind('pusher:subscription_succeeded', function() {
         getMessages();
+        if (rejoined == "True") {
+            rejoin();
+        }
     });
 
 });
