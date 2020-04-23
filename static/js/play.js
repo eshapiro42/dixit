@@ -22,7 +22,7 @@ function gameStarted(data) {
 function createTable(num_players) {
     for (num = 1; num <= num_players; num++) {
         var card_element = `
-            <div class="col-xs-6 col-md-4 col-lg-2 col-centered">
+            <div class="col-sm-6 col-md-4 col-lg-2 col-centered">
                 <div class="card table-card" style="display: none;">
                     <img src="" class="card-img-top" id="table${num}">
                     <div class="card-body" style="display: none;">
