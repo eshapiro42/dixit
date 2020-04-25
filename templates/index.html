@@ -31,18 +31,18 @@
             <div class="card">
             <div class="card-header" id="headingOne">
                 <h2 class="mb-0">
-                <button class="btn btn-link btn-lg btn-block collapsed nounderline" type="button" data-toggle="collapse" data-target="#joinGameCollapse" aria-expanded="false">
+                <button id="joinGameButton" class="btn btn-link btn-lg btn-block nounderline" type="button" data-toggle="collapse" data-target="#joinGameCollapse" aria-expanded="true" aria-controls="joinGameCollapse">
                     Join a Game
                 </button>
                 </h2>
             </div>
             <!-- Join Game Collapse -->
-            <div id="joinGameCollapse" class="collapse">
+            <div id="joinGameCollapse" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
                 <div class="card-body text-center">
                     <form id="joinGameForm" action="{{ url_for('joinGame') }}" method="POST">
                     <!-- <form id="joinGameForm"> -->
                         <div class="form-group">
-                            <input type="text" name="player_name" class="form-control" placeholder="Your Name" id="joinGameName" autocomplete="off" required>
+                            <input id="joinGamePlayerNameInput" type="text" name="player_name" class="form-control" placeholder="Your Name" id="joinGameName" autocomplete="off" required autofocus>
                         </div>
                         <div class="form-group">
                             <input type="text" name="game_id" class="form-control" placeholder="Game ID" id="joinGameID" autocomplete="off" required>
@@ -55,18 +55,18 @@
             <div class="card">
             <div class="card-header" id="headingTwo">
                 <h2 class="mb-0">
-                <button class="btn btn-link btn-lg btn-block collapsed nounderline" type="button" data-toggle="collapse" data-target="#createGameCollapse" aria-expanded="false">
+                <button id="createGameButton" class="btn btn-link btn-lg btn-block collapsed nounderline" type="button" data-toggle="collapse" data-target="#createGameCollapse" aria-expanded="false" aria-controls="createGameCollapse">
                     Create a New Game
                 </button>
                 </h2>
             </div>
             <!-- Create Game Collapse -->
-            <div id="createGameCollapse" class="collapse">
+            <div id="createGameCollapse" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
                 <div class="card-body text-center">
                     <form id="createGameForm" action="{{ url_for('createGame') }}" method="POST">
                     <!-- <form id="createGameForm"> -->
                         <div class="form-group">
-                            <input type="text" name="player_name" class="form-control" placeholder="Your Name" id="createGameName" autocomplete="off" required>
+                            <input id="createGamePlayerNameInput" type="text" name="player_name" class="form-control" placeholder="Your Name" id="createGameName" autocomplete="off" required>
                         </div>
                         <button id="createGameSubmitButton" class="btn btn-dark">Let's Groove It</button>
                     </form>
@@ -79,6 +79,7 @@
     <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>  <script src="https://js.pusher.com/5.1/pusher.min.js"></script>
+    <script src="/static/js/index.js?{{ data.random_number }}"></script>
 
 </body>
 

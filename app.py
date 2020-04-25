@@ -71,7 +71,10 @@ def handle_app_error(error):
 @app.route('/')
 def index():
     session.clear()
-    return render_template('index.html')
+    data = {
+        'random_number': random.randint(10000000, 99999999),
+    }
+    return render_template('index.html', data=data)
 
 
 @app.route('/play', defaults={'rejoin': False})
