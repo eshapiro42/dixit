@@ -98,6 +98,16 @@ $("#startGameButton").bind("click", function() {
     });
 });
 
+$("#tableSlider").on("change", function() {
+    var zoom = $(this).val() / 10;
+    $(".table-card").attr("style", `--table-zoom:${zoom}`);
+});
+
+$("#handSlider").on("change", function() {
+    var zoom = $(this).val() / 10;
+    $(".hand-card").attr("style", `--hand-zoom:${zoom}`);
+});
+
 window.addEventListener('beforeunload', function (e) { 
     e.preventDefault(); 
     e.returnValue = ''; 
