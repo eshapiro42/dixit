@@ -79,11 +79,11 @@ h1 {
         transition: transform .2s;
     }
     .hand-card:hover {
-        transform: scale(1.7);
+        transform: scale(2.2);
         z-index: 5;
     }
     .table-card:hover {
-        transform: scale(1.7);
+        transform: scale(2.2);
         z-index: 5;
     }
 }
