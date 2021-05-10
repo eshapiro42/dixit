@@ -53,8 +53,12 @@ class AppError(Exception):
 
 
 def playerChannel(player_name, game_id):
-    player_name = player_name.replace(" ", "_")
-    return 'dixit-{}-{}'.format(player_name, game_id)
+    allowed_characters = string.ascii_letters + string.digits + '_-=@,.;'
+    channel_name = player_name
+    for character in channel_name:
+        if character not in allowed_characters:
+            channel_name = channel_name.replace(character, "_")
+    return 'dixit-{}-{}'.format(channel_name, game_id)
 
 
 def gameChannel(game_id):
