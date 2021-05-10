@@ -114,7 +114,13 @@ window.addEventListener('beforeunload', function (e) {
 }); 
 
 $(window).bind("load", function() {
-    var myChannelName = player_name.replace(/ /g,"_");
+    var myChannelName = player_name;
+    var allowed_characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-=@,.;'
+    for (var character of player_name) {
+        if (!allowed_characters.includes(character)) {
+            myChannelName = myChannelName.replaceAll(character, '_');
+        }
+    }
     myChannel = pusher.subscribe(`dixit-${myChannelName}-${game_id}`);
     gameChannel = pusher.subscribe(`dixit-${game_id}`);
 
