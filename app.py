@@ -57,7 +57,6 @@ def playerChannel(player_name, game_id):
     channel_name = player_name
     for character in player_name:
         if character not in allowed_characters:
-            print(character)
             channel_name = channel_name.replace(character, "_")
     return 'dixit-{}-{}'.format(channel_name, game_id)
 
