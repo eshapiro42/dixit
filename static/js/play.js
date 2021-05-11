@@ -170,40 +170,71 @@ $(window).bind("load", function() {
     });
     
     gameChannel.bind('startHostTurn', data => {
+        var hostCard;
         if (data.host == player_name) {
+            $('#sendChoiceButton').show();
             $('.hand-card').bind('click.hostTurn', function() {
-                var hostCard = $(this).children($('img')).attr('cardnum');
+                $('.hand-card').removeClass("border-info");
+                $(this).addClass("border-info");
+                hostCard = $(this).children($('img')).attr('cardnum');
+            });
+            $('#sendChoiceButton').bind('click.hostTurn', function() {
                 var hostPrompt;
                 do {
                     hostPrompt = prompt("Please enter your prompt", "");
                 } while(hostPrompt == "");
-                if (hostPrompt == null) {
+                if (hostPrompt == null || hostCard == null) {
                     return;
                 }
-                sendHostChoice(hostCard, hostPrompt);
+                $('#sendChoiceButton').unbind('.hostTurn');
+                $('#sendChoiceButton').hide();
                 $('.hand-card').unbind('.hostTurn');
+                sendHostChoice(hostCard, hostPrompt);
+                $('.hand-card').removeClass("border-info");
             });
             alert('It is your turn!');
         }
     });
     
     gameChannel.bind('startOtherTurn', data => {
+        var otherCard;
         if (data.host != player_name) {
+            $('#sendChoiceButton').show();
             $('.hand-card').bind('click.otherTurn', function() {
-                var card = $(this).children($('img')).attr('cardnum');
-                sendOtherChoice(card);
+                $('.hand-card').removeClass("border-info");
+                $(this).addClass("border-info");
+                otherCard = $(this).children($('img')).attr('cardnum');
+            });
+            $('#sendChoiceButton').bind('click.otherTurn', function() {
+                if (otherCard == null) {
+                    return;
+                }
+                $('#sendChoiceButton').unbind('.otherTurn');
+                $('#sendChoiceButton').hide();
                 $('.hand-card').unbind('.otherTurn');
+                sendOtherChoice(otherCard);
+                $('.hand-card').removeClass("border-info");
             });
         }
     });
     
     gameChannel.bind('startVoting', data => {
+        var voteCard;
         if (data.host != player_name) {
+            $('#sendVoteButton').show();
             $('.table-card').bind('click.voting', function() {
-                var vote = $(this).children($('img')).attr('cardnum');
+                $('.table-card').removeClass("border-info");
                 $(this).addClass("border-info");
-                sendVote(vote);
+                voteCard = $(this).children($('img')).attr('cardnum');
+            });
+            $('#sendVoteButton').bind('click.voting', function() {
+                if (voteCard == null) {
+                    return;
+                }
+                $('#sendVoteButton').hide();
+                $('#sendVoteButton').unbind('.voting');
                 $('.table-card').unbind('.voting');
+                sendVote(voteCard);
             });
         }
     });
