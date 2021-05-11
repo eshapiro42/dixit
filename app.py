@@ -236,6 +236,8 @@ def sendOtherChoice():
     print('Player {} chose card {}'.format(player_name, card))
     game.current_round.otherChoice(player, card)
     showHand(game_id, player_name)
+    message = '''{} played a card.'''.format(player_name)
+    gameMessage(game_id, message)
     if game.state == State.VOTING:
         startVoting(game_id)
     return ''
@@ -250,6 +252,8 @@ def sendVote():
     vote = request.form['card']
     print('Player {} voted for card {}'.format(player_name, vote))
     game.current_round.vote(player, vote)
+    message = '''{} voted.'''.format(player_name)
+    gameMessage(game_id, message)
     # Scoring is complete, so start the next round!
     if game.state == State.SCORING:
         sendOutcomes(game_id)
@@ -270,6 +274,8 @@ def sendMulligan():
     player.discard_card(card)
     player.draw_card()
     showHand(game_id, player_name)
+    message = '''{} used a mulligan.'''.format(player_name)
+    gameMessage(game_id, message)
     return ''
 
 
