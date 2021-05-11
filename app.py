@@ -259,6 +259,20 @@ def sendVote():
     return ''
 
 
+@app.route('/api/sendMulligan', methods=['POST'])
+def sendMulligan():
+    game_id = session['game_id']
+    player_name = session['player_name']
+    player = players[(player_name, game_id)]
+    game = games[game_id]
+    card = request.form['card']
+    print('Player {} mulliganed card {}'.format(player_name, card))
+    player.discard_card(card)
+    player.draw_card()
+    showHand(game_id, player_name)
+    return ''
+
+
 def startHostTurn(game_id):
     game = games[game_id]
     host_name = game.host.name
