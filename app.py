@@ -236,6 +236,8 @@ def sendOtherChoice():
     print('Player {} chose card {}'.format(player_name, card))
     game.current_round.otherChoice(player, card)
     showHand(game_id, player_name)
+    message = '''{} played a card.'''.format(player_name)
+    gameMessage(game_id, message)
     if game.state == State.VOTING:
         startVoting(game_id)
     return ''
