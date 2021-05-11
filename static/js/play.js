@@ -71,6 +71,14 @@ function sendVote(othersCard) {
     });
 }
 
+function sendMulligan(card) {
+    $.ajax({
+        type: 'POST',
+        url: '/api/sendMulligan',
+        data: {'card': card},
+    });
+}
+
 function rejoin() {
     $.ajax({
         type: 'POST',
@@ -173,21 +181,34 @@ $(window).bind("load", function() {
         var hostCard;
         if (data.host == player_name) {
             $('#sendChoiceButton').show();
+            $('#sendMulliganButton').show();
             $('.hand-card').bind('click.hostTurn', function() {
                 $('.hand-card').removeClass("border-info");
                 $(this).addClass("border-info");
                 hostCard = $(this).children($('img')).attr('cardnum');
             });
+            $('#sendMulliganButton').bind('click.hostTurn', function() {
+                if (hostCard != null && confirm('Are you sure you want to mulligan the selected card?')) {
+                    $('#sendMulliganButton').unbind('.hostTurn');
+                    $('#sendMulliganButton').hide();
+                    sendMulligan(hostCard);
+                    $('.hand-card').removeClass("border-info");
+                }
+            })
             $('#sendChoiceButton').bind('click.hostTurn', function() {
                 var hostPrompt;
+                if (hostCard == null) {
+                    return;
+                }
                 do {
                     hostPrompt = prompt("Please enter your prompt", "");
                 } while(hostPrompt == "");
-                if (hostPrompt == null || hostCard == null) {
+                if (hostPrompt == null) {
                     return;
                 }
                 $('#sendChoiceButton').unbind('.hostTurn');
                 $('#sendChoiceButton').hide();
+                $('#sendMulliganButton').hide();
                 $('.hand-card').unbind('.hostTurn');
                 sendHostChoice(hostCard, hostPrompt);
                 $('.hand-card').removeClass("border-info");
@@ -200,17 +221,27 @@ $(window).bind("load", function() {
         var otherCard;
         if (data.host != player_name) {
             $('#sendChoiceButton').show();
+            $('#sendMulliganButton').show();
             $('.hand-card').bind('click.otherTurn', function() {
                 $('.hand-card').removeClass("border-info");
                 $(this).addClass("border-info");
                 otherCard = $(this).children($('img')).attr('cardnum');
             });
+            $('#sendMulliganButton').bind('click.otherTurn', function() {
+                if (otherCard != null && confirm('Are you sure you want to mulligan the selected card?')) {
+                    $('#sendMulliganButton').unbind('.otherTurn');
+                    $('#sendMulliganButton').hide();
+                    sendMulligan(otherCard);
+                    $('.hand-card').removeClass("border-info");
+                }
+            })
             $('#sendChoiceButton').bind('click.otherTurn', function() {
                 if (otherCard == null) {
                     return;
                 }
                 $('#sendChoiceButton').unbind('.otherTurn');
                 $('#sendChoiceButton').hide();
+                $('#sendMulliganButton').hide();
                 $('.hand-card').unbind('.otherTurn');
                 sendOtherChoice(otherCard);
                 $('.hand-card').removeClass("border-info");
