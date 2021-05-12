@@ -8,6 +8,8 @@ var myChannel;
 var gameChannel;
 var num_players;
 
+
+
 function gameStarted(data) {
     started = data.started;
     num_players = data.num_players;
@@ -22,13 +24,11 @@ function gameStarted(data) {
 function createTable(num_players) {
     for (num = 1; num <= num_players; num++) {
         var card_element = `
-            <div class="col-sm-6 col-md-4 col-lg-2 col-centered">
-                <div class="card table-card" style="display: none;">
-                    <img src="" class="card-img-top" id="table${num}">
-                    <div class="card-body" style="display: none;">
-                        <h5 class="card-title"></h5>
-                        <p class="card-text"></p>
-                    </div>
+            <div class="card table-card" style="display: none;">
+                <img src="" class="card-img-top" id="table${num}">
+                <div class="card-body" style="display: none;">
+                    <h5 class="card-title"></h5>
+                    <p class="card-text"></p>
                 </div>
             </div>
         `;
@@ -106,13 +106,13 @@ $("#startGameButton").bind("click", function() {
     });
 });
 
-$("#tableSlider").on("change", function() {
-    var zoom = $(this).val() / 10;
+$("#tableSlider").on("input", function() {
+    var zoom = $(this).val() / 20;
     $(".table-card").attr("style", `--table-zoom:${zoom}`);
 });
 
-$("#handSlider").on("change", function() {
-    var zoom = $(this).val() / 10;
+$("#handSlider").on("input", function() {
+    var zoom = $(this).val() / 20;
     $(".hand-card").attr("style", `--hand-zoom:${zoom}`);
 });
 
@@ -303,4 +303,6 @@ $(window).bind("load", function() {
         }
     });
 
+    $(".table-card").attr("style", `--table-zoom:1`);
+    $(".hand-card").attr("style", `--hand-zoom:1`);
 });
