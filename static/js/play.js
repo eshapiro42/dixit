@@ -8,7 +8,8 @@ var myChannel;
 var gameChannel;
 var num_players;
 
-
+var tableZoom = 1;
+var handZoom = 1;
 
 function gameStarted(data) {
     started = data.started;
@@ -34,6 +35,7 @@ function createTable(num_players) {
         `;
         $("#table").append(card_element);
     }
+    $(".table-card").attr("style", `--table-zoom:${tableZoom}; display: none;`);
 }
 
 function clearTable() {
@@ -107,13 +109,13 @@ $("#startGameButton").bind("click", function() {
 });
 
 $("#tableSlider").on("input", function() {
-    var zoom = $(this).val() / 20;
-    $(".table-card").attr("style", `--table-zoom:${zoom}`);
+    tableZoom = $(this).val() / 20;
+    $(".table-card").attr("style", `--table-zoom:${tableZoom}`);
 });
 
 $("#handSlider").on("input", function() {
-    var zoom = $(this).val() / 20;
-    $(".hand-card").attr("style", `--hand-zoom:${zoom}`);
+    handZoom = $(this).val() / 20;
+    $(".hand-card").attr("style", `--hand-zoom:${handZoom}`);
 });
 
 window.addEventListener('beforeunload', function (e) { 
@@ -303,6 +305,5 @@ $(window).bind("load", function() {
         }
     });
 
-    $(".table-card").attr("style", `--table-zoom:1`);
     $(".hand-card").attr("style", `--hand-zoom:1`);
 });
