@@ -161,7 +161,7 @@ scrollbar-width: none;  /* Firefox */
 }
 
 .table-card {
-    min-height: calc(var(--hand-zoom) * 10rem);
+    min-height: calc(var(--table-zoom) * 10rem);
     min-width: calc(var(--table-zoom) * 15rem);
     margin-right: 5px;
     object-fit: cover;
