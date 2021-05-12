@@ -11,6 +11,8 @@ var num_players;
 var tableZoom = 1;
 var handZoom = 1;
 
+var lastPlayedCard;
+
 function gameStarted(data) {
     started = data.started;
     num_players = data.num_players;
@@ -228,6 +230,7 @@ $(window).bind("load", function() {
                 $('.hand-card').removeClass("border-info");
                 $(this).addClass("border-info");
                 otherCard = $(this).children($('img')).attr('cardnum');
+                lastPlayedCard = otherCard;
             });
             $('#sendMulliganButton').bind('click.otherTurn', function() {
                 if (otherCard != null && confirm('Are you sure you want to mulligan the selected card?')) {
@@ -262,6 +265,10 @@ $(window).bind("load", function() {
             });
             $('#sendVoteButton').bind('click.voting', function() {
                 if (voteCard == null) {
+                    return;
+                }
+                if (voteCard == lastPlayedCard) {
+                    alert("You can't vote for your own card!");
                     return;
                 }
                 $('#sendVoteButton').hide();
