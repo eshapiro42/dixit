@@ -24,8 +24,20 @@
         </div>
     </header>
 
-    <div id="gameMessageContainer" class="container bg-dark text-center">
-        <span id="gameMessage"></span>
+    <a class="btn btn-primary" data-bs-toggle="offcanvas" href="#chatContainer" role="button" aria-controls="chatContainer">
+        Chat?
+    </a>
+
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="chatContainer" aria-labelledby="chatContainerLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="chatContainerLabel">Chat</h5>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div id="gameMessageContainer" class="container bg-dark text-center">
+                <span id="gameMessage"></span>
+            </div>
+        </div>
     </div>
 
     <div class="container text-center">
