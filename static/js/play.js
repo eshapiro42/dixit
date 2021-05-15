@@ -4,6 +4,7 @@ var pusher = new Pusher('aac926d8b7731623a59a', {
     cluster: 'us3'
 });
 
+
 var myChannel;
 var gameChannel;
 var num_players;
@@ -22,6 +23,15 @@ function gameStarted(data) {
     $("#tablecontainer").show();
     $("#handcontainer").show();
     $("#scorecontainer").show();
+
+    initUI();
+}
+
+function initUI() {
+    var offcanvasElementList = [].slice.call(document.querySelectorAll('.offcanvas'));
+    var offcanvasList = offcanvasElementList.map(function (offcanvasEl) {
+      return new bootstrap.Offcanvas(offcanvasEl)
+    });
 }
 
 function createTable(num_players) {
