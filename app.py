@@ -220,6 +220,7 @@ def sendHostChoice():
     game.current_round.hostChoice(host_card, host_prompt)
     showHand(game_id, player_name)
     message = '''{}'s prompt: "{}"'''.format(game.host.name, game.current_round.host_prompt)
+    hostPrompt(game_id, host_prompt)
     gameMessage(game_id, message, bold=True)
     if game.state == State.OTHERS_CHOOSING:
         startOtherTurn(game_id)
@@ -349,6 +350,14 @@ def gameMessage(game_id, gameMessage, bold=False):
         'gameMessage': messages[game_id],
     }
     pusher.trigger(gameChannel(game_id), 'gameMessage', data)
+
+
+def hostPrompt(game_id, prompt):
+    print('Sending prompt to all players in game {}'.format(game_id))
+    data = {
+        'hostPrompt': prompt,
+    }
+    pusher.trigger(gameChannel(game_id), 'hostPrompt', data)
 
 
 def sendOutcomes(game_id):

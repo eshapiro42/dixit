@@ -18,14 +18,13 @@
                 <div class="col-12 text-center">
                     <h1>Hi {{ data.player_name }}</h1>
                     <p>Game ID: {{ data.game_id }}</p>
+                    <button class="btn btn-outline-dark" type="button" data-bs-toggle="offcanvas" data-bs-target="#chatContainer" aria-controls="chatContainer">
+                        Game Log
+                    </button>
                 </div>
             </div>
         </div>
     </header>
-
-    <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#chatContainer" aria-controls="chatContainer">
-        Chat?
-    </button>
 
     <div class="offcanvas offcanvas-start" tabindex="-1" id="chatContainer" aria-labelledby="chatContainerLabel">
         <div class="offcanvas-header">
@@ -97,6 +96,65 @@
         </div>
         <table id="scores" class="table"></table>
     </div>
+
+    <div aria-live="polite" aria-atomic="true" class="position-relative"></div>
+        <div id="toastcontainer" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 5">
+            <div id="yourTurnToast" class="toast align-items-center bg-primary text-white" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        It's your turn!
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+
+            <div id="showHostToast" class="toast align-items-center bg-secondary text-white" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div id="showHostToastBody" class="toast-body">
+                        
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+
+            <div id="promptToast" class="toast align-items-center bg-primary text-white" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div id="promptToastBody" class="toast-body">
+                        
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+
+            <div id="playCardToast" class="toast align-items-center bg-secondary text-white" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        Please choose a card to match the prompt.
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+
+            <div id="voteCardToast" class="toast align-items-center bg-secondary text-white" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        Please vote for a card which you think matches the prompt.
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+
+            <div id="ownCardToast" class="toast align-items-center bg-warning text-white" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        You can't vote for your own card!
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <script type="text/javascript">
         var player_name="{{ data.player_name }}"
