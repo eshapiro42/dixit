@@ -143,6 +143,7 @@ def joinGame():
         if player_object is None:
             raise AppError("Could not add player. Game {} has already started.".format(game_id))
         players[(player_name, game_id)] = player_object
+        playerJoined(game_id, player_name)
         gameMessage(game_id, "{} has joined the game.".format(player_name))
     print("JOINGAME Session data: {}".format(session))
     if game.playable:
@@ -166,6 +167,7 @@ def addCPU():
     if player_object is None:
         raise AppError("Could not add player. Game {} has already started.".format(game_id))
     players[(player_name, game_id)] = player_object
+    playerJoined(game_id, player_name)
     gameMessage(game_id, "{} has joined the game.".format(player_name))
     if game.playable:
         gamePlayable(game_id)
@@ -400,6 +402,13 @@ def gamePlayable(game_id):
     print("Sending playable data to game {}".format(game_id))
     game = games[game_id]
     pusher.trigger(gameChannel(game_id), "gamePlayable", None)
+
+
+def playerJoined(game_id, player_name):
+    data = {
+        "playerName": player_name,
+    }
+    pusher.trigger(gameChannel(game_id), "playerJoined", data)
 
 
 def scoreUpdate(game_id):
