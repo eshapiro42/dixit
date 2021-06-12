@@ -4,6 +4,7 @@ var pusher = new Pusher('aac926d8b7731623a59a', {
     cluster: 'us3'
 });
 
+
 var myChannel;
 var gameChannel;
 var num_players;
@@ -12,16 +13,28 @@ var tableZoom = 1;
 var handZoom = 1;
 
 var lastPlayedCard;
+var currentHost;
+var currentPrompt;
 
 function gameStarted(data) {
     started = data.started;
     num_players = data.num_players;
     $("#startGameButton").hide();
+    $("#addCPUButton").hide();
     clearTable();
     createTable(num_players);
     $("#tablecontainer").show();
     $("#handcontainer").show();
     $("#scorecontainer").show();
+
+    initUI();
+}
+
+function initUI() {
+    var offcanvasElementList = [].slice.call(document.querySelectorAll('.offcanvas'));
+    var offcanvasList = offcanvasElementList.map(function (offcanvasEl) {
+      return new bootstrap.Offcanvas(offcanvasEl)
+    });
 }
 
 function createTable(num_players) {
@@ -38,6 +51,25 @@ function createTable(num_players) {
         $("#table").append(card_element);
     }
     $(".table-card").attr("style", `--table-zoom:${tableZoom}; display: none;`);
+}
+
+function showToast(type) {
+    if (type == "yourTurn") {
+        $("#yourTurnToast").toast("show");
+    } else if (type == "ownCard") {
+        $("#ownCardToast").toast("show");
+    } else if (type == "playCard") {
+        $("#promptToastBody").html(`${currentHost}'s prompt: "${currentPrompt}"`);
+        $("#promptToast").toast("show");
+        $("#playCardToast").toast("show");
+    } else if (type == "voteCard") {
+        $("#promptToastBody").html(`${currentHost}'s prompt: "${currentPrompt}"`);
+        $("#promptToast").toast("show");
+        $("#voteCardToast").toast("show");
+    } else if (type == "showHost") {
+        $("#showHostToastBody").html(`${currentHost} is choosing a prompt.`);
+        $("#showHostToast").toast("show");
+    }
 }
 
 function clearTable() {
@@ -110,6 +142,13 @@ $("#startGameButton").bind("click", function() {
     });
 });
 
+$("#addCPUButton").bind("click", function () {
+    $.ajax({
+        type: 'POST',
+        url: '/api/addCPU',
+    });
+});
+
 $("#tableSlider").on("input", function() {
     tableZoom = $(this).val() / 20;
     $(".table-card").attr("style", `--table-zoom:${tableZoom}`);
@@ -135,6 +174,10 @@ $(window).bind("load", function() {
     }
     myChannel = pusher.subscribe(`dixit-${myChannelName}-${game_id}`);
     gameChannel = pusher.subscribe(`dixit-${game_id}`);
+
+    if (creator == player_name && started == "False") {
+        $("#addCPUButton").show();
+    }
 
     gameChannel.bind('gamePlayable', data => {
         if (creator == player_name && started == "False") {
@@ -183,6 +226,7 @@ $(window).bind("load", function() {
     
     gameChannel.bind('startHostTurn', data => {
         var hostCard;
+        currentHost = data.host;
         if (data.host == player_name) {
             $('#sendChoiceButton').show();
             $('#sendMulliganButton').show();
@@ -217,13 +261,17 @@ $(window).bind("load", function() {
                 sendHostChoice(hostCard, hostPrompt);
                 $('.hand-card').removeClass("border-info");
             });
-            alert('It is your turn!');
+            showToast("yourTurn");
+        } else {
+            showToast("showHost");
         }
     });
     
     gameChannel.bind('startOtherTurn', data => {
         var otherCard;
+
         if (data.host != player_name) {
+            showToast("playCard");
             $('#sendChoiceButton').show();
             $('#sendMulliganButton').show();
             $('.hand-card').bind('click.otherTurn', function() {
@@ -257,6 +305,7 @@ $(window).bind("load", function() {
     gameChannel.bind('startVoting', data => {
         var voteCard;
         if (data.host != player_name) {
+            showToast("voteCard");
             $('#sendVoteButton').show();
             $('.table-card').bind('click.voting', function() {
                 $('.table-card').removeClass("border-info");
@@ -268,7 +317,7 @@ $(window).bind("load", function() {
                     return;
                 }
                 if (voteCard == lastPlayedCard) {
-                    alert("You can't vote for your own card!");
+                    showToast("ownCard");
                     return;
                 }
                 $('#sendVoteButton').hide();
@@ -279,8 +328,8 @@ $(window).bind("load", function() {
         }
     });
     
-    gameChannel.bind('hostPromptReceivedByClient', data => {
-        promptText = `${data.host}'s prompt: "${data.prompt}"`
+    gameChannel.bind('hostPrompt', data => {
+        currentPrompt = data.hostPrompt;
     });
     
     myChannel.bind('showHand', data => {
