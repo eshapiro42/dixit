@@ -1,4 +1,5 @@
 Pusher.logToConsole = true;
+Toast.setPlacement(TOAST_PLACEMENT.TOP_RIGHT);
 
 var pusher = new Pusher('aac926d8b7731623a59a', {
     cluster: 'us3'
@@ -53,22 +54,19 @@ function createTable(num_players) {
     $(".table-card").attr("style", `--table-zoom:${tableZoom}; display: none;`);
 }
 
-function showToast(type) {
+function showToast(type, playerName=null) {
     if (type == "yourTurn") {
-        $("#yourTurnToast").toast("show");
+        Toast.create("Your turn!", "Please choose a card and give a prompt.", TOAST_STATUS.SUCCESS, 5000);
     } else if (type == "ownCard") {
-        $("#ownCardToast").toast("show");
+        Toast.create("Uh oh!", "You can't vote for your own card.", TOAST_STATUS.DANGER, 1000);
     } else if (type == "playCard") {
-        $("#promptToastBody").html(`${currentHost}'s prompt: "${currentPrompt}"`);
-        $("#promptToast").toast("show");
-        $("#playCardToast").toast("show");
+        Toast.create("Choose a card!", `${currentHost}'s prompt: "${currentPrompt}"`, TOAST_STATUS.INFO, 5000);
     } else if (type == "voteCard") {
-        $("#promptToastBody").html(`${currentHost}'s prompt: "${currentPrompt}"`);
-        $("#promptToast").toast("show");
-        $("#voteCardToast").toast("show");
+        Toast.create("Time to vote!", `${currentHost}'s prompt: "${currentPrompt}"`, TOAST_STATUS.INFO, 5000);
     } else if (type == "showHost") {
-        $("#showHostToastBody").html(`${currentHost} is choosing a prompt.`);
-        $("#showHostToast").toast("show");
+        Toast.create(`${currentHost}'s turn!`, `${currentHost} is choosing a prompt.`, TOAST_STATUS.INFO, 1000);
+    } else if (type == "playerJoined") {
+        Toast.create("Someone joined!", `${playerName} joined the game.`, TOAST_STATUS.SUCCESS, 5000);
     }
 }
 
@@ -183,6 +181,10 @@ $(window).bind("load", function() {
         if (creator == player_name && started == "False") {
             $("#startGameButton").show();
         }
+    });
+
+    gameChannel.bind('playerJoined', data => {
+        showToast(type="playerJoined", playerName=data.playerName)
     });
     
     gameChannel.bind('gameMessage', data => {
