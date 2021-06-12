@@ -22,7 +22,7 @@ class Game:
         self.playable = False
         self.started = False
         self.state = None
-        print('Created game {}'.format(self.id))
+        print("Created game {}".format(self.id))
 
     @property
     def num_players(self):
@@ -41,7 +41,7 @@ class Game:
 
     @property
     def votes(self):
-        return {player.name: vote for (player, vote) in self.current_round.votes.items()}            
+        return {player.name: vote for (player, vote) in self.current_round.votes.items()}
 
     @property
     def host(self):
@@ -51,18 +51,18 @@ class Game:
     def add_player(self, name):
         # If the game has already started, new players can't be added
         if self.started:
-            print('Game {} has already started and new players cannot be added'.format(self.id))
+            print("Game {} has already started and new players cannot be added".format(self.id))
             return
         # Otherwise, create a new player object and add it to the game
         player = Player(name, self)
         self.players.append(player)
-        print('Added player {} to game {}'.format(name, self.id))
+        print("Added player {} to game {}".format(name, self.id))
         # If the game has four or more players, it is playable
         if self.num_players >= 4:
             self.playable = True
-            print('Game {} now has four players and is playable'.format(self.id))
+            print("Game {} now has four players and is playable".format(self.id))
         return player
-        
+
     def start(self):
         if self.playable:
             self.started = True
@@ -70,7 +70,7 @@ class Game:
             self.players_cycle = itertools.cycle(self.players)
             self.loop = self.game_loop()
             next(self.loop)
-            return 'started'
+            return "started"
         else:
             print("You need at least four players to play.")
             return
@@ -113,7 +113,7 @@ class Round:
 
     def hostChoice(self, host_card, host_prompt):
         if self.game.state != State.HOST_CHOOSING:
-            raise Exception('Action attempted during wrong game state')
+            raise Exception("Action attempted during wrong game state")
         self.host_card = host_card
         self.host_prompt = host_prompt
         self.table[self.host] = self.host.play_card(host_card)
@@ -121,19 +121,19 @@ class Round:
 
     def otherChoice(self, player, player_card):
         if self.game.state != State.OTHERS_CHOOSING or player == self.host:
-            raise Exception('Action attempted during wrong game state')
+            raise Exception("Action attempted during wrong game state")
         self.table[player] = player.play_card(player_card)
         self.game.loop.send(None)
 
     def vote(self, player, player_vote):
         if self.game.state != State.VOTING or player == self.host:
-            raise Exception('Action attempted during wrong game state')
+            raise Exception("Action attempted during wrong game state")
         self.votes[player] = player_vote
         self.game.loop.send(None)
 
     def score(self):
         if self.game.state != State.SCORING:
-            raise Exception('Action attempted during wrong game state')
+            raise Exception("Action attempted during wrong game state")
         other_players = copy.copy(self.game.players)
         other_players.remove(self.host)
         num_correct_votes = list(self.votes.values()).count(self.host_card)
@@ -150,12 +150,12 @@ class Round:
         # Players score 1 point for every vote for their own card
         for player in other_players:
             num_votes = list(self.votes.values()).count(self.table[player])
-            player.score += num_votes 
+            player.score += num_votes
 
     def end(self):
         if self.game.state != State.SCORING:
-            raise Exception('Action attempted during wrong game state')
-        self.game.loop.send(None)  
+            raise Exception("Action attempted during wrong game state")
+        self.game.loop.send(None)
 
 
 class Player:
@@ -187,7 +187,7 @@ class Player:
 
 class Deck:
     def __init__(self):
-        card_files = os.listdir('static/cards/')
+        card_files = os.listdir("static/cards/")
         self.deck = card_files
         self.num_cards = len(self.deck)
         self.discard = []
