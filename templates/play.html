@@ -18,7 +18,7 @@
                 <div class="col-12 text-center">
                     <h1>Hi {{ data.player_name }}</h1>
                     <p>Game ID: {{ data.game_id }}</p>
-                    <button class="btn btn-outline-dark" type="button" data-bs-toggle="offcanvas" data-bs-target="#chatContainer" aria-controls="chatContainer">
+                    <button class="btn btn-outline-dark btn-lg btn-block" type="button" data-bs-toggle="offcanvas" data-bs-target="#chatContainer" aria-controls="chatContainer">
                         Game Log
                     </button>
                 </div>
@@ -39,7 +39,8 @@
     </div>
 
     <div class="container text-center">
-        <button id="startGameButton" class="btn btn-dark" style="display:none;">Start Game</button>
+        <button id="addCPUButton" type="button" class="btn btn-secondary btn-lg btn-block" style="display:none;">Add CPU</button>
+        <button id="startGameButton" class="btn btn-dark btn-lg btn-block" style="display:none;">Start Game</button>
     </div>
 
     <div id="tablecontainer" class="container bg-light text-center" style="display:none;">

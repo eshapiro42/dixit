@@ -20,6 +20,7 @@ function gameStarted(data) {
     started = data.started;
     num_players = data.num_players;
     $("#startGameButton").hide();
+    $("#addCPUButton").hide();
     clearTable();
     createTable(num_players);
     $("#tablecontainer").show();
@@ -141,6 +142,13 @@ $("#startGameButton").bind("click", function() {
     });
 });
 
+$("#addCPUButton").bind("click", function () {
+    $.ajax({
+        type: 'POST',
+        url: '/api/addCPU',
+    });
+});
+
 $("#tableSlider").on("input", function() {
     tableZoom = $(this).val() / 20;
     $(".table-card").attr("style", `--table-zoom:${tableZoom}`);
@@ -166,6 +174,10 @@ $(window).bind("load", function() {
     }
     myChannel = pusher.subscribe(`dixit-${myChannelName}-${game_id}`);
     gameChannel = pusher.subscribe(`dixit-${game_id}`);
+
+    if (creator == player_name && started == "False") {
+        $("#addCPUButton").show();
+    }
 
     gameChannel.bind('gamePlayable', data => {
         if (creator == player_name && started == "False") {

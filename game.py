@@ -1,14 +1,39 @@
+from __future__ import annotations
+
+from enum import Enum
 import copy
 import itertools
 import os
 import random
 
 
-class State:
+class State(Enum):
     HOST_CHOOSING = 0
     OTHERS_CHOOSING = 1
-    VOTING = 2
-    SCORING = 3
+    CPUS_CHOOSING = 2
+    VOTING = 3
+    CPUS_VOTING = 4
+    SCORING = 5
+
+    def __ge__(self, other):
+        if self.__class__ is other.__class__:
+            return self.value >= other.value
+        return NotImplemented
+
+    def __gt__(self, other):
+        if self.__class__ is other.__class__:
+            return self.value > other.value
+        return NotImplemented
+
+    def __le__(self, other):
+        if self.__class__ is other.__class__:
+            return self.value <= other.value
+        return NotImplemented
+
+    def __lt__(self, other):
+        if self.__class__ is other.__class__:
+            return self.value < other.value
+        return NotImplemented
 
 
 class Game:
@@ -25,8 +50,24 @@ class Game:
         print("Created game {}".format(self.id))
 
     @property
+    def cpu_players(self):
+        return [player for player in self.players if player.is_cpu]
+
+    @property
+    def human_players(self):
+        return [player for player in self.players if not player.is_cpu]
+
+    @property
     def num_players(self):
         return len(self.players)
+
+    @property
+    def num_cpu_players(self):
+        return len(self.cpu_players)
+
+    @property
+    def num_human_players(self):
+        return len(self.human_players)
 
     @property
     def table(self):
@@ -48,17 +89,17 @@ class Game:
         if self.current_round is not None:
             return self.current_round.host
 
-    def add_player(self, name):
+    def add_player(self, name, cpu=False):
         # If the game has already started, new players can't be added
         if self.started:
             print("Game {} has already started and new players cannot be added".format(self.id))
             return
         # Otherwise, create a new player object and add it to the game
-        player = Player(name, self)
+        player = Player(name, self, cpu=cpu)
         self.players.append(player)
         print("Added player {} to game {}".format(name, self.id))
-        # If the game has four or more players, it is playable
-        if self.num_players >= 4:
+        # If the game has four or more players (at least two of them human), it is playable
+        if self.num_players >= 4 and self.num_human_players >= 2:
             self.playable = True
             print("Game {} now has four players and is playable".format(self.id))
         return player
@@ -66,8 +107,9 @@ class Game:
     def start(self):
         if self.playable:
             self.started = True
-            random.shuffle(self.players)
-            self.players_cycle = itertools.cycle(self.players)
+            human_players = self.human_players
+            random.shuffle(human_players)
+            self.players_cycle = itertools.cycle(human_players)
             self.loop = self.game_loop()
             next(self.loop)
             return "started"
@@ -86,17 +128,27 @@ class Game:
             self.new_round()
             # Host chooses a card and prompt
             self.state = State.HOST_CHOOSING
+            print(self.state.name)
             _ = yield
             # Other players choose their cards
             self.state = State.OTHERS_CHOOSING
-            while len(self.current_round.table) < self.num_players:
+            print(self.state.name)
+            while len(self.current_round.table) < self.num_human_players:
                 _ = yield
+            self.state = State.CPUS_CHOOSING
+            print(self.state.name)
+            _ = yield
             # Other players vote
             self.state = State.VOTING
-            while len(self.current_round.votes) < self.num_players - 1:
+            print(self.state.name)
+            while len(self.current_round.votes) < self.num_human_players - 1:
                 _ = yield
+            self.state = State.CPUS_VOTING
+            print(self.state.name)
+            _ = yield
             # Score the round
             self.state = State.SCORING
+            print(self.state.name)
             self.current_round.score()
             # Wait until the round is ended
             _ = yield
@@ -125,11 +177,21 @@ class Round:
         self.table[player] = player.play_card(player_card)
         self.game.loop.send(None)
 
+    def cpuChoice(self, player: Player):
+        card = random.choice(player.hand)
+        self.table[player] = player.play_card(card)
+
     def vote(self, player, player_vote):
         if self.game.state != State.VOTING or player == self.host:
             raise Exception("Action attempted during wrong game state")
         self.votes[player] = player_vote
         self.game.loop.send(None)
+
+    def cpuVote(self, player: Player):
+        table_cards = list(self.table.values())
+        weights = [list(self.votes.values()).count(card) for card in table_cards]
+        vote = random.choices(population=table_cards, weights=weights, k=1)[0]
+        self.votes[player] = vote
 
     def score(self):
         if self.game.state != State.SCORING:
@@ -159,10 +221,11 @@ class Round:
 
 
 class Player:
-    def __init__(self, name, game):
+    def __init__(self, name, game, cpu=False):
         self.name = str(name)
         self.num = len(game.players)
         self.game = game
+        self.is_cpu = cpu
         self.score = 0
         self.hand = []
         for _ in range(6):

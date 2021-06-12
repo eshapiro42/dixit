@@ -19,7 +19,10 @@ from game import Game, State
 
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = bytes(os.environ["SECRET_KEY"], "utf-8").decode("unicode_escape")
+try:
+    app.config["SECRET_KEY"] = bytes(os.environ["SECRET_KEY"], "utf-8").decode("unicode_escape")
+except KeyError:
+    app.config["SECRET_KEY"] = "TEST"
 random.seed()
 games = {}
 players = {}
@@ -150,6 +153,25 @@ def joinGame():
         return redirect(url_for("play"))
 
 
+@app.route("/api/addCPU", methods=["POST"])
+def addCPU():
+    game_id = session["game_id"]
+    try:
+        game: Game = games[game_id]
+    except KeyError:
+        raise AppError("Game ID {} was not found.".format(game_id))
+    player_name: str = f"CPU-{len(game.cpu_players)}"
+    # Create a new player object
+    player_object = game.add_player(player_name, cpu=True)
+    if player_object is None:
+        raise AppError("Could not add player. Game {} has already started.".format(game_id))
+    players[(player_name, game_id)] = player_object
+    gameMessage(game_id, "{} has joined the game.".format(player_name))
+    if game.playable:
+        gamePlayable(game_id)
+    return ""
+
+
 @app.route("/api/rejoin", methods=["POST"])
 def rejoin():
     game_id = session["game_id"]
@@ -181,7 +203,7 @@ def startGame():
         return ""
     ret = game.start()
     if ret is None:
-        raise AppError("You cannot start a game with less than four players")
+        raise AppError("You cannot start a game with fewer than four players")
     print("Game {} started".format(game_id))
     gameMessage(game_id, "The game has started.")
     data = {
@@ -206,7 +228,7 @@ def getMessages():
 def sendHostChoice():
     game_id = session["game_id"]
     player_name = session["player_name"]
-    game = games[game_id]
+    game: Game = games[game_id]
     host_card = request.form["hostCard"]
     host_prompt = request.form["hostPrompt"]
     print("Host {} chose card {}".format(player_name, host_card))
@@ -225,14 +247,19 @@ def sendOtherChoice():
     game_id = session["game_id"]
     player_name = session["player_name"]
     player = players[(player_name, game_id)]
-    game = games[game_id]
+    game: Game = games[game_id]
     card = request.form["card"]
     print("Player {} chose card {}".format(player_name, card))
     game.current_round.otherChoice(player, card)
     showHand(game_id, player_name)
     message = """{} played a card.""".format(player_name)
     gameMessage(game_id, message)
-    if game.state == State.VOTING:
+    if game.state == State.CPUS_CHOOSING:
+        for cpu_player in game.cpu_players:
+            game.current_round.cpuChoice(cpu_player)
+            message = """{} played a card.""".format(cpu_player.name)
+            gameMessage(game_id, message)
+        game.loop.send(None)
         startVoting(game_id)
     return ""
 
@@ -242,14 +269,19 @@ def sendVote():
     game_id = session["game_id"]
     player_name = session["player_name"]
     player = players[(player_name, game_id)]
-    game = games[game_id]
+    game: Game = games[game_id]
     vote = request.form["card"]
     print("Player {} voted for card {}".format(player_name, vote))
     game.current_round.vote(player, vote)
     message = """{} voted.""".format(player_name)
     gameMessage(game_id, message)
-    # Scoring is complete, so start the next round!
-    if game.state == State.SCORING:
+    if game.state == State.CPUS_VOTING:
+        for cpu_player in game.cpu_players:
+            game.current_round.cpuVote(cpu_player)
+            message = """{} voted.""".format(cpu_player.name)
+            gameMessage(game_id, message)
+        game.loop.send(None)
+        # Scoring is complete, so start the next round!
         sendOutcomes(game_id)
         scoreUpdate(game_id)
         game.current_round.end()
@@ -328,7 +360,7 @@ def showTable(game_id):
 
 
 def gameMessage(game_id, gameMessage, bold=False):
-    print("Sending message to all players in game {}".format(game_id))
+    print("Sending message to all players in game {}: {}".format(game_id, gameMessage))
     game = games[game_id]
     if messages[game_id] == "":
         messages[game_id] = gameMessage
@@ -346,7 +378,7 @@ def gameMessage(game_id, gameMessage, bold=False):
 
 
 def hostPrompt(game_id, prompt):
-    print("Sending prompt to all players in game {}".format(game_id))
+    print("Sending prompt to all players in game {}: {}".format(game_id, prompt))
     data = {
         "hostPrompt": prompt,
     }

@@ -127,14 +127,14 @@ h1 {
     appearance: none;
     width: 25px; /* Set a specific slider handle width */
     height: 25px; /* Slider handle height */
-    background: Grey; /* Green background */
+    background: Grey;
     cursor: pointer; /* Cursor on hover */
   }
   
   .slider::-moz-range-thumb {
     width: 25px; /* Set a specific slider handle width */
     height: 25px; /* Slider handle height */
-    background: Grey; /* Green background */
+    background: Grey;
     cursor: pointer; /* Cursor on hover */
   }
 
@@ -180,5 +180,5 @@ img {
 
 /* Accordion Header - Inactive */
 .accordion-button.collapsed {
-    background-color: lime;
+    background-color: #f1f1f1;
 }
