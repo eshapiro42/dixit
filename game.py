@@ -162,7 +162,7 @@ class Round:
         self.host_prompt = None
         self.table = {}
         self.votes = {}
-        self.human_votes = None
+        self.cpu_vote_weights = None
 
     def hostChoice(self, host_card, host_prompt):
         if self.game.state != State.HOST_CHOOSING:
@@ -189,11 +189,10 @@ class Round:
         self.game.loop.send(None)
 
     def cpuVote(self, player: Player):
-        if self.human_votes is None:
-            self.human_votes = copy.deepcopy(self.votes)
         table_cards = list(self.table.values())
-        weights = [list(self.human_votes.values()).count(card) for card in table_cards]
-        vote = random.choices(population=table_cards, weights=weights, k=1)[0]
+        if self.cpu_vote_weights is None:
+            self.cpu_vote_weights = [list(self.votes.values()).count(card) for card in table_cards]
+        vote = random.choices(population=table_cards, weights=self.cpu_vote_weights, k=1)[0]
         self.votes[player] = vote
 
     def score(self):
