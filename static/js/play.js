@@ -1,5 +1,5 @@
 Pusher.logToConsole = true;
-Toast.setPlacement(TOAST_PLACEMENT.TOP_RIGHT);
+Toast.setPlacement(TOAST_PLACEMENT.BOTTOM_RIGHT);
 
 var pusher = new Pusher('aac926d8b7731623a59a', {
     cluster: 'us3'
