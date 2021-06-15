@@ -48,9 +48,6 @@ h1 {
 #gameMessageContainer {
     color: white;
     overflow: auto;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    margin-bottom: 25px;
 }
 #handcontainer {
     min-height: 20vh;
@@ -167,4 +164,20 @@ img {
 /* Accordion Header - Inactive */
 .accordion-button.collapsed {
     background-color: #f1f1f1;
+}
+
+#gameMessage {
+    list-style-type: none;
+    padding: 0px;
+    margin: 0px;
+    border-bottom: 1px solid #ddd;
+}
+
+.gameMessageItem {
+    padding: 8px 16px;
+    border-bottom: 1px solid #ddd;
+}
+
+#gameMessage .gameMessageItem:last-child {
+    border-bottom: none;
 }
