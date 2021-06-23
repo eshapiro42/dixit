@@ -92,7 +92,8 @@ class Game:
     def add_player(self, name, cpu=False):
         # If the game has already started, new players can't be added
         if self.started:
-            print("Game {} has already started and new players cannot be added".format(self.id))
+            print(
+                "Game {} has already started and new players cannot be added".format(self.id))
             return
         # Otherwise, create a new player object and add it to the game
         player = Player(name, self, cpu=cpu)
@@ -162,7 +163,6 @@ class Round:
         self.host_prompt = None
         self.table = {}
         self.votes = {}
-        self.cpu_vote_weights = None
 
     def hostChoice(self, host_card, host_prompt):
         if self.game.state != State.HOST_CHOOSING:
@@ -189,10 +189,12 @@ class Round:
         self.game.loop.send(None)
 
     def cpuVote(self, player: Player):
-        table_cards = list(self.table.values())
-        if self.cpu_vote_weights is None:
-            self.cpu_vote_weights = [list(self.votes.values()).count(card) for card in table_cards]
-        vote = random.choices(population=table_cards, weights=self.cpu_vote_weights, k=1)[0]
+        table_cards = list(
+            [card for card in self.table.values() if card != self.table[player]])
+        vote_weights = [list(self.votes.values()).count(card)
+                        for card in table_cards]
+        vote = random.choices(population=table_cards,
+                              weights=vote_weights, k=1)[0]
         self.votes[player] = vote
 
     def score(self):
