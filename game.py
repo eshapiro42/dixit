@@ -157,7 +157,7 @@ class Game:
 
 class Round:
     def __init__(self, game, host):
-        self.game = game
+        self.game: Game = game
         self.host = host
         self.host_card = None
         self.host_prompt = None
@@ -211,7 +211,7 @@ class Round:
         else:
             self.host.score += 3
             for player in other_players:
-                if self.votes[player] == self.host_card:
+                if player in self.game.human_players and self.votes[player] == self.host_card:
                     player.score += 3
         # Players score 1 point for every vote for their own card
         for player in other_players:
