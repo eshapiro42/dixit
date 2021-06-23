@@ -188,9 +188,8 @@ $(window).bind("load", function() {
     });
     
     gameChannel.bind('gameMessage', data => {
-        var li = `<li class="gameMessageItem">${data.gameMessage}</li>`;
-        $('#gameMessage').append(li);
-        $('.offcanvas-body').scrollTop($('#gameMessageContainer')[0].scrollHeight);
+        $('#gameMessage').html(data.gameMessage);
+        $('#gameMessageContainer').scrollTop($('#gameMessageContainer')[0].scrollHeight);
     });
     
     gameChannel.bind('sendOutcomes', data => {
@@ -357,12 +356,11 @@ $(window).bind("load", function() {
         }
     });
 
-    gameChannel.bind('pusher:subscription_succeeded', getMessages);
-
-    myChannel.bind('gameMessage', data => {
-        var li = `<li class="gameMessageItem">${data.gameMessage}</li>`;
-        $('#gameMessage').append(li);
-        $('.offcanvas-body').scrollTop($('#gameMessageContainer')[0].scrollHeight);
+    gameChannel.bind('pusher:subscription_succeeded', function() {
+        getMessages();
+        if (rejoined == "True") {
+            rejoin();
+        }
     });
 
     $(".hand-card").attr("style", `--hand-zoom:1`);
