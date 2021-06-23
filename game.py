@@ -188,14 +188,14 @@ class Round:
         self.votes[player] = player_vote
         self.game.loop.send(None)
 
-    def cpuVote(self, player: Player):
-        table_cards = list(
-            [card for card in self.table.values() if card != self.table[player]])
-        vote_weights = [list(self.votes.values()).count(card)
-                        for card in table_cards]
-        vote = random.choices(population=table_cards,
-                              weights=vote_weights, k=1)[0]
-        self.votes[player] = vote
+    # def cpuVote(self, player: Player):
+    #     table_cards = list(
+    #         [card for card in self.table.values() if card != self.table[player]])
+    #     vote_weights = [list(self.votes.values()).count(card)
+    #                     for card in table_cards]
+    #     vote = random.choices(population=table_cards,
+    #                           weights=vote_weights, k=1)[0]
+    #     self.votes[player] = vote
 
     def score(self):
         if self.game.state != State.SCORING:

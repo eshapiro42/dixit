@@ -20,7 +20,8 @@ from game import Game, State
 
 app = Flask(__name__)
 try:
-    app.config["SECRET_KEY"] = bytes(os.environ["SECRET_KEY"], "utf-8").decode("unicode_escape")
+    app.config["SECRET_KEY"] = bytes(
+        os.environ["SECRET_KEY"], "utf-8").decode("unicode_escape")
 except KeyError:
     app.config["SECRET_KEY"] = "TEST"
 random.seed()
@@ -28,7 +29,8 @@ games = {}
 players = {}
 creators = {}
 messages = {}
-pusher = Pusher(app_id="982239", key="aac926d8b7731623a59a", secret="199bad4a11c6eae764d1", cluster="us3")
+pusher = Pusher(app_id="982239", key="aac926d8b7731623a59a",
+                secret="199bad4a11c6eae764d1", cluster="us3")
 
 
 class AppError(Exception):
@@ -141,7 +143,8 @@ def joinGame():
         rejoin = False
         player_object = game.add_player(player_name)
         if player_object is None:
-            raise AppError("Could not add player. Game {} has already started.".format(game_id))
+            raise AppError(
+                "Could not add player. Game {} has already started.".format(game_id))
         players[(player_name, game_id)] = player_object
         playerJoined(game_id, player_name)
         gameMessage(game_id, "{} has joined the game.".format(player_name))
@@ -165,7 +168,8 @@ def addCPU():
     # Create a new player object
     player_object = game.add_player(player_name, cpu=True)
     if player_object is None:
-        raise AppError("Could not add player. Game {} has already started.".format(game_id))
+        raise AppError(
+            "Could not add player. Game {} has already started.".format(game_id))
     players[(player_name, game_id)] = player_object
     playerJoined(game_id, player_name)
     gameMessage(game_id, "{} has joined the game.".format(player_name))
@@ -236,7 +240,8 @@ def sendHostChoice():
     print("Host {} chose card {}".format(player_name, host_card))
     game.current_round.hostChoice(host_card, host_prompt)
     showHand(game_id, player_name)
-    message = '''{}'s prompt: "{}"'''.format(game.host.name, game.current_round.host_prompt)
+    message = '''{}'s prompt: "{}"'''.format(
+        game.host.name, game.current_round.host_prompt)
     hostPrompt(game_id, host_prompt)
     gameMessage(game_id, message, bold=True)
     if game.state == State.OTHERS_CHOOSING:
@@ -278,10 +283,10 @@ def sendVote():
     message = """{} voted.""".format(player_name)
     gameMessage(game_id, message)
     if game.state == State.CPUS_VOTING:
-        for cpu_player in game.cpu_players:
-            game.current_round.cpuVote(cpu_player)
-            message = """{} voted.""".format(cpu_player.name)
-            gameMessage(game_id, message)
+        # for cpu_player in game.cpu_players:
+        #     game.current_round.cpuVote(cpu_player)
+        #     message = """{} voted.""".format(cpu_player.name)
+        #     gameMessage(game_id, message)
         game.loop.send(None)
         # Scoring is complete, so start the next round!
         sendOutcomes(game_id)
@@ -310,7 +315,8 @@ def sendMulligan():
 def startHostTurn(game_id):
     game = games[game_id]
     host_name = game.host.name
-    gameMessage(game_id, "It is {}'s turn to choose a card and give a prompt.".format(host_name))
+    gameMessage(
+        game_id, "It is {}'s turn to choose a card and give a prompt.".format(host_name))
     data = {
         "host": host_name,
     }
@@ -343,7 +349,8 @@ def startVoting(game_id):
 def showHand(game_id, player_name):
     print("showing hand of player {} in game {}".format(player_name, game_id))
     player = players[(player_name, game_id)]
-    pusher.trigger(playerChannel(player_name, game_id), "showHand", player.hand)
+    pusher.trigger(playerChannel(player_name, game_id),
+                   "showHand", player.hand)
 
 
 def showHands(game_id):
@@ -362,7 +369,8 @@ def showTable(game_id):
 
 
 def gameMessage(game_id, gameMessage, bold=False):
-    print("Sending message to all players in game {}: {}".format(game_id, gameMessage))
+    print("Sending message to all players in game {}: {}".format(
+        game_id, gameMessage))
     game = games[game_id]
     if messages[game_id] == "":
         messages[game_id] = gameMessage
