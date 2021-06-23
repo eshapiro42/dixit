@@ -100,7 +100,7 @@ class Game:
         self.players.append(player)
         print("Added player {} to game {}".format(name, self.id))
         # If the game has four or more players (at least two of them human), it is playable
-        if self.num_players >= 4 and self.num_human_players >= 2:
+        if self.num_players >= 4 and self.num_human_players >= 3:
             self.playable = True
             print("Game {} now has four players and is playable".format(self.id))
         return player
@@ -204,14 +204,15 @@ class Round:
         other_players.remove(self.host)
         num_correct_votes = list(self.votes.values()).count(self.host_card)
         # If nobody or everybody finds the correct card, the host scores 0 and other players scores 2
-        if num_correct_votes in [0, self.game.num_players - 1]:
+        if num_correct_votes in [0, self.game.num_human_players - 1]:
             for player in other_players:
-                player.score += 2
+                if not player.is_cpu:
+                    player.score += 2
         # Otherwise, the host and whoever found the correct answer score 3
         else:
             self.host.score += 3
             for player in other_players:
-                if player in self.game.human_players and self.votes[player] == self.host_card:
+                if not player.is_cpu and self.votes[player] == self.host_card:
                     player.score += 3
         # Players score 1 point for every vote for their own card
         for player in other_players:
