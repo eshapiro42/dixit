@@ -52,7 +52,7 @@ function createTable(num_players) {
         `;
         $("#table").append(card_element);
     }
-    $(".table-card").attr("style", `--table-zoom:${tableZoom}; display: none;`);
+    $(".table-card").css("display", "none");
 }
 
 function clearTable() {
@@ -134,12 +134,12 @@ $("#addCPUButton").bind("click", function () {
 
 $("#tableSlider").on("input", function() {
     tableZoom = $(this).val() / 20;
-    $(".table-card").attr("style", `--table-zoom:${tableZoom}`);
+    document.documentElement.style.setProperty("--table-zoom", tableZoom);
 });
 
 $("#handSlider").on("input", function() {
     handZoom = $(this).val() / 20;
-    $(".hand-card").attr("style", `--hand-zoom:${handZoom}`);
+    document.documentElement.style.setProperty("--hand-zoom", handZoom);
 });
 
 window.addEventListener('beforeunload', function (e) { 
@@ -347,6 +347,4 @@ $(window).bind("load", function() {
             rejoin();
         }
     });
-
-    $(".hand-card").attr("style", `--hand-zoom:1`);
 });
