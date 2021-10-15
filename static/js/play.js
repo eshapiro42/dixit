@@ -169,7 +169,12 @@ $(window).bind("load", function() {
     });
     
     gameChannel.bind('gameMessage', data => {
-        $('#gameMessage').html(data.gameMessage);
+        $('#gameMessage').append(data.gameMessage);
+        $('#gameMessageContainer').scrollTop($('#gameMessageContainer')[0].scrollHeight);
+    });
+
+    myChannel.bind('gameMessage', data => {
+        $('#gameMessage').append(data.gameMessage);
         $('#gameMessageContainer').scrollTop($('#gameMessageContainer')[0].scrollHeight);
     });
     
