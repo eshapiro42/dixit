@@ -24,6 +24,7 @@ function gameStarted(data) {
     $("#addCPUButton").hide();
     clearTable();
     createTable(num_players);
+    $("#summary").show();
     $("#tablecontainer").show();
     $("#handcontainer").show();
     $("#scorecontainer").show();
@@ -52,22 +53,6 @@ function createTable(num_players) {
         $("#table").append(card_element);
     }
     $(".table-card").attr("style", `--table-zoom:${tableZoom}; display: none;`);
-}
-
-function showToast(type, playerName=null) {
-    if (type == "yourTurn") {
-        Toast.create("Your turn!", "Please choose a card and give a prompt.", TOAST_STATUS.SUCCESS, 5000);
-    } else if (type == "ownCard") {
-        Toast.create("Uh oh!", "You can't vote for your own card.", TOAST_STATUS.DANGER, 1000);
-    } else if (type == "playCard") {
-        Toast.create("Choose a card!", `${currentHost}'s prompt: "${currentPrompt}"`, TOAST_STATUS.INFO, 5000);
-    } else if (type == "voteCard") {
-        Toast.create("Time to vote!", `${currentHost}'s prompt: "${currentPrompt}"`, TOAST_STATUS.INFO, 5000);
-    } else if (type == "showHost") {
-        Toast.create(`${currentHost}'s turn!`, `${currentHost} is choosing a prompt.`, TOAST_STATUS.INFO, 1000);
-    } else if (type == "playerJoined") {
-        Toast.create("Someone joined!", `${playerName} joined the game.`, TOAST_STATUS.SUCCESS, 5000);
-    }
 }
 
 function clearTable() {
@@ -182,10 +167,6 @@ $(window).bind("load", function() {
             $("#startGameButton").show();
         }
     });
-
-    gameChannel.bind('playerJoined', data => {
-        showToast(type="playerJoined", playerName=data.playerName)
-    });
     
     gameChannel.bind('gameMessage', data => {
         $('#gameMessage').html(data.gameMessage);
@@ -229,6 +210,9 @@ $(window).bind("load", function() {
     gameChannel.bind('startHostTurn', data => {
         var hostCard;
         currentHost = data.host;
+        $("#summary_storyteller").text(currentHost);
+        $("#summary_prompt").text("");
+        $("#summary_phase").text(`${currentHost} is choosing a card.`);
         if (data.host == player_name) {
             $('#sendChoiceButton').show();
             $('#sendMulliganButton').show();
@@ -263,17 +247,14 @@ $(window).bind("load", function() {
                 sendHostChoice(hostCard, hostPrompt);
                 $('.hand-card').removeClass("border-info");
             });
-            showToast("yourTurn");
-        } else {
-            showToast("showHost");
         }
     });
     
     gameChannel.bind('startOtherTurn', data => {
         var otherCard;
-
+        $("#summary_prompt").text(currentPrompt);
+        $("#summary_phase").text(`Other players are choosing their cards.`);
         if (data.host != player_name) {
-            showToast("playCard");
             $('#sendChoiceButton').show();
             $('#sendMulliganButton').show();
             $('.hand-card').bind('click.otherTurn', function() {
@@ -306,8 +287,8 @@ $(window).bind("load", function() {
     
     gameChannel.bind('startVoting', data => {
         var voteCard;
+        $("#summary_phase").text(`Other players are voting.`);
         if (data.host != player_name) {
-            showToast("voteCard");
             $('#sendVoteButton').show();
             $('.table-card').bind('click.voting', function() {
                 $('.table-card').removeClass("border-info");
@@ -319,7 +300,6 @@ $(window).bind("load", function() {
                     return;
                 }
                 if (voteCard == lastPlayedCard) {
-                    showToast("ownCard");
                     return;
                 }
                 $('#sendVoteButton').hide();

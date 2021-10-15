@@ -46,6 +46,23 @@
         <button id="startGameButton" class="btn btn-dark btn-lg btn-block" style="display:none;">Start Game</button>
     </div>
 
+    <div id="summary" class="container text-center" style="display: none;">
+        <table style="width:100%">
+            <tr>
+                <th>Storyteller</th>
+                <th>Prompt</th>
+                <th>Phase</th>
+            </tr>
+            <tr>
+                <td id="summary_storyteller"></td>
+                <td id="summary_prompt"></td>
+                <td id="summary_phase"></td>
+            </tr>
+            </table>
+    </div>
+
+    <div class="spacer"></div>
+
     <div id="tablecontainer" class="container bg-light text-center" style="display:none;">
         <div class="slidercontainer">
             <input type="range" min="10" max="50" value="20" class="slider" id="tableSlider">
@@ -59,7 +76,7 @@
             <!-- tableCards appear here -->
         </div>
 
-        <div class="container text-center">
+        <div class="container text-center buttoncontainer">
             <button id="sendVoteButton" class="btn btn-dark" style="display:none;">Submit Vote</button>
         </div>
     </div>
@@ -84,10 +101,10 @@
             <div class="card hand-card"> <img src="" class="card-img-top" id="hand6"> </div>
         </div>
 
-        <div class="container text-center">
+        <div class="container text-center buttoncontainer">
             <div class="btn-group" role="group">
                 <button id="sendChoiceButton" class="btn btn-dark" style="display:none;">Submit Choice</button>
-                <button id="sendMulliganButton" class="btn btn-danger" style="display:none;">Mulligan</button>
+                <!-- <button id="sendMulliganButton" class="btn btn-danger" style="display:none;">Mulligan</button> -->
             </div>
         </div>
     </div>

@@ -99,6 +99,10 @@ h1 {
     border-width: 0.3rem !important;
 }
 
+.buttoncontainer {
+    padding-top: 25px;
+}
+
 .slidercontainer {
     width: 100%; /* Width of the outside container */
   }
@@ -167,4 +171,16 @@ img {
 /* Accordion Header - Inactive */
 .accordion-button.collapsed {
     background-color: #f1f1f1;
+}
+
+/* Style the summary bar */
+#summary {
+    z-index: 10;
+    position: -webkit-sticky; /* Safari */
+    position: sticky;
+    top: 0;
+    background-color: #343a40;
+    color: white;
+    padding: 1em;
+    margin-top: 1em;
 }
