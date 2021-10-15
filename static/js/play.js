@@ -219,6 +219,7 @@ $(window).bind("load", function() {
         $("#summary_prompt").text("");
         $("#summary_phase").text(`${currentHost} is choosing a card.`);
         if (data.host == player_name) {
+            alert("You are now the storyteller.");
             $('#sendChoiceButton').show();
             $('#sendMulliganButton').show();
             $('.hand-card').bind('click.hostTurn', function() {
@@ -237,6 +238,7 @@ $(window).bind("load", function() {
             $('#sendChoiceButton').bind('click.hostTurn', function() {
                 var hostPrompt;
                 if (hostCard == null) {
+                    alert("Please select a card.");
                     return;
                 }
                 do {
@@ -278,6 +280,7 @@ $(window).bind("load", function() {
             })
             $('#sendChoiceButton').bind('click.otherTurn', function() {
                 if (otherCard == null) {
+                    alert("Please select a card.");
                     return;
                 }
                 $('#sendChoiceButton').unbind('.otherTurn');
@@ -302,9 +305,11 @@ $(window).bind("load", function() {
             });
             $('#sendVoteButton').bind('click.voting', function() {
                 if (voteCard == null) {
+                    alert("Please select a card.")
                     return;
                 }
                 if (voteCard == lastPlayedCard) {
+                    alert("You cannot vote for your own card.")
                     return;
                 }
                 $('#sendVoteButton').hide();
