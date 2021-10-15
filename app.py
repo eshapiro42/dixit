@@ -226,7 +226,8 @@ def startGame():
 @app.route("/api/getMessages")
 def getMessages():
     game_id = session["game_id"]
-    gameMessage(game_id, None)
+    player_name = session["player_name"]
+    gameMessage(game_id, None, player_name=player_name)
     return ""
 
 
@@ -368,23 +369,30 @@ def showTable(game_id):
     pusher.trigger(gameChannel(game_id), "showTable", table_list)
 
 
-def gameMessage(game_id, gameMessage, bold=False):
-    print("Sending message to all players in game {}: {}".format(
-        game_id, gameMessage))
-    game = games[game_id]
-    if messages[game_id] == "":
-        messages[game_id] = gameMessage
-    elif gameMessage == None:
-        pass
+def gameMessage(game_id, gameMessage, bold=False, player_name=None):
+    if gameMessage == None:
+        formatted_message = messages[game_id]
     else:
         if bold:
-            messages[game_id] += "<br><b>{}</b>".format(gameMessage)
+            if messages[game_id] == "":
+                formatted_message = f"<b>{gameMessage}</b>"
+            else:
+                formatted_message = f"<br><b>{gameMessage}</b>"
         else:
-            messages[game_id] += "<br>{}".format(gameMessage)
+            if messages[game_id] == "":
+                formatted_message = f"{gameMessage}"
+            else:
+                formatted_message = f"<br>{gameMessage}"
+        messages[game_id] += formatted_message
     data = {
-        "gameMessage": messages[game_id],
+        "gameMessage": formatted_message,
     }
-    pusher.trigger(gameChannel(game_id), "gameMessage", data)
+    if player_name is not None:
+        print(f"Sending message to player {player_name}: {gameMessage}")
+        pusher.trigger(playerChannel(player_name, game_id), "gameMessage", data)
+    else:
+        print(f"Sending message to all players in game {game_id}: {gameMessage}")
+        pusher.trigger(gameChannel(game_id), "gameMessage", data)
 
 
 def hostPrompt(game_id, prompt):
