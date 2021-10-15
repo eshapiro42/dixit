@@ -352,4 +352,13 @@ $(window).bind("load", function() {
             rejoin();
         }
     });
+
+    $("#summary_sticky").on("click", function() {
+        checked = $(this).is(":checked");
+        if (checked) {
+            $("#summary").css("position", "sticky");
+        } else {
+            $("#summary").css("position", "static");
+        }
+    });
 });
