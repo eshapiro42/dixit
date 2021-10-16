@@ -148,7 +148,9 @@ h1 {
   }
 
 .card-deck {
-overflow-x: scroll;
+    scroll-snap-type: x mandatory;
+    display: flex;
+    overflow-x: scroll;
 }
 
 .hand-card {
@@ -156,6 +158,7 @@ overflow-x: scroll;
     min-width: calc(var(--hand-zoom) * 15rem);
     margin-right: 5px;
     object-fit: cover;
+    scroll-snap-align: center;
 }
 
 .table-card {
@@ -163,6 +166,7 @@ overflow-x: scroll;
     min-width: calc(var(--table-zoom) * 15rem);
     margin-right: 5px;
     object-fit: cover;
+    scroll-snap-align: center;
 }
 
 img {
