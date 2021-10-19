@@ -215,11 +215,12 @@ $(window).bind("load", function() {
     gameChannel.bind('startHostTurn', data => {
         var hostCard;
         currentHost = data.host;
+        $("#summary").addClass("wiggle");
         $("#summary_storyteller").text(currentHost);
         $("#summary_prompt").text("");
         $("#summary_phase").text(`${currentHost} is choosing a card.`);
         if (data.host == player_name) {
-            alert("You are now the storyteller.");
+            $("#your-turn-modal").modal('show');
             $('#sendChoiceButton').show();
             $('#sendMulliganButton').show();
             $('.hand-card').bind('click.hostTurn', function() {
@@ -238,7 +239,7 @@ $(window).bind("load", function() {
             $('#sendChoiceButton').bind('click.hostTurn', function() {
                 var hostPrompt;
                 if (hostCard == null) {
-                    alert("Please select a card.");
+                    $("#select-card-modal").modal('show');
                     return;
                 }
                 do {
@@ -259,6 +260,7 @@ $(window).bind("load", function() {
     
     gameChannel.bind('startOtherTurn', data => {
         var otherCard;
+        $("#summary").addClass("wiggle");
         $("#summary_prompt").text(currentPrompt);
         $("#summary_phase").text(`Other players are choosing their cards.`);
         if (data.host != player_name) {
@@ -280,7 +282,7 @@ $(window).bind("load", function() {
             })
             $('#sendChoiceButton').bind('click.otherTurn', function() {
                 if (otherCard == null) {
-                    alert("Please select a card.");
+                    $("#select-card-modal").modal('show');
                     return;
                 }
                 $('#sendChoiceButton').unbind('.otherTurn');
@@ -295,6 +297,7 @@ $(window).bind("load", function() {
     
     gameChannel.bind('startVoting', data => {
         var voteCard;
+        $("#summary").addClass("wiggle");
         $("#summary_phase").text(`Other players are voting.`);
         if (data.host != player_name) {
             $('#sendVoteButton').show();
@@ -305,11 +308,11 @@ $(window).bind("load", function() {
             });
             $('#sendVoteButton').bind('click.voting', function() {
                 if (voteCard == null) {
-                    alert("Please select a card.")
+                    $("#select-card-modal").modal('show');
                     return;
                 }
                 if (voteCard == lastPlayedCard) {
-                    alert("You cannot vote for your own card.")
+                    $("#own-card-modal").modal('show');
                     return;
                 }
                 $('#sendVoteButton').hide();
@@ -352,6 +355,13 @@ $(window).bind("load", function() {
             rejoin();
         }
     });
+
+    $("#summary").on(
+        "animationend transitionend MSTransitionEnd webkitTransitionEnd oTransitionEnd",
+        function() {
+            $(this).removeClass("wiggle");
+        }
+    );
 
     $("#summary_sticky").on("click", function() {
         checked = $(this).is(":checked");
