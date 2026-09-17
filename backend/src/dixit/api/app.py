@@ -30,5 +30,9 @@ def create_app(config: Config | None = None) -> Flask:
     register_socket_handlers(socketio, store=store)
     register_error_handlers(app)
 
+    @app.get("/healthz")
+    def healthz() -> tuple[str, int]:
+        return "ok", 200
+
     app.extensions["socketio"] = socketio
     return app

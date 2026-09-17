@@ -1,0 +1,10 @@
+.git
+**/__pycache__
+**/*.pyc
+backend/.venv
+backend/.pytest_cache
+backend/.mypy_cache
+backend/.ruff_cache
+frontend/node_modules
+frontend/.svelte-kit
+frontend/build
