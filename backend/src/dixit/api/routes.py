@@ -5,12 +5,12 @@ import string
 
 from flask import Blueprint, Response, jsonify, request, send_from_directory
 
-from dixit.domain import CardLibrary, DixitError, Game
+from dixit.domain import MIN_HUMAN_PLAYERS, CardLibrary, DixitError, Game
 from dixit.store import GameStore
 
 from . import views
 from .notifier import GameNotifier
-from .session import current_game_id, current_player_name, start_session
+from .session import current_game_id, current_player_name, end_session, start_session
 
 GAME_ID_ALPHABET = string.ascii_uppercase + string.digits
 GAME_ID_LENGTH = 4
@@ -18,7 +18,11 @@ MAX_NAME_LENGTH = 32
 
 
 def build_routes_blueprint(
-    *, store: GameStore, library: CardLibrary, notifier: GameNotifier
+    *,
+    store: GameStore,
+    library: CardLibrary,
+    notifier: GameNotifier,
+    min_human_players: int = MIN_HUMAN_PLAYERS,
 ) -> Blueprint:
     """Every handler below follows the same shape: mutate the game inside a store
     transaction (so it's saved before anything is announced), then broadcast.
@@ -47,7 +51,9 @@ def build_routes_blueprint(
     def create_game() -> Response:
         player_name = player_name_from(request.get_json(force=True))
         game_id = new_game_id()
-        game = Game.new(game_id, library, creator_name=player_name)
+        game = Game.new(
+            game_id, library, creator_name=player_name, min_human_players=min_human_players
+        )
         game.add_player(player_name)
         store.create(game)
         start_session(game_id, player_name)
@@ -74,6 +80,19 @@ def build_routes_blueprint(
         player_name = current_player_name()
         with store.transaction(game_id) as game:
             return jsonify(views.session_view(game, player_name))
+
+    @bp.post("/session/leave")
+    def leave_session() -> Response:
+        game_id = current_game_id()
+        player_name = current_player_name()
+        end_session()
+        with store.transaction(game_id) as game:
+            if game.started or not game.has_player(player_name):
+                return jsonify(ok=True)
+            game.remove_player(player_name)
+        notifier.message(game_id, f"{player_name} left before the game started.")
+        notifier.state_changed(game)
+        return jsonify(ok=True)
 
     @bp.post("/session/add-cpu")
     def add_cpu() -> Response:

@@ -11,6 +11,10 @@ def start_session(game_id: str, player_name: str) -> None:
     flask_session["player_name"] = player_name
 
 
+def end_session() -> None:
+    flask_session.clear()
+
+
 def current_game_id() -> str:
     game_id = flask_session.get("game_id")
     if not game_id:

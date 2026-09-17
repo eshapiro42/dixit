@@ -33,8 +33,10 @@ class GameNotStartedError(DixitError):
 
 
 class NotEnoughPlayersError(DixitError):
-    def __init__(self) -> None:
-        super().__init__("A game needs at least four players, three of them human.")
+    def __init__(self, min_players: int, min_human_players: int) -> None:
+        super().__init__(
+            f"A game needs at least {min_players} players, {min_human_players} of them human."
+        )
 
 
 class WrongPhaseError(DixitError):

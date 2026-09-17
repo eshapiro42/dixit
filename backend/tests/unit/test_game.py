@@ -49,6 +49,16 @@ def test_start_raises_when_not_playable(game: Game) -> None:
         game.start()
 
 
+def test_min_human_players_is_configurable(card_library: CardLibrary) -> None:
+    game = Game.new("ABCD", card_library, creator_name="alice", min_human_players=1)
+    game.add_player("alice")
+    for i in range(3):
+        game.add_player(f"CPU-{i}", is_cpu=True)
+    assert game.playable is True
+    game.start()
+    assert game.started is True
+
+
 def test_start_only_selects_a_human_host(game: Game) -> None:
     for name in ("alice", "bob", "carol"):
         game.add_player(name)

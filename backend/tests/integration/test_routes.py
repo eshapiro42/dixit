@@ -1,6 +1,12 @@
 from conftest import create_game, join_game
 from flask import Flask
 
+from dixit.api.errors import register_error_handlers
+from dixit.api.notifier import GameNotifier
+from dixit.api.routes import build_routes_blueprint
+from dixit.realtime import FakeBroadcaster
+from dixit.store import InMemoryGameStore
+
 
 def test_create_game_returns_a_session_view(client) -> None:
     view = create_game(client, "alice")
@@ -198,3 +204,55 @@ def test_joining_broadcasts_state_and_a_message(app: Flask, broadcaster) -> None
     assert "message" in events
     assert "state" in events
     assert "you" in events
+
+
+def test_min_human_players_is_configurable(card_library) -> None:
+    flask_app = Flask(__name__)
+    flask_app.config.update(SECRET_KEY="test", TESTING=True)
+    notifier = GameNotifier(FakeBroadcaster())
+    blueprint = build_routes_blueprint(
+        store=InMemoryGameStore(), library=card_library, notifier=notifier, min_human_players=1
+    )
+    flask_app.register_blueprint(blueprint)
+    register_error_handlers(flask_app)
+
+    solo = flask_app.test_client()
+    create_game(solo, "alice")
+    for _ in range(3):
+        solo.post("/api/session/add-cpu")
+
+    response = solo.post("/api/session/start")
+    assert response.status_code == 200
+
+
+def test_leaving_before_start_removes_the_player_and_clears_the_session(app: Flask) -> None:
+    creator = app.test_client()
+    created = create_game(creator, "alice")
+    bob = app.test_client()
+    join_game(bob, created["game_id"], "bob")
+
+    response = bob.post("/api/session/leave")
+    assert response.status_code == 200
+
+    assert bob.get("/api/session").status_code == 401
+    state = creator.get("/api/session").get_json()
+    assert {p["name"] for p in state["players"]} == {"alice"}
+
+
+def test_leaving_after_start_only_clears_the_session(app: Flask) -> None:
+    lobby = _started_lobby(app)
+    clients = lobby["clients"]
+    _, bob = list(clients.items())[1]
+
+    response = bob.post("/api/session/leave")
+    assert response.status_code == 200
+    assert bob.get("/api/session").status_code == 401
+
+    creator = clients["alice"]
+    state = creator.get("/api/session").get_json()
+    assert {p["name"] for p in state["players"]} == {"alice", "bob", "carol", "CPU-1"}
+
+
+def test_leave_requires_an_active_session(client) -> None:
+    response = client.post("/api/session/leave")
+    assert response.status_code == 401

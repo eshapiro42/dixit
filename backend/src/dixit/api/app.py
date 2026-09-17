@@ -26,7 +26,13 @@ def create_app(config: Config | None = None) -> Flask:
     socketio = SocketIO(app, message_queue=config.redis_url)
     notifier = GameNotifier(SocketIOBroadcaster(socketio))
 
-    app.register_blueprint(build_routes_blueprint(store=store, library=library, notifier=notifier))
+    blueprint = build_routes_blueprint(
+        store=store,
+        library=library,
+        notifier=notifier,
+        min_human_players=config.min_human_players,
+    )
+    app.register_blueprint(blueprint)
     register_socket_handlers(socketio, store=store)
     register_error_handlers(app)
 

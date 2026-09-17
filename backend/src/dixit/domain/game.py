@@ -30,10 +30,22 @@ class Game:
     host_index: int = 0
     current_round: Round | None = None
     previous_round: Round | None = None
+    min_human_players: int = MIN_HUMAN_PLAYERS
 
     @classmethod
-    def new(cls, game_id: str, library: CardLibrary, creator_name: str) -> Game:
-        return cls(id=game_id, deck=Deck.shuffled(library), creator_name=creator_name)
+    def new(
+        cls,
+        game_id: str,
+        library: CardLibrary,
+        creator_name: str,
+        min_human_players: int = MIN_HUMAN_PLAYERS,
+    ) -> Game:
+        return cls(
+            id=game_id,
+            deck=Deck.shuffled(library),
+            creator_name=creator_name,
+            min_human_players=min_human_players,
+        )
 
     @property
     def cpu_players(self) -> list[Player]:
@@ -57,7 +69,7 @@ class Game:
 
     @property
     def playable(self) -> bool:
-        return self.num_players >= MIN_PLAYERS and self.num_human_players >= MIN_HUMAN_PLAYERS
+        return self.num_players >= MIN_PLAYERS and self.num_human_players >= self.min_human_players
 
     @property
     def host(self) -> Player | None:
@@ -73,6 +85,9 @@ class Game:
             if player.name == name:
                 return player
         raise PlayerNotFoundError(name, self.id)
+
+    def remove_player(self, name: str) -> None:
+        self.players = [player for player in self.players if player.name != name]
 
     @property
     def _active_round(self) -> Round:
@@ -91,7 +106,7 @@ class Game:
 
     def start(self) -> None:
         if not self.playable:
-            raise NotEnoughPlayersError()
+            raise NotEnoughPlayersError(MIN_PLAYERS, self.min_human_players)
         humans = self.human_players
         random.shuffle(humans)
         self.host_order = [player.name for player in humans]
@@ -146,6 +161,7 @@ class Game:
             "host_index": self.host_index,
             "current_round": self.current_round.to_dict() if self.current_round else None,
             "previous_round": self.previous_round.to_dict() if self.previous_round else None,
+            "min_human_players": self.min_human_players,
         }
 
     @classmethod
@@ -162,4 +178,5 @@ class Game:
             previous_round=(
                 Round.from_dict(data["previous_round"]) if data["previous_round"] else None
             ),
+            min_human_players=data["min_human_players"],
         )
