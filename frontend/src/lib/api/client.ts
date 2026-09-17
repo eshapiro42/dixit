@@ -35,6 +35,7 @@ export const api = {
 	joinGame: (gameId: string, playerName: string) =>
 		post<SessionView>(`/api/games/${gameId}/join`, { player_name: playerName }),
 	session: () => request<SessionView>('/api/session'),
+	leave: () => post<{ ok: true }>('/api/session/leave'),
 	addCpu: () => post<{ ok: true }>('/api/session/add-cpu'),
 	start: () => post<{ ok: true }>('/api/session/start'),
 	hostChoice: (cardId: string, prompt: string) =>

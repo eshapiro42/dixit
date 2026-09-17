@@ -2,9 +2,9 @@
 	<title>Dixit</title>
 	<mask id="bunny-cutout">
 		<rect width="64" height="64" fill="white" />
-		<ellipse cx="24" cy="20" rx="6" ry="17" fill="black" />
-		<ellipse cx="40" cy="20" rx="6" ry="17" fill="black" />
-		<circle cx="32" cy="44" r="16" fill="black" />
+		<ellipse cx="24" cy="20" rx="6" ry="17" />
+		<ellipse cx="40" cy="20" rx="6" ry="17" />
+		<circle cx="32" cy="44" r="16" />
 	</mask>
 	<circle cx="32" cy="32" r="30" fill="#ffffff" mask="url(#bunny-cutout)" />
 </svg>

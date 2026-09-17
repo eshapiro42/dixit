@@ -28,8 +28,16 @@ class GameState {
 		await this.run(async () => this.enterSession(await api.joinGame(gameId, playerName)));
 	}
 
-	async refresh(): Promise<void> {
-		await this.run(async () => this.enterSession(await api.session()));
+	/** Silently recover an existing session (e.g. after a page reload). No session yet is
+	 * the expected outcome for a first-time visitor, not an error worth showing.
+	 */
+	async tryResume(): Promise<boolean> {
+		try {
+			this.enterSession(await api.session());
+			return true;
+		} catch {
+			return false;
+		}
 	}
 
 	async addCpu(): Promise<void> {
@@ -56,12 +64,21 @@ class GameState {
 		await this.run(() => api.mulligan(cardId));
 	}
 
-	leave(): void {
+	/** Leave the current game and return to the lobby form. The session is cleared
+	 * locally even if the request fails: there's nothing useful to retry here.
+	 */
+	async leaveGame(): Promise<void> {
+		try {
+			await api.leave();
+		} catch {
+			// already leaving regardless
+		}
 		disconnectSocket();
 		this.connected = false;
 		this.view = null;
 		this.messages = [];
 		this.lastOutcome = null;
+		this.error = null;
 	}
 
 	private enterSession(view: SessionView): void {

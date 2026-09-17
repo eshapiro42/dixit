@@ -15,6 +15,15 @@ describe('api client', () => {
 		await expect(api.start()).resolves.toEqual({ ok: true });
 	});
 
+	it('posts with no body for parameterless actions', async () => {
+		vi.mocked(fetch).mockResolvedValue(new Response('{}', { status: 200 }));
+		await api.leave();
+		const [path, init] = vi.mocked(fetch).mock.calls[0];
+		expect(path).toBe('/api/session/leave');
+		expect(init?.method).toBe('POST');
+		expect(init?.body).toBeUndefined();
+	});
+
 	it('sends json bodies with the player name', async () => {
 		vi.mocked(fetch).mockResolvedValue(new Response('{}', { status: 200 }));
 		await api.createGame('alice');
