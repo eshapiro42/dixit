@@ -48,6 +48,12 @@ def test_has_played_true_once_on_the_table() -> None:
     assert views.has_played(round_, Player(name="carol")) is False
 
 
+def test_has_voted_true_once_recorded() -> None:
+    round_ = _round()
+    assert views.has_voted(round_, Player(name="a")) is True
+    assert views.has_voted(round_, Player(name="b")) is False
+
+
 class TestMulliganAvailable:
     def test_host_before_choosing(self) -> None:
         round_ = _round(phase=Phase.HOST_CHOOSING, table={})

@@ -45,6 +45,10 @@ def has_played(round_: Round, player: Player) -> bool:
     return player.name in round_.table
 
 
+def has_voted(round_: Round, player: Player) -> bool:
+    return player.name in round_.votes
+
+
 def public_view(game: Game) -> dict:
     """The shared view of a game: the same for every player, broadcast as `state`."""
     current = game.current_round
@@ -69,6 +73,7 @@ def private_view(game: Game, player: Player) -> dict:
         "hand": [card.id for card in player.hand],
         "mulligan_available": mulligan_available(current, player) if current else False,
         "has_played": has_played(current, player) if current else False,
+        "has_voted": has_voted(current, player) if current else False,
     }
 
 
