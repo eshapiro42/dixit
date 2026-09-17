@@ -37,6 +37,11 @@
 		submitting = false;
 	}
 
+	async function leaveGame(): Promise<void> {
+		await gameState.leaveGame();
+		gameId = '';
+	}
+
 	let showOutcome = $state(false);
 
 	$effect(() => {
@@ -121,7 +126,7 @@
 					<div class="log">
 						<MessageLog messages={gameState.messages} />
 					</div>
-					<Button kind="ghost" onclick={() => gameState.leaveGame()}>Leave game</Button>
+					<Button kind="ghost" onclick={leaveGame}>Leave game</Button>
 				</aside>
 			</div>
 		</PageShell>
