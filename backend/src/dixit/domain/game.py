@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from .card import CardLibrary
 from .deck import Deck
 from .exceptions import (
+    DuplicatePlayerNameError,
     GameAlreadyStartedError,
     GameNotStartedError,
     NotEnoughPlayersError,
@@ -87,7 +88,11 @@ class Game:
         raise PlayerNotFoundError(name, self.id)
 
     def remove_player(self, name: str) -> None:
+        leaving = [player for player in self.players if player.name == name]
         self.players = [player for player in self.players if player.name != name]
+        for player in leaving:
+            for card in player.hand:
+                self.deck.discard(card)
 
     @property
     def _active_round(self) -> Round:
@@ -98,6 +103,8 @@ class Game:
     def add_player(self, name: str, is_cpu: bool = False) -> Player:
         if self.started:
             raise GameAlreadyStartedError(self.id)
+        if self.has_player(name):
+            raise DuplicatePlayerNameError(name)
         player = Player(name=name, is_cpu=is_cpu)
         for _ in range(HAND_SIZE):
             player.draw(self.deck)
@@ -105,6 +112,8 @@ class Game:
         return player
 
     def start(self) -> None:
+        if self.started:
+            raise GameAlreadyStartedError(self.id)
         if not self.playable:
             raise NotEnoughPlayersError(MIN_PLAYERS, self.min_human_players)
         humans = self.human_players
@@ -121,31 +130,16 @@ class Game:
         self.current_round = Round(host_name=host_name)
 
     def submit_host_choice(self, player: Player, card_id: str, prompt: str) -> bool:
-        """Returns True if the round is now fully scored.
-
-        This only happens here when the host is the only human: with no other
-        human left to play a card or cast a vote, both steps resolve immediately
-        instead of waiting for a human action that will never come.
-        """
+        """Returns True if the round is now fully scored (see _finish_choosing)."""
         round_ = self._active_round
         round_.host_choice(player, self.deck, card_id, prompt)
-        if not round_.all_humans_played(self.human_players):
-            return False
-        round_.resolve_cpu_choices(self.cpu_players, self.deck)
-        if not round_.all_humans_voted(self.human_players):
-            return False
-        round_.resolve_cpu_votes(self.cpu_players)
-        round_.score(self.players)
-        return True
+        return self._finish_choosing(round_)
 
     def submit_other_choice(self, player: Player, card_id: str) -> bool:
-        """Returns True if every human has now played, and voting has begun."""
+        """Returns True if the round is now fully scored (see _finish_choosing)."""
         round_ = self._active_round
         round_.other_choice(player, self.deck, card_id)
-        if not round_.all_humans_played(self.human_players):
-            return False
-        round_.resolve_cpu_choices(self.cpu_players, self.deck)
-        return True
+        return self._finish_choosing(round_)
 
     def submit_mulligan(self, player: Player, card_id: str) -> None:
         self._active_round.mulligan(player, self.deck, card_id)
@@ -154,10 +148,25 @@ class Game:
         """Returns True if every human has now voted, and the round has been scored."""
         round_ = self._active_round
         round_.vote(player, card_id)
+        return self._finish_voting(round_)
+
+    def _finish_choosing(self, round_: Round) -> bool:
+        """Resolves CPU choices once every human has played, then tries to finish
+        voting immediately too: with no other human around to vote either (the
+        host is the only human in the game), nothing else will ever trigger it.
+        """
+        if not round_.all_humans_played(self.human_players):
+            return False
+        round_.resolve_cpu_choices(self.cpu_players, self.deck)
+        return self._finish_voting(round_)
+
+    def _finish_voting(self, round_: Round) -> bool:
         if not round_.all_humans_voted(self.human_players):
             return False
         round_.resolve_cpu_votes(self.cpu_players)
         round_.score(self.players)
+        for card in round_.table.values():
+            self.deck.discard(card)
         return True
 
     def advance_round(self) -> None:

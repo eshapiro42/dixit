@@ -5,9 +5,11 @@ import pytest
 from dixit.domain import (
     CardLibrary,
     DuplicateActionError,
+    DuplicatePlayerNameError,
     Game,
     GameAlreadyStartedError,
     NotEnoughPlayersError,
+    NotYourTurnError,
     Phase,
     WrongPhaseError,
 )
@@ -21,6 +23,26 @@ def test_add_player_deals_a_full_hand(game: Game) -> None:
 def test_add_player_raises_once_the_game_has_started(started_game: Game) -> None:
     with pytest.raises(GameAlreadyStartedError):
         started_game.add_player("dave")
+
+
+def test_add_player_raises_for_a_duplicate_name(game: Game) -> None:
+    game.add_player("alice")
+    with pytest.raises(DuplicatePlayerNameError):
+        game.add_player("alice")
+
+
+def test_start_raises_if_already_started(started_game: Game) -> None:
+    with pytest.raises(GameAlreadyStartedError):
+        started_game.start()
+
+
+def test_remove_player_returns_their_hand_to_the_discard_pile(game: Game) -> None:
+    player = game.add_player("alice")
+    hand_size = len(player.hand)
+    discarded_before = len(game.deck.discard_pile)
+    game.remove_player("alice")
+    assert len(game.deck.discard_pile) == discarded_before + hand_size
+    assert not game.has_player("alice")
 
 
 @pytest.mark.parametrize(
@@ -125,6 +147,26 @@ def test_a_full_round_scores_and_can_advance(started_game: Game) -> None:
     assert started_game.current_round.votes.get("CPU-0") is not None
     started_game.advance_round()
     assert started_game.current_round.phase == Phase.HOST_CHOOSING
+
+
+def test_scoring_returns_the_tables_cards_to_the_discard_pile(started_game: Game) -> None:
+    table_size = started_game.num_players
+    discarded_before = len(started_game.deck.discard_pile)
+    _play_full_round(started_game)
+    assert len(started_game.deck.discard_pile) == discarded_before + table_size
+
+
+def test_host_choice_by_a_non_host_player_raises(started_game: Game) -> None:
+    host = started_game.host
+    impostor = next(p for p in started_game.human_players if p.name != host.name)
+    with pytest.raises(NotYourTurnError):
+        started_game.submit_host_choice(impostor, impostor.hand[0].id, "a prompt")
+
+
+def test_a_game_can_run_many_rounds_without_exhausting_the_deck(started_game: Game) -> None:
+    for _ in range(30):
+        _play_full_round(started_game)
+        started_game.advance_round()
 
 
 def test_duplicate_choice_from_the_same_player_raises(started_game: Game) -> None:

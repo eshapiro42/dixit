@@ -50,6 +50,10 @@ class TestHostChoice:
         with pytest.raises(WrongPhaseError):
             round_.host_choice(host, deck, "host-card.jpg", "a prompt")
 
+    def test_raises_for_a_non_host_player(self, round_: Round, other: Player, deck: Deck) -> None:
+        with pytest.raises(NotYourTurnError):
+            round_.host_choice(other, deck, "other-card.jpg", "a prompt")
+
 
 class TestOtherChoice:
     def test_moves_the_card_to_the_table(

@@ -20,11 +20,14 @@ class Config:
 
     @classmethod
     def from_env(cls) -> Config:
+        min_human_players = int(os.environ.get("MIN_HUMAN_PLAYERS", MIN_HUMAN_PLAYERS))
+        if min_human_players < 1:
+            raise ConfigError("MIN_HUMAN_PLAYERS must be at least 1: a round always needs a host.")
         return cls(
             secret_key=_require("SECRET_KEY"),
             redis_url=_require("REDIS_URL"),
             cards_dir=Path(_require("CARDS_DIR")),
-            min_human_players=int(os.environ.get("MIN_HUMAN_PLAYERS", MIN_HUMAN_PLAYERS)),
+            min_human_players=min_human_players,
         )
 
 

@@ -32,6 +32,12 @@ class GameNotStartedError(DixitError):
         self.game_id = game_id
 
 
+class DuplicatePlayerNameError(DixitError):
+    def __init__(self, player_name: str) -> None:
+        super().__init__(f"{player_name} is already in this game.")
+        self.player_name = player_name
+
+
 class NotEnoughPlayersError(DixitError):
     def __init__(self, min_players: int, min_human_players: int) -> None:
         super().__init__(

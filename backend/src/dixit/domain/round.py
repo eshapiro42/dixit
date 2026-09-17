@@ -39,6 +39,8 @@ class Round:
     def host_choice(self, host: Player, deck: Deck, card_id: str, prompt: str) -> None:
         if self.phase != Phase.HOST_CHOOSING:
             raise WrongPhaseError("choose the prompt card", self.phase.value)
+        if host.name != self.host_name:
+            raise NotYourTurnError(host.name)
         card = host.play_card(card_id, deck)
         self.table[host.name] = card
         self.prompt = prompt
