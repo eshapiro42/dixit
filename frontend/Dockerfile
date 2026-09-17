@@ -1,6 +1,8 @@
 FROM node:24-slim AS base
 
-RUN corepack enable
+# Recent Node images don't reliably ship Corepack enabled by default, so pin
+# and install pnpm directly rather than depending on `corepack enable`.
+RUN npm install -g pnpm@12.4.2
 WORKDIR /app
 
 FROM base AS dev
