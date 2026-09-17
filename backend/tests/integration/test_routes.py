@@ -70,6 +70,52 @@ def test_start_requires_four_players(app: Flask) -> None:
     assert response.status_code == 400
 
 
+def test_start_requires_the_creator(app: Flask) -> None:
+    creator = app.test_client()
+    created = create_game(creator, "alice")
+    bob = app.test_client()
+    join_game(bob, created["game_id"], "bob")
+
+    response = bob.post("/api/session/start")
+    assert response.status_code == 400
+
+
+def test_add_cpu_requires_the_creator(app: Flask) -> None:
+    creator = app.test_client()
+    created = create_game(creator, "alice")
+    bob = app.test_client()
+    join_game(bob, created["game_id"], "bob")
+
+    response = bob.post("/api/session/add-cpu")
+    assert response.status_code == 400
+
+
+def test_a_non_object_json_body_is_a_clean_400(app: Flask) -> None:
+    creator = app.test_client()
+    create_game(creator, "alice")
+
+    response = creator.post("/api/session/mulligan", json=None)
+    assert response.status_code == 400
+
+    response = creator.post("/api/session/mulligan", json=[1, 2, 3])
+    assert response.status_code == 400
+
+
+def test_a_prompt_over_the_length_limit_is_truncated(app: Flask) -> None:
+    lobby = _started_lobby(app)
+    clients = lobby["clients"]
+    host_name, host = _current_host(clients)
+    hand = host.get("/api/session").get_json()["hand"]
+
+    response = host.post(
+        "/api/session/host-choice", json={"card_id": hand[0], "prompt": "x" * 500}
+    )
+    assert response.status_code == 200
+    state = host.get("/api/session").get_json()
+    assert state["prompt"] is not None
+    assert len(state["prompt"]) == 200
+
+
 def _started_lobby(app: Flask) -> dict[str, object]:
     creator = app.test_client()
     created = create_game(creator, "alice")

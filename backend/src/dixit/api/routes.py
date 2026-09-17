@@ -15,6 +15,7 @@ from .session import current_game_id, current_player_name, end_session, start_se
 GAME_ID_ALPHABET = string.ascii_uppercase + string.digits
 GAME_ID_LENGTH = 4
 MAX_NAME_LENGTH = 32
+MAX_PROMPT_LENGTH = 200
 
 
 def build_routes_blueprint(
@@ -29,6 +30,12 @@ def build_routes_blueprint(
     """
     bp = Blueprint("api", __name__, url_prefix="/api")
 
+    def json_body() -> dict:
+        body = request.get_json(force=True, silent=True)
+        if not isinstance(body, dict):
+            raise DixitError("Expected a JSON object.")
+        return body
+
     def player_name_from(payload: dict) -> str:
         name = str(payload.get("player_name", "")).strip()[:MAX_NAME_LENGTH]
         if not name:
@@ -41,6 +48,16 @@ def build_routes_blueprint(
             raise DixitError("A card is required.")
         return card_id
 
+    def prompt_from(payload: dict) -> str:
+        prompt = str(payload.get("prompt", "")).strip()[:MAX_PROMPT_LENGTH]
+        if not prompt:
+            raise DixitError("A prompt is required.")
+        return prompt
+
+    def require_creator(game: Game, player_name: str) -> None:
+        if player_name != game.creator_name:
+            raise DixitError("Only the game's creator can do that.")
+
     def new_game_id() -> str:
         game_id = "".join(random.choices(GAME_ID_ALPHABET, k=GAME_ID_LENGTH))
         while store.exists(game_id):
@@ -49,7 +66,7 @@ def build_routes_blueprint(
 
     @bp.post("/games")
     def create_game() -> Response:
-        player_name = player_name_from(request.get_json(force=True))
+        player_name = player_name_from(json_body())
         game_id = new_game_id()
         game = Game.new(
             game_id, library, creator_name=player_name, min_human_players=min_human_players
@@ -61,7 +78,7 @@ def build_routes_blueprint(
 
     @bp.post("/games/<game_id>/join")
     def join_game(game_id: str) -> Response:
-        player_name = player_name_from(request.get_json(force=True))
+        player_name = player_name_from(json_body())
         with store.transaction(game_id) as game:
             rejoining = game.has_player(player_name)
             if not rejoining:
@@ -97,7 +114,9 @@ def build_routes_blueprint(
     @bp.post("/session/add-cpu")
     def add_cpu() -> Response:
         game_id = current_game_id()
+        player_name = current_player_name()
         with store.transaction(game_id) as game:
+            require_creator(game, player_name)
             cpu_name = f"CPU-{game.num_cpu_players + 1}"
             game.add_player(cpu_name, is_cpu=True)
         notifier.message(game_id, f"{cpu_name} has joined the game.")
@@ -107,7 +126,9 @@ def build_routes_blueprint(
     @bp.post("/session/start")
     def start_game() -> Response:
         game_id = current_game_id()
+        player_name = current_player_name()
         with store.transaction(game_id) as game:
+            require_creator(game, player_name)
             game.start()
         notifier.message(game_id, "The game has started.", emphasis=True)
         notifier.state_changed(game)
@@ -117,11 +138,9 @@ def build_routes_blueprint(
     def host_choice() -> Response:
         game_id = current_game_id()
         player_name = current_player_name()
-        payload = request.get_json(force=True)
+        payload = json_body()
         card_id = card_id_from(payload)
-        prompt = str(payload.get("prompt", "")).strip()
-        if not prompt:
-            raise DixitError("A prompt is required.")
+        prompt = prompt_from(payload)
         with store.transaction(game_id) as game:
             player = game.player(player_name)
             scored = game.submit_host_choice(player, card_id, prompt)
@@ -138,11 +157,16 @@ def build_routes_blueprint(
     def play_card() -> Response:
         game_id = current_game_id()
         player_name = current_player_name()
-        card_id = card_id_from(request.get_json(force=True))
+        card_id = card_id_from(json_body())
         with store.transaction(game_id) as game:
             player = game.player(player_name)
-            game.submit_other_choice(player, card_id)
+            scored = game.submit_other_choice(player, card_id)
+            finished_round = game.current_round if scored else None
+            if scored:
+                game.advance_round()
         notifier.message(game_id, f"{player_name} played a card.")
+        if finished_round is not None:
+            notifier.round_finished(game_id, finished_round)
         notifier.state_changed(game)
         return jsonify(ok=True)
 
@@ -150,7 +174,7 @@ def build_routes_blueprint(
     def vote() -> Response:
         game_id = current_game_id()
         player_name = current_player_name()
-        card_id = card_id_from(request.get_json(force=True))
+        card_id = card_id_from(json_body())
         with store.transaction(game_id) as game:
             player = game.player(player_name)
             scored = game.submit_vote(player, card_id)
@@ -167,7 +191,7 @@ def build_routes_blueprint(
     def mulligan() -> Response:
         game_id = current_game_id()
         player_name = current_player_name()
-        card_id = card_id_from(request.get_json(force=True))
+        card_id = card_id_from(json_body())
         with store.transaction(game_id) as game:
             player = game.player(player_name)
             game.submit_mulligan(player, card_id)
