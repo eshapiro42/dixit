@@ -1,7 +1,7 @@
 [project]
 name = "dixit"
 version = "0.1.0"
-description = "Dixit Backend"
+description = "Web server for the Dixit card game"
 authors = [
     { name = "eshapiro42", email = "eshapiro42@gmail.com" }
 ]
@@ -38,6 +38,10 @@ warn_redundant_casts = true
 warn_unreachable = true
 warn_unused_ignores = true
 
+[[tool.mypy.overrides]]
+module = "eventlet"
+ignore_missing_imports = true
+
 [dependency-groups]
 dev = [
     "fakeredis[lua]>=2.38.0",
@@ -45,4 +49,5 @@ dev = [
     "pytest>=9.1.1",
     "pytest-cov>=7.1.0",
     "ruff>=0.16.8",
+    "types-flask-socketio>=5.6.0.20260728",
 ]

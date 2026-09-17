@@ -14,7 +14,7 @@ def card_library(tmp_path: Path) -> CardLibrary:
 
 @pytest.fixture
 def game(card_library: CardLibrary) -> Game:
-    return Game.new("ABCD", card_library)
+    return Game.new("ABCD", card_library, creator_name="alice")
 
 
 @pytest.fixture

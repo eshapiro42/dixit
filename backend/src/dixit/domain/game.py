@@ -23,6 +23,7 @@ MIN_HUMAN_PLAYERS = 3
 class Game:
     id: str
     deck: Deck
+    creator_name: str
     players: list[Player] = field(default_factory=list)
     started: bool = False
     host_order: list[str] = field(default_factory=list)
@@ -31,8 +32,8 @@ class Game:
     previous_round: Round | None = None
 
     @classmethod
-    def new(cls, game_id: str, library: CardLibrary) -> Game:
-        return cls(id=game_id, deck=Deck.shuffled(library))
+    def new(cls, game_id: str, library: CardLibrary, creator_name: str) -> Game:
+        return cls(id=game_id, deck=Deck.shuffled(library), creator_name=creator_name)
 
     @property
     def cpu_players(self) -> list[Player]:
@@ -138,6 +139,7 @@ class Game:
         return {
             "id": self.id,
             "deck": self.deck.to_dict(),
+            "creator_name": self.creator_name,
             "players": [player.to_dict() for player in self.players],
             "started": self.started,
             "host_order": list(self.host_order),
@@ -151,6 +153,7 @@ class Game:
         return cls(
             id=data["id"],
             deck=Deck.from_dict(data["deck"]),
+            creator_name=data["creator_name"],
             players=[Player.from_dict(player) for player in data["players"]],
             started=data["started"],
             host_order=list(data["host_order"]),

@@ -209,6 +209,7 @@ dev = [
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "ruff" },
+    { name = "types-flask-socketio" },
 ]
 
 [package.metadata]
@@ -227,6 +228,7 @@ dev = [
     { name = "pytest", specifier = ">=9.1.1" },
     { name = "pytest-cov", specifier = ">=7.1.0" },
     { name = "ruff", specifier = ">=0.16.8" },
+    { name = "types-flask-socketio", specifier = ">=5.6.0.20260728" },
 ]
 
 [[package]]
@@ -795,6 +797,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/e8/c4/ba2f8066cceb6f23394729afe52f3bf7adec04bf9ed2c820b39e19299111/sortedcontainers-2.4.0.tar.gz", hash = "sha256:25caa5a06cc30b6b83d11423433f65d1f9d76c4c6a0c90e3379eaa43b9bfdb88", size = 30594, upload-time = "2021-05-16T22:03:42.897Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/32/46/9cb0e58b2deb7f82b84065f37f3bffeb12413f947f9388e4cac22c4621ce/sortedcontainers-2.4.0-py2.py3-none-any.whl", hash = "sha256:a163dcaede0f1c021485e957a39245190e74249897e2ae4b2aa38595db237ee0", size = 29575, upload-time = "2021-05-16T22:03:41.177Z" },
+]
+
+[[package]]
+name = "types-flask-socketio"
+version = "5.6.0.20260728"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "flask" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/94/bb/5d71bd6773370943c48b27a7b2df6f3527e270b69c4ca549a97beda85444/types_flask_socketio-5.6.0.20260728.tar.gz", hash = "sha256:5eebb72403677a7b73352d508e86f2bc97b371f17da7147a971e03f83a2fbfd5", size = 10103, upload-time = "2026-07-28T04:51:59.194Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4a/d4/a5032ffae5d0f3095c5a0968dbe2c4469152f82b95492a893347171962fe/types_flask_socketio-5.6.0.20260728-py3-none-any.whl", hash = "sha256:f8cf6f275ec5446df7d56e598146440a9cefcf5e8f40ca2afc080a0c806ef524", size = 10328, upload-time = "2026-07-28T04:51:58.359Z" },
 ]
 
 [[package]]

@@ -54,7 +54,7 @@ def test_transaction_raises_for_an_unknown_game(store: GameStore) -> None:
 def test_transaction_serializes_concurrent_mutations(store: GameStore, tmp_path) -> None:
     for i in range(300):
         (tmp_path / f"{i}.jpg").write_bytes(b"x")
-    game = Game.new("RACE", CardLibrary(tmp_path))
+    game = Game.new("RACE", CardLibrary(tmp_path), creator_name="alice")
     store.create(game)
     errors: list[Exception] = []
 

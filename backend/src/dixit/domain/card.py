@@ -13,12 +13,9 @@ class CardLibrary:
     """The full set of card images available to be dealt, read once from disk."""
 
     def __init__(self, cards_dir: Path) -> None:
-        self._cards_dir = cards_dir
+        self.directory = cards_dir
         self.cards = tuple(
             Card(id=path.name) for path in sorted(cards_dir.iterdir()) if path.is_file()
         )
         if not self.cards:
             raise ValueError(f"No card images found in {cards_dir}")
-
-    def image_path(self, card: Card) -> Path:
-        return self._cards_dir / card.id
