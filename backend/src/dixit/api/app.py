@@ -20,6 +20,9 @@ def create_app(config: Config | None = None) -> Flask:
 
     app = Flask(__name__)
     app.config["SECRET_KEY"] = config.secret_key
+    # Explicit rather than relying on browsers' own SameSite-by-default behavior.
+    # Not Secure: this app isn't guaranteed to be served over HTTPS.
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
     library = CardLibrary(config.cards_dir)
     store = RedisGameStore(redis.Redis.from_url(config.redis_url))
