@@ -13,3 +13,6 @@ FROM caddy:2-alpine
 
 COPY caddy/Caddyfile.production /etc/caddy/Caddyfile
 COPY --from=frontend-build /app/build /srv/frontend
+
+HEALTHCHECK --interval=5s --timeout=3s --start-period=10s --retries=12 \
+    CMD wget --spider -q http://localhost/ || exit 1
