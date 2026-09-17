@@ -38,6 +38,13 @@ def mulligan_available(round_: Round, player: Player) -> bool:
     return round_.phase == Phase.OTHERS_CHOOSING and player.name not in round_.table
 
 
+def has_played(round_: Round, player: Player) -> bool:
+    """Whether this player has already submitted a card this round. Hand size
+    can't tell you this: a play immediately draws a replacement.
+    """
+    return player.name in round_.table
+
+
 def public_view(game: Game) -> dict:
     """The shared view of a game: the same for every player, broadcast as `state`."""
     current = game.current_round
@@ -61,6 +68,7 @@ def private_view(game: Game, player: Player) -> dict:
         "is_creator": player.name == game.creator_name,
         "hand": [card.id for card in player.hand],
         "mulligan_available": mulligan_available(current, player) if current else False,
+        "has_played": has_played(current, player) if current else False,
     }
 
 
