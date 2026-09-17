@@ -96,8 +96,10 @@ def test_a_full_round_reaches_scoring_and_starts_the_next(app: Flask) -> None:
     )
     assert response.status_code == 200
 
+    played_card_ids = {}
     for other in others:
         hand = other.get("/api/session").get_json()["hand"]
+        played_card_ids[other] = hand[0]
         response = other.post("/api/session/play", json={"card_id": hand[0]})
         assert response.status_code == 200
 
@@ -107,7 +109,8 @@ def test_a_full_round_reaches_scoring_and_starts_the_next(app: Flask) -> None:
 
     for other in others:
         table = other.get("/api/session").get_json()["table"]
-        response = other.post("/api/session/vote", json={"card_id": table[0]})
+        vote_for = next(card_id for card_id in table if card_id != played_card_ids[other])
+        response = other.post("/api/session/vote", json={"card_id": vote_for})
         assert response.status_code == 200
 
     final_state = host.get("/api/session").get_json()
