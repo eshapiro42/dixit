@@ -59,6 +59,25 @@ def test_min_human_players_is_configurable(card_library: CardLibrary) -> None:
     assert game.started is True
 
 
+def test_a_solo_human_can_complete_a_round_against_cpus_alone(card_library: CardLibrary) -> None:
+    """With no other human, nobody else is ever around to trigger the CPUs'
+    choices and votes, so the host's own action has to resolve the whole round.
+    """
+    game = Game.new("ABCD", card_library, creator_name="alice", min_human_players=1)
+    host = game.add_player("alice")
+    for i in range(3):
+        game.add_player(f"CPU-{i}", is_cpu=True)
+    game.start()
+
+    scored = game.submit_host_choice(host, host.hand[0].id, "a prompt")
+
+    assert scored is True
+    assert game.current_round.is_scored
+    game.advance_round()
+    assert game.current_round.phase == Phase.HOST_CHOOSING
+    assert game.host.name == "alice"
+
+
 def test_start_only_selects_a_human_host(game: Game) -> None:
     for name in ("alice", "bob", "carol"):
         game.add_player(name)

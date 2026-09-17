@@ -224,6 +224,17 @@ def test_min_human_players_is_configurable(card_library) -> None:
     response = solo.post("/api/session/start")
     assert response.status_code == 200
 
+    state = solo.get("/api/session").get_json()
+    assert state["host"] == "alice"
+    response = solo.post(
+        "/api/session/host-choice", json={"card_id": state["hand"][0], "prompt": "a memory"}
+    )
+    assert response.status_code == 200
+
+    after = solo.get("/api/session").get_json()
+    assert after["phase"] == "host_choosing"
+    assert after["previous_round_outcome"]["host"] == "alice"
+
 
 def test_leaving_before_start_removes_the_player_and_clears_the_session(app: Flask) -> None:
     creator = app.test_client()

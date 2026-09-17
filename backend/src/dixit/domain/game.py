@@ -120,8 +120,23 @@ class Game:
         self.host_index += 1
         self.current_round = Round(host_name=host_name)
 
-    def submit_host_choice(self, player: Player, card_id: str, prompt: str) -> None:
-        self._active_round.host_choice(player, self.deck, card_id, prompt)
+    def submit_host_choice(self, player: Player, card_id: str, prompt: str) -> bool:
+        """Returns True if the round is now fully scored.
+
+        This only happens here when the host is the only human: with no other
+        human left to play a card or cast a vote, both steps resolve immediately
+        instead of waiting for a human action that will never come.
+        """
+        round_ = self._active_round
+        round_.host_choice(player, self.deck, card_id, prompt)
+        if not round_.all_humans_played(self.human_players):
+            return False
+        round_.resolve_cpu_choices(self.cpu_players, self.deck)
+        if not round_.all_humans_voted(self.human_players):
+            return False
+        round_.resolve_cpu_votes(self.cpu_players)
+        round_.score(self.players)
+        return True
 
     def submit_other_choice(self, player: Player, card_id: str) -> bool:
         """Returns True if every human has now played, and voting has begun."""

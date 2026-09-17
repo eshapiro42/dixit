@@ -124,8 +124,13 @@ def build_routes_blueprint(
             raise DixitError("A prompt is required.")
         with store.transaction(game_id) as game:
             player = game.player(player_name)
-            game.submit_host_choice(player, card_id, prompt)
+            scored = game.submit_host_choice(player, card_id, prompt)
+            finished_round = game.current_round if scored else None
+            if scored:
+                game.advance_round()
         notifier.message(game_id, f'{player_name}\'s prompt: "{prompt}"', emphasis=True)
+        if finished_round is not None:
+            notifier.round_finished(game_id, finished_round)
         notifier.state_changed(game)
         return jsonify(ok=True)
 
