@@ -57,7 +57,6 @@
 		<PageShell>
 			<div class="lobby">
 				<h1>Dixit</h1>
-				<p class="quiet">Gather storytellers, then create or join a game.</p>
 
 				<ErrorBanner message={gameState.error} ondismiss={() => gameState.clearError()} />
 
@@ -95,11 +94,11 @@
 		</PageShell>
 	{:else}
 		<PageShell>
-			<PromptBar phase={view.phase} host={view.host} prompt={view.prompt} />
 			<ErrorBanner message={gameState.error} ondismiss={() => gameState.clearError()} />
 
 			<div class="layout">
-				<div class="main">
+				<div class="main panel">
+					<PromptBar phase={view.phase} host={view.host} prompt={view.prompt} />
 					{#if showOutcome && gameState.lastOutcome}
 						<Outcome outcome={gameState.lastOutcome} ondismiss={() => (showOutcome = false)} />
 					{:else if !view.started}
@@ -127,14 +126,16 @@
 					{/if}
 				</div>
 
-				<aside>
+				<aside class="panel">
 					<h2>Scores</h2>
 					<ScoreBoard players={view.players} hostName={view.host} />
 					<h2>Log</h2>
 					<div class="log">
 						<MessageLog messages={gameState.messages} />
 					</div>
-					<Button kind="ghost" onclick={leaveGame}>Leave game</Button>
+					<div class="leave">
+						<Button kind="secondary" onclick={leaveGame}>Leave game</Button>
+					</div>
 				</aside>
 			</div>
 		</PageShell>
@@ -150,8 +151,7 @@
 		gap: var(--space-2);
 	}
 
-	.lobby h1,
-	.lobby > p {
+	.lobby h1 {
 		text-align: center;
 	}
 
@@ -189,20 +189,38 @@
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
 		gap: var(--space-6);
+		align-items: start;
 	}
 
 	@media (min-width: 720px) {
 		.layout {
-			grid-template-columns: minmax(0, 1fr) 260px;
+			grid-template-columns: minmax(0, 1fr) 280px;
 		}
+	}
+
+	.panel {
+		background: var(--color-surface);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-sm);
+		padding: var(--space-6);
 	}
 
 	aside h2 {
 		font-size: var(--size-md);
+		margin: 0 0 var(--space-2);
+	}
+
+	aside h2:not(:first-child) {
 		margin-top: var(--space-4);
 	}
 
 	.log {
 		max-height: 220px;
+	}
+
+	.leave {
+		margin-top: var(--space-6);
+		padding-top: var(--space-4);
+		border-top: 1px solid var(--color-border);
 	}
 </style>

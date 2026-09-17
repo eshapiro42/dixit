@@ -21,7 +21,6 @@
 {#if isHost}
 	<section>
 		<h2>Votes are coming in</h2>
-		<p class="quiet">You wrote this round's prompt, so you don't vote.</p>
 	</section>
 {:else if view.has_voted}
 	<section>

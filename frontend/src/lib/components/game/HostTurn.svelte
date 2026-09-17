@@ -27,7 +27,6 @@
 
 <section>
 	<h2>Your turn to set the scene</h2>
-	<p class="quiet">Pick a card, then write a prompt that hints at it without giving it away.</p>
 
 	<CardRow
 		cardIds={view.hand}

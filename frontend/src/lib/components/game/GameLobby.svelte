@@ -8,7 +8,6 @@
 
 <section>
 	<h2>Game code: <span class="numeric">{view.game_id}</span></h2>
-	<p class="quiet">Share this code so others can join.</p>
 
 	<ul class="players">
 		{#each view.players as player (player.name)}

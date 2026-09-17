@@ -19,12 +19,9 @@
 
 <style>
 	.bar {
-		position: sticky;
-		top: 0;
-		z-index: 10;
-		background: var(--color-surface);
 		border-bottom: 1px solid var(--color-border);
-		padding: var(--space-3) var(--space-4);
+		padding-bottom: var(--space-3);
+		margin-bottom: var(--space-4);
 	}
 
 	.label {
