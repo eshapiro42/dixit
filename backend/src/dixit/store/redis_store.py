@@ -31,7 +31,11 @@ class RedisGameStore:
         with self._client.lock(self._lock_key(game_id), timeout=10, blocking_timeout=5):
             game = self._load(game_id)
             yield game
-            self._save(game)
+            # xx=True: only overwrite a key that still exists, so a game deleted
+            # or expired during the transaction is reported rather than silently
+            # resurrected with a fresh TTL.
+            if not self._save(game, xx=True):
+                raise GameNotFoundError(game_id)
 
     def _load(self, game_id: str) -> Game:
         raw = self._client.get(self._key(game_id))
@@ -39,8 +43,11 @@ class RedisGameStore:
             raise GameNotFoundError(game_id)
         return Game.from_dict(json.loads(raw))
 
-    def _save(self, game: Game) -> None:
-        self._client.set(self._key(game.id), json.dumps(game.to_dict()), ex=self._ttl_seconds)
+    def _save(self, game: Game, *, xx: bool = False) -> bool:
+        result = self._client.set(
+            self._key(game.id), json.dumps(game.to_dict()), ex=self._ttl_seconds, xx=xx
+        )
+        return bool(result)
 
     @staticmethod
     def _key(game_id: str) -> str:

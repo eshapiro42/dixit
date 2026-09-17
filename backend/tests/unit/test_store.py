@@ -75,3 +75,18 @@ def test_transaction_serializes_concurrent_mutations(store: GameStore, tmp_path)
     assert not errors
     with store.transaction("RACE") as final:
         assert final.num_players == 40
+
+
+def test_redis_transaction_does_not_resurrect_a_key_deleted_mid_transaction(
+    game: Game,
+) -> None:
+    client = fakeredis.FakeRedis()
+    store = RedisGameStore(client)
+    store.create(game)
+
+    with pytest.raises(GameNotFoundError):
+        with store.transaction(game.id) as loaded:
+            loaded.add_player("alice")
+            client.delete(f"dixit:game:{game.id}")
+
+    assert not store.exists(game.id)
