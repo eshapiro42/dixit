@@ -55,35 +55,43 @@
 {#if !checkingSession}
 	{#if !view}
 		<PageShell>
-			<h1>Dixit</h1>
-			<p class="quiet">Gather storytellers, then create or join a game.</p>
+			<div class="lobby">
+				<h1>Dixit</h1>
+				<p class="quiet">Gather storytellers, then create or join a game.</p>
 
-			<ErrorBanner message={gameState.error} ondismiss={() => gameState.clearError()} />
+				<ErrorBanner message={gameState.error} ondismiss={() => gameState.clearError()} />
 
-			<div class="tabs" role="tablist">
-				<button
-					type="button"
-					role="tab"
-					aria-selected={mode === 'create'}
-					onclick={() => (mode = 'create')}>Create a game</button
-				>
-				<button
-					type="button"
-					role="tab"
-					aria-selected={mode === 'join'}
-					onclick={() => (mode = 'join')}>Join a game</button
-				>
+				<div class="tabs" role="tablist">
+					<button
+						type="button"
+						role="tab"
+						aria-selected={mode === 'create'}
+						onclick={() => (mode = 'create')}>Create a game</button
+					>
+					<button
+						type="button"
+						role="tab"
+						aria-selected={mode === 'join'}
+						onclick={() => (mode = 'join')}>Join a game</button
+					>
+				</div>
+
+				<form onsubmit={submitLobbyForm}>
+					{#if mode === 'join'}
+						<Field id="game-id" label="Game code" bind:value={gameId} required maxlength={4} />
+					{/if}
+					<Field
+						id="player-name"
+						label="Your name"
+						bind:value={playerName}
+						required
+						maxlength={32}
+					/>
+					<Button type="submit" disabled={submitting || !playerName.trim()}>
+						{mode === 'create' ? 'Create game' : 'Join game'}
+					</Button>
+				</form>
 			</div>
-
-			<form onsubmit={submitLobbyForm}>
-				{#if mode === 'join'}
-					<Field id="game-id" label="Game code" bind:value={gameId} required maxlength={4} />
-				{/if}
-				<Field id="player-name" label="Your name" bind:value={playerName} required maxlength={32} />
-				<Button type="submit" disabled={submitting || !playerName.trim()}>
-					{mode === 'create' ? 'Create game' : 'Join game'}
-				</Button>
-			</form>
 		</PageShell>
 	{:else}
 		<PageShell>
@@ -134,6 +142,19 @@
 {/if}
 
 <style>
+	.lobby {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding-top: 15vh;
+		gap: var(--space-2);
+	}
+
+	.lobby h1,
+	.lobby > p {
+		text-align: center;
+	}
+
 	.tabs {
 		display: flex;
 		gap: var(--space-2);
