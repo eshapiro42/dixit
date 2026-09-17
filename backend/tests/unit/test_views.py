@@ -82,6 +82,14 @@ def test_public_view_never_leaks_a_hand_or_votes(started_game) -> None:
     assert "votes" not in public
 
 
+def test_public_view_carries_the_configured_player_minimums(card_library) -> None:
+    from dixit.domain import MIN_PLAYERS, Game
+
+    game = Game.new("ABCD", card_library, creator_name="alice", min_human_players=1)
+    assert views.public_view(game)["min_human_players"] == 1
+    assert views.public_view(game)["min_players"] == MIN_PLAYERS
+
+
 def test_private_view_carries_only_the_viewers_hand(started_game) -> None:
     viewer = started_game.human_players[0]
     private = views.private_view(started_game, viewer)

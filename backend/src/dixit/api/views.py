@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import random
 
-from dixit.domain import Game, Phase, Player, Round
+from dixit.domain import MIN_PLAYERS, Game, Phase, Player, Round
 
 
 def player_summary(player: Player) -> dict:
@@ -56,6 +56,8 @@ def public_view(game: Game) -> dict:
         "game_id": game.id,
         "started": game.started,
         "playable": game.playable,
+        "min_players": MIN_PLAYERS,
+        "min_human_players": game.min_human_players,
         "players": [player_summary(p) for p in game.players],
         "phase": current.phase.value if current else None,
         "host": current.host_name if current else None,

@@ -8,9 +8,16 @@ class GameState {
 	view = $state<SessionView | null>(null);
 	messages = $state<GameMessage[]>([]);
 	lastOutcome = $state<RoundOutcome | null>(null);
+	/** True only when lastOutcome arrived live, so the UI can pop it open
+	 * automatically without also re-showing history on every page reload.
+	 */
+	outcomeIsFresh = $state(false);
 	error = $state<string | null>(null);
 
 	private connected = false;
+	// Bumped by enterSession/leaveGame so a run() call that resolves after the
+	// session has already moved on doesn't apply its result to the new session.
+	private generation = 0;
 
 	get inGame(): boolean {
 		return this.view !== null;
@@ -21,19 +28,21 @@ class GameState {
 	}
 
 	async createGame(playerName: string): Promise<void> {
-		await this.run(async () => this.enterSession(await api.createGame(playerName)));
+		await this.run(async () => this.enterSession(await api.createGame(playerName), true));
 	}
 
 	async joinGame(gameId: string, playerName: string): Promise<void> {
-		await this.run(async () => this.enterSession(await api.joinGame(gameId, playerName)));
+		await this.run(async () => this.enterSession(await api.joinGame(gameId, playerName), true));
 	}
 
-	/** Silently recover an existing session (e.g. after a page reload). No session yet is
-	 * the expected outcome for a first-time visitor, not an error worth showing.
+	/** Silently recover the session: on first load (no view yet) or after a
+	 * socket reconnect (view already present, so history is kept rather than
+	 * wiped by what's really just a resync). No session yet is the expected
+	 * outcome for a first-time visitor, not an error worth showing.
 	 */
 	async tryResume(): Promise<boolean> {
 		try {
-			this.enterSession(await api.session());
+			this.enterSession(await api.session(), !this.inGame);
 			return true;
 		} catch {
 			return false;
@@ -68,6 +77,7 @@ class GameState {
 	 * locally even if the request fails: there's nothing useful to retry here.
 	 */
 	async leaveGame(): Promise<void> {
+		this.generation++;
 		try {
 			await api.leave();
 		} catch {
@@ -78,13 +88,18 @@ class GameState {
 		this.view = null;
 		this.messages = [];
 		this.lastOutcome = null;
+		this.outcomeIsFresh = false;
 		this.error = null;
 	}
 
-	private enterSession(view: SessionView): void {
+	private enterSession(view: SessionView, resetHistory: boolean): void {
+		this.generation++;
 		this.view = view;
-		this.messages = [];
-		this.lastOutcome = view.previous_round_outcome;
+		if (resetHistory) {
+			this.messages = [];
+			this.lastOutcome = view.previous_round_outcome;
+			this.outcomeIsFresh = false;
+		}
 		if (!this.connected) {
 			this.subscribe();
 			this.connected = true;
@@ -93,6 +108,9 @@ class GameState {
 
 	private subscribe(): void {
 		const socket = connectSocket();
+		socket.on('connect', () => {
+			this.tryResume();
+		});
 		socket.on('state', (data) => {
 			if (this.view) Object.assign(this.view, data);
 		});
@@ -101,6 +119,7 @@ class GameState {
 		});
 		socket.on('round_outcome', (data) => {
 			this.lastOutcome = data;
+			this.outcomeIsFresh = true;
 		});
 		socket.on('message', (data) => {
 			this.messages.push(data);
@@ -109,10 +128,12 @@ class GameState {
 	}
 
 	private async run<T>(action: () => Promise<T>): Promise<T | undefined> {
+		const generation = this.generation;
 		this.error = null;
 		try {
 			return await action();
 		} catch (err) {
+			if (this.generation !== generation) return undefined;
 			this.error = err instanceof ApiError ? err.message : 'Something went wrong.';
 			return undefined;
 		}

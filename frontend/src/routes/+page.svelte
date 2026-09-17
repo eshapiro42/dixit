@@ -40,7 +40,7 @@
 	let showOutcome = $state(false);
 
 	$effect(() => {
-		if (gameState.lastOutcome) showOutcome = true;
+		if (gameState.lastOutcome && gameState.outcomeIsFresh) showOutcome = true;
 	});
 
 	let view = $derived(gameState.view);

@@ -17,7 +17,8 @@
 			<span class="name">
 				{player.name}
 				{#if player.name === hostName}
-					<span class="badge" title="Storyteller this round">✎</span>
+					<span class="badge" aria-hidden="true">✎</span>
+					<span class="sr-only">(Storyteller this round)</span>
 				{/if}
 				{#if player.is_cpu}<span class="quiet">· CPU</span>{/if}
 			</span>

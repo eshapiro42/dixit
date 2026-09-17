@@ -13,7 +13,7 @@
 </script>
 
 <div class="row" role="list">
-	{#each cardIds as cardId (cardId)}
+	{#each cardIds as cardId, index (cardId)}
 		<div class="slot" role="listitem">
 			<Card
 				{cardId}
@@ -21,6 +21,7 @@
 				{selectable}
 				onselect={() => onselect?.(cardId)}
 				label={labels?.[cardId]}
+				accessibleLabel={labels?.[cardId] ?? `Card ${index + 1} of ${cardIds.length}`}
 			/>
 		</div>
 	{/each}

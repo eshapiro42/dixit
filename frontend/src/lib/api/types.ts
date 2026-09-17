@@ -17,6 +17,8 @@ export interface PublicView {
 	game_id: string;
 	started: boolean;
 	playable: boolean;
+	min_players: number;
+	min_human_players: number;
 	players: PlayerSummary[];
 	phase: Phase | null;
 	host: string | null;

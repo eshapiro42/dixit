@@ -7,13 +7,28 @@
 		selectable?: boolean;
 		onselect?: () => void;
 		label?: string;
+		accessibleLabel?: string;
 	}
 
-	let { cardId, selected = false, selectable = false, onselect, label }: Props = $props();
+	let {
+		cardId,
+		selected = false,
+		selectable = false,
+		onselect,
+		label,
+		accessibleLabel
+	}: Props = $props();
 </script>
 
 {#if selectable}
-	<button type="button" class="card" class:selected onclick={onselect} aria-pressed={selected}>
+	<button
+		type="button"
+		class="card"
+		class:selected
+		onclick={onselect}
+		aria-pressed={selected}
+		aria-label={accessibleLabel ?? label ?? 'Card'}
+	>
 		<img src={api.cardImageUrl(cardId)} alt="" loading="lazy" />
 	</button>
 {:else}

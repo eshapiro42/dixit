@@ -24,7 +24,9 @@
 			<Button disabled={!view.playable} onclick={() => gameState.start()}>Start game</Button>
 		</div>
 		{#if !view.playable}
-			<p class="quiet">Need at least four players, three of them human.</p>
+			<p class="quiet">
+				Need at least {view.min_players} players, {view.min_human_players} of them human.
+			</p>
 		{/if}
 	{:else}
 		<p class="quiet">Waiting for the host to start the game.</p>
