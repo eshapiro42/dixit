@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { GameMessage } from '../api/types';
+	import Button from './Button.svelte';
 
 	interface Props {
 		messages: GameMessage[];
@@ -15,7 +16,7 @@
 	let listEl: HTMLElement | undefined;
 	// Only follow new messages while already reading the bottom of the log;
 	// once the user scrolls up to read history, leave them where they are.
-	let stickToBottom = true;
+	let stickToBottom = $state(true);
 	// Which round groups the user has manually toggled, overriding the default
 	// (every past round collapsed, the round in progress expanded).
 	let openOverrides = $state<Record<number, boolean>>({});
@@ -24,6 +25,11 @@
 		if (!listEl) return;
 		const distanceFromBottom = listEl.scrollHeight - listEl.scrollTop - listEl.clientHeight;
 		stickToBottom = distanceFromBottom < 16;
+	}
+
+	function jumpToLatest(): void {
+		stickToBottom = true;
+		listEl?.scrollTo({ top: listEl.scrollHeight, behavior: 'smooth' });
 	}
 
 	$effect(() => {
@@ -58,39 +64,68 @@
 	}
 </script>
 
-<div class="log" bind:this={listEl} onscroll={trackScrollPosition}>
-	{#each groups as group, index (index)}
-		<section class="group" class:round={group.isRound}>
-			{#if group.isRound}
-				<button
-					type="button"
-					class="round-toggle"
-					class:current={index === groups.length - 1}
-					aria-expanded={isOpen(index)}
-					onclick={() => toggle(index)}
-				>
-					<span class="chevron" class:open={isOpen(index)} aria-hidden="true">&#9656;</span>
-					<span class="round-title">Round {group.roundNumber}</span>
-					<span class="count numeric">{group.messages.length}</span>
-				</button>
-			{/if}
-			{#if !group.isRound || isOpen(index)}
-				<div class="messages">
-					{#each group.messages as message, messageIndex (messageIndex)}
-						<p class:emphasis={message.emphasis}>{message.text}</p>
-					{/each}
-				</div>
-			{/if}
-		</section>
-	{/each}
+<div class="log-wrapper">
+	<div class="log" bind:this={listEl} onscroll={trackScrollPosition}>
+		{#each groups as group, index (index)}
+			<section class="group" class:round={group.isRound}>
+				{#if group.isRound}
+					<button
+						type="button"
+						class="round-toggle"
+						class:current={index === groups.length - 1}
+						aria-expanded={isOpen(index)}
+						onclick={() => toggle(index)}
+					>
+						<span class="chevron" class:open={isOpen(index)} aria-hidden="true">&#9656;</span>
+						<span class="round-title">Round {group.roundNumber}</span>
+						<span class="count numeric">{group.messages.length}</span>
+					</button>
+				{/if}
+				{#if !group.isRound || isOpen(index)}
+					<div class="messages">
+						{#each group.messages as message, messageIndex (messageIndex)}
+							<p class:emphasis={message.emphasis}>{message.text}</p>
+						{/each}
+					</div>
+				{/if}
+			</section>
+		{/each}
+	</div>
+	{#if !stickToBottom && messages.length > 0}
+		<div class="jump-to-latest">
+			<Button kind="secondary" onclick={jumpToLatest}>&darr; Jump to latest</Button>
+		</div>
+	{/if}
 </div>
 
 <style>
-	.log {
+	/* A flex item of Dialog's .content, which is itself a bounded-height flex
+	 * column: min-height: 0 is what lets this actually shrink to fit instead
+	 * of growing to its content's full height, so .log below gets a real
+	 * boundary to scroll within instead of leaving that to .content.
+	 */
+	.log-wrapper {
+		position: relative;
 		display: flex;
 		flex-direction: column;
+		flex: 1 1 auto;
+		min-height: 0;
+	}
+
+	.log {
+		--icon-col: 1.25rem;
+		/* Where the round's connecting rule sits: under the chevron's center. */
+		--rule-x: calc(var(--space-2) + var(--icon-col) / 2);
+		/* Where message text sits: clearly past the round title's own indent
+		 * (button padding + icon column + its gap to the title), so a round's
+		 * messages always read as nested deeper than the "Round N" heading. */
+		--text-x: calc(var(--space-2) + var(--icon-col) + var(--space-2) + var(--space-3));
+
+		display: flex;
+		flex-direction: column;
+		flex: 1 1 auto;
+		min-height: 0;
 		overflow-y: auto;
-		max-height: 100%;
 		font-size: var(--size-sm);
 	}
 
@@ -102,7 +137,9 @@
 	}
 
 	.round .messages {
-		padding-left: calc(var(--size-md) + var(--space-2));
+		margin-left: var(--rule-x);
+		padding-left: calc(var(--text-x) - var(--rule-x));
+		border-left: 1px solid var(--color-border);
 	}
 
 	p {
@@ -144,7 +181,10 @@
 
 	.chevron {
 		display: inline-flex;
+		align-items: center;
+		justify-content: center;
 		flex-shrink: 0;
+		width: var(--icon-col);
 		font-size: var(--size-md);
 		color: var(--color-accent);
 		transition: transform 0.15s ease;
@@ -168,5 +208,12 @@
 		font-size: var(--size-xs);
 		font-weight: 600;
 		text-align: center;
+	}
+
+	.jump-to-latest {
+		position: absolute;
+		bottom: var(--space-2);
+		left: 50%;
+		transform: translateX(-50%);
 	}
 </style>

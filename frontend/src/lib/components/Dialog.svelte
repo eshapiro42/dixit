@@ -65,6 +65,8 @@
 	}
 
 	.content {
+		display: flex;
+		flex-direction: column;
 		max-height: 60vh;
 		overflow-y: auto;
 	}
