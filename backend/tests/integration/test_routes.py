@@ -356,10 +356,42 @@ def test_solo_game_log_covers_the_full_round_lifecycle(card_library) -> None:
     assert "The game has started." in texts
     assert texts.count("It is alice's turn to choose a card and give a prompt.") == 2
     assert 'alice\'s prompt: "a memory"' in texts
-    assert sum(text.endswith("played a card.") for text in texts) == 3
+    assert "CPU-1, CPU-2, and CPU-3 played cards." in texts
 
     after = solo.get("/api/session").get_json()
     outcome = after["previous_round_outcome"]
     assert outcome["host"] == "alice"
     assert set(outcome["votes"]).issubset({"CPU-1", "CPU-2", "CPU-3"})
     assert len(outcome["votes"]) == 3
+
+
+def test_two_cpus_playing_together_are_joined_with_and(card_library) -> None:
+    flask_app = Flask(__name__)
+    flask_app.config.update(SECRET_KEY="test", TESTING=True)
+    broadcaster = FakeBroadcaster()
+    notifier = GameNotifier(broadcaster)
+    blueprint = build_routes_blueprint(
+        store=InMemoryGameStore(), library=card_library, notifier=notifier, min_human_players=1
+    )
+    flask_app.register_blueprint(blueprint)
+    register_error_handlers(flask_app)
+
+    alice = flask_app.test_client()
+    created = create_game(alice, "alice")
+    bob = flask_app.test_client()
+    join_game(bob, created["game_id"], "bob")
+    for _ in range(2):
+        alice.post("/api/session/add-cpu")
+    alice.post("/api/session/start")
+
+    clients = {"alice": alice, "bob": bob}
+    host_name, host = _current_host(clients)
+    other = next(c for name, c in clients.items() if name != host_name)
+
+    host_hand = host.get("/api/session").get_json()["hand"]
+    host.post("/api/session/host-choice", json={"card_id": host_hand[0], "prompt": "a memory"})
+    other_hand = other.get("/api/session").get_json()["hand"]
+    other.post("/api/session/play", json={"card_id": other_hand[0]})
+
+    texts = [e.payload["text"] for e in broadcaster.emissions if e.event == "message"]
+    assert "CPU-1 and CPU-2 played cards." in texts

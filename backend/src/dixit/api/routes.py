@@ -91,6 +91,15 @@ def build_routes_blueprint(
             return []
         return [name for name in round_.table if name not in before and game.player(name).is_cpu]
 
+    def played_message(names: list[str]) -> str | None:
+        if not names:
+            return None
+        if len(names) == 1:
+            return f"{names[0]} played a card."
+        if len(names) == 2:
+            return f"{names[0]} and {names[1]} played cards."
+        return f"{', '.join(names[:-1])}, and {names[-1]} played cards."
+
     def new_game_id() -> str:
         game_id = "".join(random.choices(GAME_ID_ALPHABET, k=GAME_ID_LENGTH))
         while store.exists(game_id):
@@ -192,9 +201,10 @@ def build_routes_blueprint(
             finished_round = round_ if scored else None
             next_phase = round_.phase if round_ and not scored else None
             cpus_played = cpus_played_since(game, before)
+            played = played_message(cpus_played)
             game.log(f'{player_name}\'s prompt: "{prompt}"', emphasis=True)
-            for cpu_name in cpus_played:
-                game.log(f"{cpu_name} played a card.")
+            if played:
+                game.log(played)
             announcement = phase_announcement(next_phase) if next_phase else None
             if announcement:
                 game.log(announcement)
@@ -202,8 +212,8 @@ def build_routes_blueprint(
                 game.advance_round()
                 log_next_host(game)
         notifier.message(game_id, f'{player_name}\'s prompt: "{prompt}"', emphasis=True)
-        for cpu_name in cpus_played:
-            notifier.message(game_id, f"{cpu_name} played a card.")
+        if played:
+            notifier.message(game_id, played)
         if announcement:
             notifier.message(game_id, announcement)
         if finished_round is not None:
@@ -225,9 +235,10 @@ def build_routes_blueprint(
             finished_round = round_ if scored else None
             next_phase = round_.phase if round_ and not scored else None
             cpus_played = cpus_played_since(game, before)
+            played = played_message(cpus_played)
             game.log(f"{player_name} played a card.")
-            for cpu_name in cpus_played:
-                game.log(f"{cpu_name} played a card.")
+            if played:
+                game.log(played)
             announcement = phase_announcement(next_phase) if next_phase else None
             if announcement:
                 game.log(announcement)
@@ -235,8 +246,8 @@ def build_routes_blueprint(
                 game.advance_round()
                 log_next_host(game)
         notifier.message(game_id, f"{player_name} played a card.")
-        for cpu_name in cpus_played:
-            notifier.message(game_id, f"{cpu_name} played a card.")
+        if played:
+            notifier.message(game_id, played)
         if announcement:
             notifier.message(game_id, announcement)
         if finished_round is not None:
