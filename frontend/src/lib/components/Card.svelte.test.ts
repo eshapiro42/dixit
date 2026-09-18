@@ -23,4 +23,19 @@ describe('Card', () => {
 		const screen = render(Card, { cardId: '1.jpg' });
 		expect(screen.container.querySelector('button')).toBeNull();
 	});
+
+	it('shows a checkmark only when selected', () => {
+		const screen = render(Card, { cardId: '1.jpg', selectable: true, selected: true });
+		expect(screen.container.querySelector('.check')).not.toBeNull();
+	});
+
+	it('renders a score delta badge when one is given', () => {
+		const screen = render(Card, { cardId: '1.jpg', delta: 3 });
+		expect(screen.container.querySelector('.delta')?.textContent).toBe('+3');
+	});
+
+	it('omits the delta badge when none is given', () => {
+		const screen = render(Card, { cardId: '1.jpg' });
+		expect(screen.container.querySelector('.delta')).toBeNull();
+	});
 });

@@ -23,4 +23,10 @@
 	.shell.wide {
 		max-width: 1400px;
 	}
+
+	@media (max-width: 480px) {
+		.shell {
+			padding: var(--space-2);
+		}
+	}
 </style>

@@ -8,13 +8,16 @@ export interface PlayerSummary {
 
 export interface RoundOutcome {
 	host: string;
+	round_number: number;
 	prompt: string | null;
 	table: Record<string, string>;
 	votes: Record<string, string>;
+	scores: Record<string, number>;
 }
 
 export interface PublicView {
 	game_id: string;
+	creator_name: string;
 	started: boolean;
 	playable: boolean;
 	min_players: number;
@@ -24,6 +27,8 @@ export interface PublicView {
 	host: string | null;
 	prompt: string | null;
 	table: string[] | null;
+	votes_cast: number;
+	votes_needed: number;
 }
 
 export interface PrivateView {

@@ -8,6 +8,7 @@
 	import PageShell from '$lib/components/PageShell.svelte';
 	import ScoreBoard from '$lib/components/ScoreBoard.svelte';
 	import TopBar from '$lib/components/TopBar.svelte';
+	import Waiting from '$lib/components/Waiting.svelte';
 	import GameLobby from '$lib/components/game/GameLobby.svelte';
 	import HostTurn from '$lib/components/game/HostTurn.svelte';
 	import Outcome from '$lib/components/game/Outcome.svelte';
@@ -95,7 +96,7 @@
 						maxlength={32}
 					/>
 					<Button type="submit" disabled={submitting || !playerName.trim()}>
-						{mode === 'create' ? "Let's Groove It" : "Let's Move It"}
+						{mode === 'create' ? "Let's Move It" : "Let's Groove It"}
 					</Button>
 				</form>
 			</div>
@@ -112,15 +113,11 @@
 						{#if isHost}
 							<HostTurn {view} />
 						{:else}
-							<section>
-								<h2>Waiting</h2>
-							</section>
+							<Waiting detail="Waiting for {view.host} to write a prompt." />
 						{/if}
 					{:else if view.phase === 'others_choosing'}
 						{#if isHost}
-							<section>
-								<h2>Waiting</h2>
-							</section>
+							<Waiting detail="Waiting for the other players to choose a card." />
 						{:else}
 							<OtherTurn {view} />
 						{/if}
@@ -129,14 +126,16 @@
 					{/if}
 
 					{#if view.phase !== 'voting' && gameState.lastOutcome}
-						<Outcome outcome={gameState.lastOutcome} />
+						<Outcome outcome={gameState.lastOutcome} players={view.players} />
 					{/if}
 				{/if}
 			</div>
 
-			<div class="panel score-panel">
-				<ScoreBoard players={view.players} hostName={view.host} />
-			</div>
+			{#if view.started}
+				<div class="panel score-panel">
+					<ScoreBoard players={view.players} hostName={view.host} />
+				</div>
+			{/if}
 
 			<Dialog title="Game Log" open={logOpen} onclose={() => (logOpen = false)}>
 				<MessageLog messages={gameState.messages} />
@@ -195,5 +194,15 @@
 
 	.score-panel {
 		padding: var(--space-4) var(--space-6);
+	}
+
+	@media (max-width: 480px) {
+		.panel {
+			padding: var(--space-4);
+		}
+
+		.score-panel {
+			padding: var(--space-3) var(--space-4);
+		}
 	}
 </style>

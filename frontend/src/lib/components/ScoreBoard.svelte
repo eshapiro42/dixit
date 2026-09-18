@@ -64,4 +64,20 @@
 		font-weight: 600;
 		font-size: var(--size-lg);
 	}
+
+	/* Equal-width columns look good with a handful of players, but crush names
+	 * once there are many on a narrow screen; fall back to natural sizing plus
+	 * horizontal scroll instead of shrinking text to fit.
+	 */
+	@media (max-width: 480px) {
+		table {
+			table-layout: auto;
+		}
+
+		th,
+		td {
+			width: auto;
+			padding: var(--space-2) var(--space-3);
+		}
+	}
 </style>

@@ -18,7 +18,7 @@
 		<h1 class="wordmark">Dixit</h1>
 		{#if view}
 			{#key view.phase}
-				<p class="status">{phaseLabel(view.phase, view.host, view.prompt)}</p>
+				<p class="status">{phaseLabel(view.phase, view.host)}</p>
 			{/key}
 			<div class="meta">
 				<span class="quiet numeric">Game ID: {view.game_id}</span>
@@ -70,6 +70,23 @@
 		gap: var(--space-3);
 		flex-shrink: 0;
 		margin-left: auto;
+	}
+
+	.meta > :global(*) {
+		white-space: nowrap;
+	}
+
+	@media (max-width: 480px) {
+		.inner {
+			padding: var(--space-2) var(--space-3);
+		}
+
+		.meta {
+			flex-basis: 100%;
+			flex-wrap: wrap;
+			margin-left: 0;
+			justify-content: flex-start;
+		}
 	}
 
 	@keyframes settle {

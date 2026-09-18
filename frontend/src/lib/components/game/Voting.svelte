@@ -3,6 +3,8 @@
 	import { gameState } from '../../game/state.svelte';
 	import Button from '../Button.svelte';
 	import CardRow from '../CardRow.svelte';
+	import Clue from '../Clue.svelte';
+	import Waiting from '../Waiting.svelte';
 
 	let { view }: { view: SessionView } = $props();
 	let selected = $state<string | null>(null);
@@ -19,16 +21,14 @@
 </script>
 
 {#if isHost}
-	<section>
-		<h2>Waiting</h2>
-	</section>
+	<Waiting detail="Waiting for votes ({view.votes_cast} of {view.votes_needed})." />
 {:else if view.has_voted}
-	<section>
-		<h2>Waiting</h2>
-		<p class="quiet">Waiting for the other players to vote.</p>
-	</section>
+	<Waiting detail="Waiting for the other players to vote." />
 {:else}
 	<section class="action-needed">
+		{#if view.host && view.prompt}
+			<Clue host={view.host} prompt={view.prompt} />
+		{/if}
 		<h2>Table</h2>
 		<CardRow
 			cardIds={view.table ?? []}

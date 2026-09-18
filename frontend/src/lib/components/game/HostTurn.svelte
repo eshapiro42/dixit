@@ -3,12 +3,14 @@
 	import { gameState } from '../../game/state.svelte';
 	import Button from '../Button.svelte';
 	import CardRow from '../CardRow.svelte';
+	import ConfirmDialog from '../ConfirmDialog.svelte';
 
 	let { view }: { view: SessionView } = $props();
 
 	let selected = $state<string | null>(null);
 	let prompt = $state('');
 	let submitting = $state(false);
+	let confirmingMulligan = $state(false);
 
 	// A solo-host round resolves entirely server-side, so this component never
 	// remounts between rounds; clear a selection once its card leaves the hand.
@@ -27,9 +29,14 @@
 		submitting = false;
 	}
 
-	async function mulligan(): Promise<void> {
+	function askMulligan(): void {
 		if (!selected) return;
-		if (!confirm('This will discard the selected card and draw a replacement.')) return;
+		confirmingMulligan = true;
+	}
+
+	async function confirmMulligan(): Promise<void> {
+		confirmingMulligan = false;
+		if (!selected) return;
 		await gameState.mulligan(selected);
 		selected = null;
 	}
@@ -49,7 +56,7 @@
 		<input type="text" bind:value={prompt} placeholder="Your prompt" maxlength="200" required />
 		<div class="actions">
 			{#if view.mulligan_available}
-				<Button kind="ghost" disabled={!selected} onclick={mulligan}>Mulligan</Button>
+				<Button kind="ghost" disabled={!selected} onclick={askMulligan}>Mulligan</Button>
 			{/if}
 			<Button type="submit" disabled={submitting || !selected || !prompt.trim()}
 				>Submit Choice</Button
@@ -57,6 +64,15 @@
 		</div>
 	</form>
 </section>
+
+<ConfirmDialog
+	open={confirmingMulligan}
+	title="Mulligan"
+	message="This will discard the selected card and draw a replacement."
+	confirmLabel="Mulligan"
+	onconfirm={confirmMulligan}
+	oncancel={() => (confirmingMulligan = false)}
+/>
 
 <style>
 	form {
