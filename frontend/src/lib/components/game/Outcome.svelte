@@ -1,33 +1,32 @@
 <script lang="ts">
 	import type { RoundOutcome } from '../../api/types';
-	import Button from '../Button.svelte';
 	import CardRow from '../CardRow.svelte';
 
-	interface Props {
-		outcome: RoundOutcome;
-		ondismiss: () => void;
-	}
-
-	let { outcome, ondismiss }: Props = $props();
+	let { outcome }: { outcome: RoundOutcome } = $props();
 
 	let cardIds = $derived(Object.values(outcome.table));
 	let labels = $derived(
 		Object.fromEntries(Object.entries(outcome.table).map(([name, cardId]) => [cardId, name]))
 	);
+	let votes = $derived.by(() => {
+		const byCard: Record<string, string[]> = {};
+		for (const [voter, cardId] of Object.entries(outcome.votes)) {
+			(byCard[cardId] ??= []).push(voter);
+		}
+		return byCard;
+	});
 </script>
 
 <section class="outcome">
-	<h2>Last round</h2>
+	<h2>Table</h2>
 	<p class="quiet">{outcome.host}'s prompt: "{outcome.prompt}"</p>
-	<CardRow {cardIds} {labels} />
-	<Button onclick={ondismiss}>Continue</Button>
+	<CardRow {cardIds} {labels} {votes} />
 </section>
 
 <style>
 	.outcome {
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-lg);
-		padding: var(--space-4);
-		background: var(--color-accent-soft);
+		border-top: 1px solid var(--color-border);
+		margin-top: var(--space-4);
+		padding-top: var(--space-4);
 	}
 </style>

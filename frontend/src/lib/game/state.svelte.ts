@@ -8,10 +8,6 @@ class GameState {
 	view = $state<SessionView | null>(null);
 	messages = $state<GameMessage[]>([]);
 	lastOutcome = $state<RoundOutcome | null>(null);
-	/** True only when lastOutcome arrived live, so the UI can pop it open
-	 * automatically without also re-showing history on every page reload.
-	 */
-	outcomeIsFresh = $state(false);
 	error = $state<string | null>(null);
 
 	private connected = false;
@@ -88,7 +84,6 @@ class GameState {
 		this.view = null;
 		this.messages = [];
 		this.lastOutcome = null;
-		this.outcomeIsFresh = false;
 		this.error = null;
 	}
 
@@ -98,7 +93,6 @@ class GameState {
 		if (resetHistory) {
 			this.messages = [];
 			this.lastOutcome = view.previous_round_outcome;
-			this.outcomeIsFresh = false;
 		}
 		if (!this.connected) {
 			this.subscribe();
@@ -119,7 +113,6 @@ class GameState {
 		});
 		socket.on('round_outcome', (data) => {
 			this.lastOutcome = data;
-			this.outcomeIsFresh = true;
 		});
 		socket.on('message', (data) => {
 			this.messages.push(data);

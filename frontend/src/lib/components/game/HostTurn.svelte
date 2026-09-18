@@ -10,6 +10,15 @@
 	let prompt = $state('');
 	let submitting = $state(false);
 
+	// A solo-host round resolves entirely server-side, so this component never
+	// remounts between rounds; clear a selection once its card leaves the hand.
+	$effect(() => {
+		if (selected !== null && !view.hand.includes(selected)) {
+			selected = null;
+			prompt = '';
+		}
+	});
+
 	async function submit(event: SubmitEvent): Promise<void> {
 		event.preventDefault();
 		if (!selected || !prompt.trim()) return;
@@ -20,13 +29,14 @@
 
 	async function mulligan(): Promise<void> {
 		if (!selected) return;
+		if (!confirm('This will discard the selected card and draw a replacement.')) return;
 		await gameState.mulligan(selected);
 		selected = null;
 	}
 </script>
 
 <section>
-	<h2>Your turn to set the scene</h2>
+	<h2>Your hand</h2>
 
 	<CardRow
 		cardIds={view.hand}

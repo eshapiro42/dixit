@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Button from '$lib/components/Button.svelte';
+	import Dialog from '$lib/components/Dialog.svelte';
 	import ErrorBanner from '$lib/components/ErrorBanner.svelte';
 	import Field from '$lib/components/Field.svelte';
 	import MessageLog from '$lib/components/MessageLog.svelte';
@@ -42,11 +43,7 @@
 		gameId = '';
 	}
 
-	let showOutcome = $state(false);
-
-	$effect(() => {
-		if (gameState.lastOutcome && gameState.outcomeIsFresh) showOutcome = true;
-	});
+	let logOpen = $state(false);
 
 	let view = $derived(gameState.view);
 	let isHost = $derived(view !== null && view.host === view.player_name);
@@ -93,30 +90,33 @@
 			</div>
 		</PageShell>
 	{:else}
-		<PageShell>
+		<PageShell wide>
 			<ErrorBanner message={gameState.error} ondismiss={() => gameState.clearError()} />
 
-			<div class="layout">
-				<div class="main panel">
+			<div class="board panel">
+				<div class="board-header">
 					<PromptBar phase={view.phase} host={view.host} prompt={view.prompt} />
-					{#if showOutcome && gameState.lastOutcome}
-						<Outcome outcome={gameState.lastOutcome} ondismiss={() => (showOutcome = false)} />
-					{:else if !view.started}
-						<GameLobby {view} />
-					{:else if view.phase === 'host_choosing'}
+					<div class="board-actions">
+						<Button kind="secondary" onclick={() => (logOpen = true)}>Game log</Button>
+						<Button kind="ghost" onclick={leaveGame}>Leave game</Button>
+					</div>
+				</div>
+
+				{#if !view.started}
+					<GameLobby {view} />
+				{:else}
+					{#if view.phase === 'host_choosing'}
 						{#if isHost}
 							<HostTurn {view} />
 						{:else}
 							<section>
 								<h2>Waiting</h2>
-								<p class="quiet">{view.host} is choosing a card and a prompt.</p>
 							</section>
 						{/if}
 					{:else if view.phase === 'others_choosing'}
 						{#if isHost}
 							<section>
 								<h2>Waiting</h2>
-								<p class="quiet">Other players are matching your prompt.</p>
 							</section>
 						{:else}
 							<OtherTurn {view} />
@@ -124,20 +124,20 @@
 					{:else if view.phase === 'voting'}
 						<Voting {view} />
 					{/if}
-				</div>
 
-				<aside class="panel">
-					<h2>Scores</h2>
-					<ScoreBoard players={view.players} hostName={view.host} />
-					<h2>Log</h2>
-					<div class="log">
-						<MessageLog messages={gameState.messages} />
-					</div>
-					<div class="leave">
-						<Button kind="secondary" onclick={leaveGame}>Leave game</Button>
-					</div>
-				</aside>
+					{#if view.phase !== 'voting' && gameState.lastOutcome}
+						<Outcome outcome={gameState.lastOutcome} />
+					{/if}
+				{/if}
 			</div>
+
+			<div class="panel score-panel">
+				<ScoreBoard players={view.players} hostName={view.host} />
+			</div>
+
+			<Dialog title="Game log" open={logOpen} onclose={() => (logOpen = false)}>
+				<MessageLog messages={gameState.messages} />
+			</Dialog>
 		</PageShell>
 	{/if}
 {/if}
@@ -185,19 +185,6 @@
 		max-width: 360px;
 	}
 
-	.layout {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr);
-		gap: var(--space-6);
-		align-items: start;
-	}
-
-	@media (min-width: 720px) {
-		.layout {
-			grid-template-columns: minmax(0, 1fr) 280px;
-		}
-	}
-
 	.panel {
 		background: var(--color-surface);
 		border-radius: var(--radius-lg);
@@ -205,22 +192,28 @@
 		padding: var(--space-6);
 	}
 
-	aside h2 {
-		font-size: var(--size-md);
-		margin: 0 0 var(--space-2);
+	.board {
+		margin-bottom: var(--space-6);
 	}
 
-	aside h2:not(:first-child) {
-		margin-top: var(--space-4);
+	.board-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		flex-wrap: wrap;
+		gap: var(--space-3);
+		border-bottom: 1px solid var(--color-border);
+		padding-bottom: var(--space-3);
+		margin-bottom: var(--space-4);
 	}
 
-	.log {
-		max-height: 220px;
+	.board-actions {
+		display: flex;
+		gap: var(--space-2);
+		flex-shrink: 0;
 	}
 
-	.leave {
-		margin-top: var(--space-6);
-		padding-top: var(--space-4);
-		border-top: 1px solid var(--color-border);
+	.score-panel {
+		padding: var(--space-4) var(--space-6);
 	}
 </style>

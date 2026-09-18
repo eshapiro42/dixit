@@ -11,53 +11,57 @@
 	let ranked = $derived([...players].sort((a, b) => b.score - a.score));
 </script>
 
-<ul class="scoreboard">
-	{#each ranked as player (player.name)}
-		<li>
-			<span class="name">
-				{player.name}
-				{#if player.name === hostName}
-					<span class="badge" aria-hidden="true">✎</span>
-					<span class="sr-only">(Storyteller this round)</span>
-				{/if}
-				{#if player.is_cpu}<span class="quiet">· CPU</span>{/if}
-			</span>
-			<span class="score numeric">{player.score}</span>
-		</li>
-	{/each}
-</ul>
+<div class="scores">
+	<table>
+		<thead>
+			<tr>
+				{#each ranked as player (player.name)}
+					<th>
+						{player.name}
+						{#if player.name === hostName}<span class="quiet"> · Storyteller</span>{/if}
+					</th>
+				{/each}
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				{#each ranked as player (player.name)}
+					<td class="numeric">{player.score}</td>
+				{/each}
+			</tr>
+		</tbody>
+	</table>
+</div>
 
 <style>
-	.scoreboard {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-1);
+	.scores {
+		overflow-x: auto;
 	}
 
-	li {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: var(--space-2) var(--space-3);
-		border-radius: var(--radius-sm);
+	table {
+		width: 100%;
+		table-layout: fixed;
+		border-collapse: collapse;
 	}
 
-	li:nth-child(odd) {
-		background: color-mix(in srgb, var(--color-border) 35%, transparent);
+	th,
+	td {
+		width: 1%;
+		padding: var(--space-2) var(--space-4);
+		text-align: center;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
-	.name {
+	th {
 		font-size: var(--size-sm);
-	}
-
-	.badge {
-		color: var(--color-accent);
-	}
-
-	.score {
 		font-weight: 600;
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	td {
+		font-weight: 600;
+		font-size: var(--size-lg);
 	}
 </style>

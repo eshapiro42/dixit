@@ -17,6 +17,7 @@
 
 	async function mulligan(): Promise<void> {
 		if (!selected) return;
+		if (!confirm('This will discard the selected card and draw a replacement.')) return;
 		await gameState.mulligan(selected);
 		selected = null;
 	}
@@ -24,13 +25,12 @@
 
 {#if view.has_played}
 	<section>
-		<h2>Card played</h2>
+		<h2>Waiting</h2>
 		<p class="quiet">Waiting for the other players to choose.</p>
 	</section>
 {:else}
 	<section>
-		<h2>Match the prompt</h2>
-		<p class="quiet">"{view.prompt}"</p>
+		<h2>Your hand</h2>
 		<CardRow
 			cardIds={view.hand}
 			selectable

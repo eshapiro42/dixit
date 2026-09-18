@@ -11,19 +11,11 @@
 	let { phase, host, prompt }: Props = $props();
 </script>
 
-<div class="bar">
-	{#key phase}
-		<p class="label">{phaseLabel(phase, host, prompt)}</p>
-	{/key}
-</div>
+{#key phase}
+	<p class="label">{phaseLabel(phase, host, prompt)}</p>
+{/key}
 
 <style>
-	.bar {
-		border-bottom: 1px solid var(--color-border);
-		padding-bottom: var(--space-3);
-		margin-bottom: var(--space-4);
-	}
-
 	.label {
 		margin: 0;
 		font-weight: 600;

@@ -20,16 +20,16 @@
 
 {#if isHost}
 	<section>
-		<h2>Votes are coming in</h2>
+		<h2>Waiting</h2>
 	</section>
 {:else if view.has_voted}
 	<section>
-		<h2>Vote cast</h2>
+		<h2>Waiting</h2>
 		<p class="quiet">Waiting for the other players to vote.</p>
 	</section>
 {:else}
 	<section>
-		<h2>Which card matches "{view.prompt}"?</h2>
+		<h2>Table</h2>
 		<CardRow
 			cardIds={view.table ?? []}
 			selectable

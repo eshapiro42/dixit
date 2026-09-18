@@ -1,10 +1,15 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 
-	let { children }: { children: Snippet } = $props();
+	interface Props {
+		wide?: boolean;
+		children: Snippet;
+	}
+
+	let { wide = false, children }: Props = $props();
 </script>
 
-<div class="shell">
+<div class="shell" class:wide>
 	{@render children()}
 </div>
 
@@ -13,5 +18,9 @@
 		max-width: 960px;
 		margin: 0 auto;
 		padding: var(--space-4);
+	}
+
+	.shell.wide {
+		max-width: 1400px;
 	}
 </style>

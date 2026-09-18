@@ -7,6 +7,7 @@
 		selectable?: boolean;
 		onselect?: () => void;
 		label?: string;
+		votes?: string[];
 		accessibleLabel?: string;
 	}
 
@@ -16,6 +17,7 @@
 		selectable = false,
 		onselect,
 		label,
+		votes,
 		accessibleLabel
 	}: Props = $props();
 </script>
@@ -37,6 +39,9 @@
 	</div>
 {/if}
 {#if label}<span class="label quiet">{label}</span>{/if}
+{#each votes ?? [] as voter (voter)}
+	<span class="label quiet">{voter}'s vote</span>
+{/each}
 
 <style>
 	.card {
