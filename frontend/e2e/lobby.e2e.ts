@@ -20,7 +20,8 @@ const SESSION_VIEW = {
 	mulligan_available: false,
 	has_played: false,
 	has_voted: false,
-	previous_round_outcome: null
+	previous_round_outcome: null,
+	messages: []
 };
 
 test('creating a game shows the in-game lobby without changing the URL', async ({ page }) => {

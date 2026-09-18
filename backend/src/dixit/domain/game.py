@@ -32,6 +32,13 @@ class Game:
     current_round: Round | None = None
     previous_round: Round | None = None
     min_human_players: int = MIN_HUMAN_PLAYERS
+    messages: list[dict] = field(default_factory=list)
+
+    def log(self, text: str, *, emphasis: bool = False, round_start: bool = False) -> None:
+        """Record a log message so a client that (re)joins later can see the
+        game's history, not just what happens to arrive live from here on.
+        """
+        self.messages.append({"text": text, "emphasis": emphasis, "round_start": round_start})
 
     @classmethod
     def new(
@@ -186,6 +193,7 @@ class Game:
             "current_round": self.current_round.to_dict() if self.current_round else None,
             "previous_round": self.previous_round.to_dict() if self.previous_round else None,
             "min_human_players": self.min_human_players,
+            "messages": [dict(message) for message in self.messages],
         }
 
     @classmethod
@@ -203,4 +211,5 @@ class Game:
                 Round.from_dict(data["previous_round"]) if data["previous_round"] else None
             ),
             min_human_players=data["min_human_players"],
+            messages=[dict(message) for message in data["messages"]],
         )

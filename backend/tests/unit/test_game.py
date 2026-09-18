@@ -187,10 +187,21 @@ def test_duplicate_choice_from_the_same_player_raises(started_game: Game) -> Non
         started_game.submit_other_choice(started_game.player(other.name), other.hand[0].id)
 
 
+def test_log_appends_a_message_with_its_flags(started_game: Game) -> None:
+    started_game.log("hello", emphasis=True, round_start=True)
+    started_game.log("world")
+    assert started_game.messages == [
+        {"text": "hello", "emphasis": True, "round_start": True},
+        {"text": "world", "emphasis": False, "round_start": False},
+    ]
+
+
 def test_round_trip_through_dict(started_game: Game) -> None:
     _play_full_round(started_game)
+    started_game.log("a memory", emphasis=True, round_start=True)
     restored = Game.from_dict(json.loads(json.dumps(started_game.to_dict())))
     assert restored.to_dict() == started_game.to_dict()
+    assert restored.messages == started_game.messages
 
 
 def test_card_library_rejects_an_empty_directory(tmp_path) -> None:

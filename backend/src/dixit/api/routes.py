@@ -65,14 +65,21 @@ def build_routes_blueprint(
             return "Other players, vote for which card you think matches the prompt."
         return None
 
-    def announce_next_host(game: Game) -> None:
+    def next_host_text(game: Game) -> str | None:
         round_ = game.current_round
-        if round_ is not None:
-            notifier.message(
-                game.id,
-                f"It is {round_.host_name}'s turn to choose a card and give a prompt.",
-                round_start=True,
-            )
+        if round_ is None:
+            return None
+        return f"It is {round_.host_name}'s turn to choose a card and give a prompt."
+
+    def log_next_host(game: Game) -> None:
+        text = next_host_text(game)
+        if text is not None:
+            game.log(text, round_start=True)
+
+    def announce_next_host(game: Game) -> None:
+        text = next_host_text(game)
+        if text is not None:
+            notifier.message(game.id, text, round_start=True)
 
     def table_names(game: Game) -> set[str]:
         round_ = game.current_round
@@ -98,6 +105,8 @@ def build_routes_blueprint(
             game_id, library, creator_name=player_name, min_human_players=min_human_players
         )
         game.add_player(player_name)
+        game.log(f"{player_name} created the game room.")
+        game.log("Waiting for players.")
         store.create(game)
         start_session(game_id, player_name)
         notifier.message(game_id, f"{player_name} created the game room.")
@@ -111,9 +120,10 @@ def build_routes_blueprint(
             rejoining = game.has_player(player_name)
             if not rejoining:
                 game.add_player(player_name)
+            message = "has rejoined the game." if rejoining else "has joined the game."
+            game.log(f"{player_name} {message}")
             view = views.session_view(game, player_name)
         start_session(game_id, player_name)
-        message = "has rejoined the game." if rejoining else "has joined the game."
         notifier.message(game_id, f"{player_name} {message}")
         if not rejoining:
             notifier.state_changed(game)
@@ -135,6 +145,7 @@ def build_routes_blueprint(
             if game.started or not game.has_player(player_name):
                 return jsonify(ok=True)
             game.remove_player(player_name)
+            game.log(f"{player_name} left before the game started.")
         notifier.message(game_id, f"{player_name} left before the game started.")
         notifier.state_changed(game)
         return jsonify(ok=True)
@@ -147,6 +158,7 @@ def build_routes_blueprint(
             require_creator(game, player_name)
             cpu_name = f"CPU-{game.num_cpu_players + 1}"
             game.add_player(cpu_name, is_cpu=True)
+            game.log(f"{cpu_name} has joined the game.")
         notifier.message(game_id, f"{cpu_name} has joined the game.")
         notifier.state_changed(game)
         return jsonify(ok=True)
@@ -158,6 +170,8 @@ def build_routes_blueprint(
         with store.transaction(game_id) as game:
             require_creator(game, player_name)
             game.start()
+            game.log("The game has started.", emphasis=True)
+            log_next_host(game)
         notifier.message(game_id, "The game has started.", emphasis=True)
         announce_next_host(game)
         notifier.state_changed(game)
@@ -178,12 +192,18 @@ def build_routes_blueprint(
             finished_round = round_ if scored else None
             next_phase = round_.phase if round_ and not scored else None
             cpus_played = cpus_played_since(game, before)
+            game.log(f'{player_name}\'s prompt: "{prompt}"', emphasis=True)
+            for cpu_name in cpus_played:
+                game.log(f"{cpu_name} played a card.")
+            announcement = phase_announcement(next_phase) if next_phase else None
+            if announcement:
+                game.log(announcement)
             if scored:
                 game.advance_round()
+                log_next_host(game)
         notifier.message(game_id, f'{player_name}\'s prompt: "{prompt}"', emphasis=True)
         for cpu_name in cpus_played:
             notifier.message(game_id, f"{cpu_name} played a card.")
-        announcement = phase_announcement(next_phase) if next_phase else None
         if announcement:
             notifier.message(game_id, announcement)
         if finished_round is not None:
@@ -205,12 +225,18 @@ def build_routes_blueprint(
             finished_round = round_ if scored else None
             next_phase = round_.phase if round_ and not scored else None
             cpus_played = cpus_played_since(game, before)
+            game.log(f"{player_name} played a card.")
+            for cpu_name in cpus_played:
+                game.log(f"{cpu_name} played a card.")
+            announcement = phase_announcement(next_phase) if next_phase else None
+            if announcement:
+                game.log(announcement)
             if scored:
                 game.advance_round()
+                log_next_host(game)
         notifier.message(game_id, f"{player_name} played a card.")
         for cpu_name in cpus_played:
             notifier.message(game_id, f"{cpu_name} played a card.")
-        announcement = phase_announcement(next_phase) if next_phase else None
         if announcement:
             notifier.message(game_id, announcement)
         if finished_round is not None:
@@ -228,8 +254,10 @@ def build_routes_blueprint(
             player = game.player(player_name)
             scored = game.submit_vote(player, card_id)
             finished_round = game.current_round if scored else None
+            game.log(f"{player_name} voted.")
             if scored:
                 game.advance_round()
+                log_next_host(game)
         notifier.message(game_id, f"{player_name} voted.")
         if finished_round is not None:
             notifier.round_finished(game_id, finished_round)
@@ -245,6 +273,7 @@ def build_routes_blueprint(
         with store.transaction(game_id) as game:
             player = game.player(player_name)
             game.submit_mulligan(player, card_id)
+            game.log(f"{player_name} used a mulligan.")
         notifier.message(game_id, f"{player_name} used a mulligan.")
         notifier.state_changed(game)
         return jsonify(ok=True)

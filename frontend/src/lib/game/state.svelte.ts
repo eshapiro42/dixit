@@ -2,8 +2,6 @@ import { ApiError, api } from '../api/client';
 import type { GameMessage, RoundOutcome, SessionView } from '../api/types';
 import { connectSocket, disconnectSocket } from './socket';
 
-const MAX_MESSAGES = 100;
-
 class GameState {
 	view = $state<SessionView | null>(null);
 	messages = $state<GameMessage[]>([]);
@@ -91,7 +89,7 @@ class GameState {
 		this.generation++;
 		this.view = view;
 		if (resetHistory) {
-			this.messages = [];
+			this.messages = [...view.messages];
 			this.lastOutcome = view.previous_round_outcome;
 		}
 		if (!this.connected) {
@@ -116,7 +114,6 @@ class GameState {
 		});
 		socket.on('message', (data) => {
 			this.messages.push(data);
-			if (this.messages.length > MAX_MESSAGES) this.messages.shift();
 		});
 	}
 

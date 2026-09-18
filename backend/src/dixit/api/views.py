@@ -94,4 +94,5 @@ def session_view(game: Game, player_name: str) -> dict:
         "previous_round_outcome": (
             round_outcome(game.previous_round) if game.previous_round else None
         ),
+        "messages": [dict(message) for message in game.messages],
     }

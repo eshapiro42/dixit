@@ -313,6 +313,22 @@ def test_leave_requires_an_active_session(client) -> None:
     assert response.status_code == 401
 
 
+def test_rejoining_after_start_still_sees_the_earlier_log(app: Flask) -> None:
+    lobby = _started_lobby(app)
+    clients = lobby["clients"]
+    bob = clients["bob"]
+
+    bob.post("/api/session/leave")
+    assert bob.get("/api/session").status_code == 401
+
+    bob_new_tab = app.test_client()
+    view = join_game(bob_new_tab, lobby["game_id"], "bob")
+    texts = [message["text"] for message in view["messages"]]
+    assert "alice created the game room." in texts
+    assert "The game has started." in texts
+    assert "bob has rejoined the game." in texts
+
+
 def test_solo_game_log_covers_the_full_round_lifecycle(card_library) -> None:
     flask_app = Flask(__name__)
     flask_app.config.update(SECRET_KEY="test", TESTING=True)
