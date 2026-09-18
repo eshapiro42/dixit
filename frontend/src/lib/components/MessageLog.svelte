@@ -60,27 +60,28 @@
 
 <div class="log" bind:this={listEl} onscroll={trackScrollPosition}>
 	{#each groups as group, index (index)}
-		{#if group.isRound}
-			<button
-				type="button"
-				class="round-toggle"
-				aria-expanded={isOpen(index)}
-				onclick={() => toggle(index)}
-			>
-				<span class="chevron" class:open={isOpen(index)} aria-hidden="true">&#9656;</span>
-				Round {group.roundNumber}
-				<span class="quiet count">({group.messages.length})</span>
-			</button>
-			{#if isOpen(index)}
-				{#each group.messages as message, messageIndex (messageIndex)}
-					<p class:emphasis={message.emphasis}>{message.text}</p>
-				{/each}
+		<section class="group" class:round={group.isRound}>
+			{#if group.isRound}
+				<button
+					type="button"
+					class="round-toggle"
+					class:current={index === groups.length - 1}
+					aria-expanded={isOpen(index)}
+					onclick={() => toggle(index)}
+				>
+					<span class="chevron" class:open={isOpen(index)} aria-hidden="true">&#9656;</span>
+					<span class="round-title">Round {group.roundNumber}</span>
+					<span class="count numeric">{group.messages.length}</span>
+				</button>
 			{/if}
-		{:else}
-			{#each group.messages as message, messageIndex (messageIndex)}
-				<p class:emphasis={message.emphasis}>{message.text}</p>
-			{/each}
-		{/if}
+			{#if !group.isRound || isOpen(index)}
+				<div class="messages">
+					{#each group.messages as message, messageIndex (messageIndex)}
+						<p class:emphasis={message.emphasis}>{message.text}</p>
+					{/each}
+				</div>
+			{/if}
+		</section>
 	{/each}
 </div>
 
@@ -88,10 +89,20 @@
 	.log {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-1);
 		overflow-y: auto;
 		max-height: 100%;
 		font-size: var(--size-sm);
+	}
+
+	.messages {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+		padding-bottom: var(--space-1);
+	}
+
+	.round .messages {
+		padding-left: calc(var(--size-md) + var(--space-2));
 	}
 
 	p {
@@ -108,26 +119,34 @@
 		display: flex;
 		align-items: center;
 		gap: var(--space-2);
+		width: 100%;
 		margin: 0;
-		margin-top: var(--space-2);
-		padding: var(--space-2) 0 var(--space-1);
+		padding: var(--space-3) var(--space-2) var(--space-2);
 		border: none;
 		border-top: 1px solid var(--color-border);
+		border-radius: var(--radius);
 		background: none;
 		font: inherit;
-		font-weight: 600;
+		font-weight: 500;
 		color: var(--color-text-quiet);
 		text-align: left;
 		cursor: pointer;
 	}
 
 	.round-toggle:hover {
+		background: var(--color-accent-soft);
+	}
+
+	.round-toggle.current {
+		font-weight: 700;
 		color: var(--color-text);
 	}
 
 	.chevron {
-		display: inline-block;
-		font-size: var(--size-xs);
+		display: inline-flex;
+		flex-shrink: 0;
+		font-size: var(--size-md);
+		color: var(--color-accent);
 		transition: transform 0.15s ease;
 	}
 
@@ -135,7 +154,19 @@
 		transform: rotate(90deg);
 	}
 
+	.round-title {
+		flex: 1 1 auto;
+	}
+
 	.count {
-		font-weight: 400;
+		flex-shrink: 0;
+		min-width: 1.5em;
+		padding: 0 var(--space-1);
+		border-radius: var(--radius);
+		background: var(--color-accent-soft);
+		color: var(--color-text-quiet);
+		font-size: var(--size-xs);
+		font-weight: 600;
+		text-align: center;
 	}
 </style>
