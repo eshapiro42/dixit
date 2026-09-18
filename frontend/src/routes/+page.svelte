@@ -1,15 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import BrandHeader from '$lib/components/BrandHeader.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import Dialog from '$lib/components/Dialog.svelte';
 	import ErrorBanner from '$lib/components/ErrorBanner.svelte';
 	import Field from '$lib/components/Field.svelte';
 	import MessageLog from '$lib/components/MessageLog.svelte';
 	import PageShell from '$lib/components/PageShell.svelte';
-	import PromptBar from '$lib/components/PromptBar.svelte';
 	import ScoreBoard from '$lib/components/ScoreBoard.svelte';
-	import ZoomControl from '$lib/components/ZoomControl.svelte';
+	import TopBar from '$lib/components/TopBar.svelte';
 	import GameLobby from '$lib/components/game/GameLobby.svelte';
 	import HostTurn from '$lib/components/game/HostTurn.svelte';
 	import Outcome from '$lib/components/game/Outcome.svelte';
@@ -63,9 +61,10 @@
 </script>
 
 {#if !checkingSession}
+	<TopBar {view} onOpenLog={() => (logOpen = true)} onLeave={leaveGame} />
+
 	{#if !view}
 		<PageShell>
-			<BrandHeader />
 			<div class="lobby">
 				<ErrorBanner message={gameState.error} ondismiss={() => gameState.clearError()} />
 
@@ -103,21 +102,9 @@
 		</PageShell>
 	{:else}
 		<PageShell wide>
-			<BrandHeader />
 			<ErrorBanner message={gameState.error} ondismiss={() => gameState.clearError()} />
 
 			<div class="board panel">
-				<div class="board-header">
-					<PromptBar phase={view.phase} host={view.host} prompt={view.prompt} />
-					<div class="board-actions">
-						{#if view.started}
-							<ZoomControl />
-						{/if}
-						<Button kind="secondary" onclick={() => (logOpen = true)}>Game Log</Button>
-						<Button kind="ghost" onclick={leaveGame}>Leave Game</Button>
-					</div>
-				</div>
-
 				{#if !view.started}
 					<GameLobby {view} />
 				{:else}
@@ -163,7 +150,7 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		padding-top: 15vh;
+		padding-top: 10vh;
 		gap: var(--space-2);
 	}
 
@@ -199,30 +186,11 @@
 
 	.panel {
 		background: var(--color-surface);
-		border-radius: var(--radius-lg);
-		box-shadow: var(--shadow-sm);
 		padding: var(--space-6);
 	}
 
 	.board {
 		margin-bottom: var(--space-6);
-	}
-
-	.board-header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		flex-wrap: wrap;
-		gap: var(--space-3);
-		border-bottom: 1px solid var(--color-border);
-		padding-bottom: var(--space-3);
-		margin-bottom: var(--space-4);
-	}
-
-	.board-actions {
-		display: flex;
-		gap: var(--space-2);
-		flex-shrink: 0;
 	}
 
 	.score-panel {

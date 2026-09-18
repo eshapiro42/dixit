@@ -31,9 +31,9 @@
 <style>
 	dialog {
 		border: none;
-		border-radius: var(--radius-lg);
+		border-radius: var(--radius);
 		padding: var(--space-6);
-		box-shadow: var(--shadow-md);
+		box-shadow: var(--shadow-overlay);
 		max-width: 480px;
 		width: 90vw;
 	}

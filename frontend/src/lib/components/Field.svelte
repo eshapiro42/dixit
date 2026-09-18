@@ -46,7 +46,7 @@
 	input {
 		min-height: var(--tap);
 		padding: 0 var(--space-3);
-		border-radius: var(--radius-md);
+		border-radius: var(--radius);
 		border: 1px solid var(--color-border);
 		background: var(--color-surface);
 		color: var(--color-text);

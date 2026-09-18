@@ -51,7 +51,7 @@
 
 	.row::-webkit-scrollbar-thumb {
 		background: var(--color-border);
-		border-radius: var(--radius-md);
+		border-radius: var(--radius);
 	}
 
 	.row::-webkit-scrollbar-thumb:hover {

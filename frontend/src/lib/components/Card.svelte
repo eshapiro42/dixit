@@ -50,10 +50,10 @@
 		aspect-ratio: 363 / 527;
 		padding: 0;
 		border: none;
-		border-radius: var(--radius-md);
+		border-radius: var(--radius-card);
 		overflow: hidden;
 		background: var(--color-surface);
-		box-shadow: var(--shadow-sm);
+		box-shadow: var(--shadow-card);
 		cursor: default;
 		transition:
 			transform 0.15s ease,
@@ -66,7 +66,7 @@
 
 	button.card:hover {
 		transform: translateY(-4px);
-		box-shadow: var(--shadow-md);
+		box-shadow: var(--shadow-card-hover);
 	}
 
 	.card.selected {

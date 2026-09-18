@@ -24,7 +24,7 @@
 		gap: var(--space-2);
 		min-height: var(--tap);
 		padding: 0 var(--space-4);
-		border-radius: var(--radius-md);
+		border-radius: var(--radius);
 		border: 1px solid transparent;
 		font-family: inherit;
 		font-size: var(--size-sm);
