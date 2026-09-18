@@ -13,9 +13,11 @@ def round_outcome(round_: Round) -> dict:
     """The full, attributed result of a finished round: safe to reveal once scored."""
     return {
         "host": round_.host_name,
+        "round_number": round_.round_number,
         "prompt": round_.prompt,
         "table": {name: card.id for name, card in round_.table.items()},
         "votes": dict(round_.votes),
+        "scores": dict(round_.scores),
     }
 
 
@@ -54,6 +56,7 @@ def public_view(game: Game) -> dict:
     current = game.current_round
     return {
         "game_id": game.id,
+        "creator_name": game.creator_name,
         "started": game.started,
         "playable": game.playable,
         "min_players": MIN_PLAYERS,
@@ -63,6 +66,8 @@ def public_view(game: Game) -> dict:
         "host": current.host_name if current else None,
         "prompt": current.prompt if current else None,
         "table": visible_table(current) if current else None,
+        "votes_cast": len(current.votes) if current else 0,
+        "votes_needed": max(game.num_human_players - 1, 0),
     }
 
 

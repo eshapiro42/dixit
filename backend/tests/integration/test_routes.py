@@ -107,9 +107,7 @@ def test_a_prompt_over_the_length_limit_is_truncated(app: Flask) -> None:
     host_name, host = _current_host(clients)
     hand = host.get("/api/session").get_json()["hand"]
 
-    response = host.post(
-        "/api/session/host-choice", json={"card_id": hand[0], "prompt": "x" * 500}
-    )
+    response = host.post("/api/session/host-choice", json={"card_id": hand[0], "prompt": "x" * 500})
     assert response.status_code == 200
     state = host.get("/api/session").get_json()
     assert state["prompt"] is not None

@@ -26,11 +26,13 @@ class Phase(Enum):
 @dataclass
 class Round:
     host_name: str
+    round_number: int = 1
     phase: Phase = Phase.HOST_CHOOSING
     prompt: str | None = None
     table: dict[str, Card] = field(default_factory=dict)
     votes: dict[str, str] = field(default_factory=dict)
     mulligans_used: set[str] = field(default_factory=set)
+    scores: dict[str, int] = field(default_factory=dict)
 
     @property
     def is_scored(self) -> bool:
@@ -95,12 +97,9 @@ class Round:
 
     def resolve_cpu_votes(self, cpu_players: list[Player]) -> None:
         for cpu in cpu_players:
-            candidates = [
-                (name, card) for name, card in self.table.items() if name != cpu.name
-            ]
+            candidates = [(name, card) for name, card in self.table.items() if name != cpu.name]
             raw_weights = [
-                sum(1 for vote in self.votes.values() if vote == card.id)
-                for _, card in candidates
+                sum(1 for vote in self.votes.values() if vote == card.id) for _, card in candidates
             ]
             weights: list[int] | None = raw_weights if any(raw_weights) else None
             _, chosen_card = random.choices(candidates, weights=weights, k=1)[0]
@@ -109,6 +108,17 @@ class Round:
     def score(self, all_players: list[Player]) -> None:
         if self.phase != Phase.VOTING:
             raise WrongPhaseError("score the round", self.phase.value)
+        deltas = self._score_deltas(all_players)
+        for player in all_players:
+            player.score += deltas[player.name]
+        self.scores = deltas
+        self.phase = Phase.SCORING
+
+    def _score_deltas(self, all_players: list[Player]) -> dict[str, int]:
+        """Each player's point change this round, keyed by name. CPUs never
+        compete for score, so they're always 0.
+        """
+        deltas = {player.name: 0 for player in all_players}
         host_card_id = self.table[self.host_name].id
         others = [player for player in all_players if player.name != self.host_name]
         correct_voters = [
@@ -117,37 +127,40 @@ class Round:
         if len(correct_voters) in (0, len(others)):
             for player in others:
                 if not player.is_cpu:
-                    player.score += 2
+                    deltas[player.name] += 2
         else:
-            host = next(player for player in all_players if player.name == self.host_name)
-            host.score += 3
+            deltas[self.host_name] += 3
             for player in correct_voters:
                 if not player.is_cpu:
-                    player.score += 3
+                    deltas[player.name] += 3
         for player in others:
             if player.is_cpu:
                 continue
             own_card_id = self.table[player.name].id
-            player.score += sum(1 for vote in self.votes.values() if vote == own_card_id)
-        self.phase = Phase.SCORING
+            deltas[player.name] += sum(1 for vote in self.votes.values() if vote == own_card_id)
+        return deltas
 
     def to_dict(self) -> dict:
         return {
             "host_name": self.host_name,
+            "round_number": self.round_number,
             "phase": self.phase.value,
             "prompt": self.prompt,
             "table": {name: card.id for name, card in self.table.items()},
             "votes": dict(self.votes),
             "mulligans_used": sorted(self.mulligans_used),
+            "scores": dict(self.scores),
         }
 
     @classmethod
     def from_dict(cls, data: dict) -> Round:
         return cls(
             host_name=data["host_name"],
+            round_number=data["round_number"],
             phase=Phase(data["phase"]),
             prompt=data["prompt"],
             table={name: Card(id=card_id) for name, card_id in data["table"].items()},
             votes=dict(data["votes"]),
             mulligans_used=set(data["mulligans_used"]),
+            scores=dict(data["scores"]),
         )

@@ -125,6 +125,15 @@ def test_advance_round_raises_before_scoring(started_game: Game) -> None:
         started_game.advance_round()
 
 
+def test_round_number_increments_and_never_repeats(started_game: Game) -> None:
+    seen_numbers = [started_game.current_round.round_number]
+    for _ in range(len(started_game.host_order) * 2):
+        started_game.current_round.phase = Phase.SCORING
+        started_game.advance_round()
+        seen_numbers.append(started_game.current_round.round_number)
+    assert seen_numbers == list(range(1, len(seen_numbers) + 1))
+
+
 def _play_full_round(game: Game) -> None:
     host = game.host
     game.submit_host_choice(host, host.hand[0].id, "a prompt")

@@ -56,9 +56,7 @@ class TestHostChoice:
 
 
 class TestOtherChoice:
-    def test_moves_the_card_to_the_table(
-        self, round_: Round, other: Player, deck: Deck
-    ) -> None:
+    def test_moves_the_card_to_the_table(self, round_: Round, other: Player, deck: Deck) -> None:
         round_.phase = Phase.OTHERS_CHOOSING
         round_.other_choice(other, deck, "other-card.jpg")
         assert round_.table[other.name].id == "other-card.jpg"
@@ -74,9 +72,7 @@ class TestOtherChoice:
         with pytest.raises(NotYourTurnError):
             round_.other_choice(host, deck, "host-card.jpg")
 
-    def test_raises_for_a_second_submission(
-        self, round_: Round, other: Player, deck: Deck
-    ) -> None:
+    def test_raises_for_a_second_submission(self, round_: Round, other: Player, deck: Deck) -> None:
         round_.phase = Phase.OTHERS_CHOOSING
         round_.other_choice(other, deck, "other-card.jpg")
         with pytest.raises(DuplicateActionError):
@@ -242,15 +238,24 @@ class TestScore:
         with pytest.raises(WrongPhaseError):
             round_.score([Player(name="host")])
 
+    def test_records_each_players_delta_on_the_round_itself(self) -> None:
+        round_ = self._table_and_votes()
+        round_.votes = {"a": "h.jpg", "b": "a.jpg"}
+        players = [Player(name="host"), Player(name="a"), Player(name="b")]
+        round_.score(players)
+        assert round_.scores == {"host": 3, "a": 4, "b": 0}
+
 
 def test_round_trip_through_dict() -> None:
     round_ = Round(
         host_name="host",
+        round_number=3,
         phase=Phase.VOTING,
         prompt="a prompt",
         table={"host": Card(id="h.jpg")},
         votes={"a": "h.jpg"},
         mulligans_used={"a"},
+        scores={"host": 3, "a": 4},
     )
     restored = Round.from_dict(round_.to_dict())
     assert restored == round_

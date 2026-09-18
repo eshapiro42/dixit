@@ -127,7 +127,7 @@ class Game:
         self.previous_round = self.current_round
         host_name = self.host_order[self.host_index % len(self.host_order)]
         self.host_index += 1
-        self.current_round = Round(host_name=host_name)
+        self.current_round = Round(host_name=host_name, round_number=self.host_index)
 
     def submit_host_choice(self, player: Player, card_id: str, prompt: str) -> bool:
         """Returns True if the round is now fully scored (see _finish_choosing)."""
