@@ -8,6 +8,14 @@
 	let selected = $state<string | null>(null);
 	let submitting = $state(false);
 
+	// Clears a selection once its card leaves the hand, so a card played (and
+	// discarded) last round can't linger as an enabled-but-invalid selection.
+	$effect(() => {
+		if (selected !== null && !view.hand.includes(selected)) {
+			selected = null;
+		}
+	});
+
 	async function submit(): Promise<void> {
 		if (!selected) return;
 		submitting = true;
@@ -29,8 +37,8 @@
 		<p class="quiet">Waiting for the other players to choose.</p>
 	</section>
 {:else}
-	<section>
-		<h2>Your hand</h2>
+	<section class="action-needed">
+		<h2>Your Hand</h2>
 		<CardRow
 			cardIds={view.hand}
 			selectable
@@ -41,7 +49,7 @@
 			{#if view.mulligan_available}
 				<Button kind="ghost" disabled={!selected} onclick={mulligan}>Mulligan</Button>
 			{/if}
-			<Button disabled={submitting || !selected} onclick={submit}>Play card</Button>
+			<Button disabled={submitting || !selected} onclick={submit}>Submit Choice</Button>
 		</div>
 	</section>
 {/if}

@@ -35,8 +35,8 @@
 	}
 </script>
 
-<section>
-	<h2>Your hand</h2>
+<section class="action-needed">
+	<h2>Your Hand</h2>
 
 	<CardRow
 		cardIds={view.hand}
@@ -51,7 +51,9 @@
 			{#if view.mulligan_available}
 				<Button kind="ghost" disabled={!selected} onclick={mulligan}>Mulligan</Button>
 			{/if}
-			<Button type="submit" disabled={submitting || !selected || !prompt.trim()}>Submit</Button>
+			<Button type="submit" disabled={submitting || !selected || !prompt.trim()}
+				>Submit Choice</Button
+			>
 		</div>
 	</form>
 </section>

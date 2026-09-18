@@ -69,7 +69,9 @@ def build_routes_blueprint(
         round_ = game.current_round
         if round_ is not None:
             notifier.message(
-                game.id, f"It is {round_.host_name}'s turn to choose a card and give a prompt."
+                game.id,
+                f"It is {round_.host_name}'s turn to choose a card and give a prompt.",
+                round_start=True,
             )
 
     def table_names(game: Game) -> set[str]:

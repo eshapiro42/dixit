@@ -23,5 +23,8 @@ class GameNotifier:
     def round_finished(self, game_id: str, finished_round: Round) -> None:
         self._broadcaster.to_game(game_id, "round_outcome", views.round_outcome(finished_round))
 
-    def message(self, game_id: str, text: str, *, emphasis: bool = False) -> None:
-        self._broadcaster.to_game(game_id, "message", {"text": text, "emphasis": emphasis})
+    def message(
+        self, game_id: str, text: str, *, emphasis: bool = False, round_start: bool = False
+    ) -> None:
+        payload = {"text": text, "emphasis": emphasis, "round_start": round_start}
+        self._broadcaster.to_game(game_id, "message", payload)

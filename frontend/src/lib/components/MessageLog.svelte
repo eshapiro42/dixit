@@ -16,7 +16,9 @@
 
 <div class="log" bind:this={listEl}>
 	{#each messages as message, index (index)}
-		<p class:emphasis={message.emphasis}>{message.text}</p>
+		<p class:emphasis={message.emphasis} class:round-start={message.round_start && index > 0}>
+			{message.text}
+		</p>
 	{/each}
 </div>
 
@@ -38,5 +40,11 @@
 	p.emphasis {
 		color: var(--color-text);
 		font-weight: 600;
+	}
+
+	p.round-start {
+		margin-top: var(--space-2);
+		padding-top: var(--space-2);
+		border-top: 1px solid var(--color-border);
 	}
 </style>

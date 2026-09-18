@@ -28,7 +28,7 @@
 		<p class="quiet">Waiting for the other players to vote.</p>
 	</section>
 {:else}
-	<section>
+	<section class="action-needed">
 		<h2>Table</h2>
 		<CardRow
 			cardIds={view.table ?? []}
@@ -36,6 +36,6 @@
 			selectedId={selected}
 			onselect={(id) => (selected = id)}
 		/>
-		<Button disabled={submitting || !selected} onclick={submit}>Vote</Button>
+		<Button disabled={submitting || !selected} onclick={submit}>Submit Vote</Button>
 	</section>
 {/if}

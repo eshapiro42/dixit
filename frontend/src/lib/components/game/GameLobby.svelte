@@ -7,20 +7,16 @@
 </script>
 
 <section>
-	<h2>Game code: <span class="numeric">{view.game_id}</span></h2>
-
 	<ul class="players">
 		{#each view.players as player (player.name)}
-			<li>
-				{player.name}{#if player.is_cpu}<span class="quiet"> · CPU</span>{/if}
-			</li>
+			<li>{player.name}</li>
 		{/each}
 	</ul>
 
 	{#if view.is_creator}
 		<div class="actions">
-			<Button kind="secondary" onclick={() => gameState.addCpu()}>Add CPU player</Button>
-			<Button disabled={!view.playable} onclick={() => gameState.start()}>Start game</Button>
+			<Button kind="secondary" onclick={() => gameState.addCpu()}>Add CPU</Button>
+			<Button disabled={!view.playable} onclick={() => gameState.start()}>Start Game</Button>
 		</div>
 		{#if !view.playable}
 			<p class="quiet">

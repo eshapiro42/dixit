@@ -84,3 +84,31 @@ h3 {
 .numeric {
 	font-variant-numeric: tabular-nums;
 }
+
+/* Marks the section a player can currently act on: a persistent accent bar in
+ * the margin, plus a one-time flash when it first appears (a new turn starting).
+ */
+.action-needed {
+	position: relative;
+	animation: action-flash 1s ease-out;
+}
+
+.action-needed::before {
+	content: '';
+	position: absolute;
+	top: 0.15em;
+	bottom: 0.15em;
+	left: calc(-1 * var(--space-4));
+	width: 3px;
+	border-radius: var(--radius-md);
+	background: var(--color-accent);
+}
+
+@keyframes action-flash {
+	from {
+		background: var(--color-accent-soft);
+	}
+	to {
+		background: transparent;
+	}
+}

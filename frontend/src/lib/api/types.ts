@@ -42,4 +42,5 @@ export interface SessionView extends PublicView, PrivateView {
 export interface GameMessage {
 	text: string;
 	emphasis: boolean;
+	round_start: boolean;
 }

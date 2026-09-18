@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import BrandHeader from '$lib/components/BrandHeader.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import Dialog from '$lib/components/Dialog.svelte';
 	import ErrorBanner from '$lib/components/ErrorBanner.svelte';
@@ -8,6 +9,7 @@
 	import PageShell from '$lib/components/PageShell.svelte';
 	import PromptBar from '$lib/components/PromptBar.svelte';
 	import ScoreBoard from '$lib/components/ScoreBoard.svelte';
+	import ZoomControl from '$lib/components/ZoomControl.svelte';
 	import GameLobby from '$lib/components/game/GameLobby.svelte';
 	import HostTurn from '$lib/components/game/HostTurn.svelte';
 	import Outcome from '$lib/components/game/Outcome.svelte';
@@ -39,6 +41,7 @@
 	}
 
 	async function leaveGame(): Promise<void> {
+		if (!confirm('Leave the game?')) return;
 		await gameState.leaveGame();
 		gameId = '';
 	}
@@ -47,14 +50,23 @@
 
 	let view = $derived(gameState.view);
 	let isHost = $derived(view !== null && view.host === view.player_name);
+
+	$effect(() => {
+		if (!view) return;
+		function confirmClose(event: BeforeUnloadEvent): void {
+			event.preventDefault();
+			event.returnValue = '';
+		}
+		window.addEventListener('beforeunload', confirmClose);
+		return () => window.removeEventListener('beforeunload', confirmClose);
+	});
 </script>
 
 {#if !checkingSession}
 	{#if !view}
 		<PageShell>
+			<BrandHeader />
 			<div class="lobby">
-				<h1>Dixit</h1>
-
 				<ErrorBanner message={gameState.error} ondismiss={() => gameState.clearError()} />
 
 				<div class="tabs" role="tablist">
@@ -62,43 +74,47 @@
 						type="button"
 						role="tab"
 						aria-selected={mode === 'create'}
-						onclick={() => (mode = 'create')}>Create a game</button
+						onclick={() => (mode = 'create')}>Create a New Game</button
 					>
 					<button
 						type="button"
 						role="tab"
 						aria-selected={mode === 'join'}
-						onclick={() => (mode = 'join')}>Join a game</button
+						onclick={() => (mode = 'join')}>Join a Game</button
 					>
 				</div>
 
 				<form onsubmit={submitLobbyForm}>
 					{#if mode === 'join'}
-						<Field id="game-id" label="Game code" bind:value={gameId} required maxlength={4} />
+						<Field id="game-id" label="Game ID" bind:value={gameId} required maxlength={4} />
 					{/if}
 					<Field
 						id="player-name"
-						label="Your name"
+						label="Your Name"
 						bind:value={playerName}
 						required
 						maxlength={32}
 					/>
 					<Button type="submit" disabled={submitting || !playerName.trim()}>
-						{mode === 'create' ? 'Create game' : 'Join game'}
+						{mode === 'create' ? "Let's Groove It" : "Let's Move It"}
 					</Button>
 				</form>
 			</div>
 		</PageShell>
 	{:else}
 		<PageShell wide>
+			<BrandHeader />
 			<ErrorBanner message={gameState.error} ondismiss={() => gameState.clearError()} />
 
 			<div class="board panel">
 				<div class="board-header">
 					<PromptBar phase={view.phase} host={view.host} prompt={view.prompt} />
 					<div class="board-actions">
-						<Button kind="secondary" onclick={() => (logOpen = true)}>Game log</Button>
-						<Button kind="ghost" onclick={leaveGame}>Leave game</Button>
+						{#if view.started}
+							<ZoomControl />
+						{/if}
+						<Button kind="secondary" onclick={() => (logOpen = true)}>Game Log</Button>
+						<Button kind="ghost" onclick={leaveGame}>Leave Game</Button>
 					</div>
 				</div>
 
@@ -135,7 +151,7 @@
 				<ScoreBoard players={view.players} hostName={view.host} />
 			</div>
 
-			<Dialog title="Game log" open={logOpen} onclose={() => (logOpen = false)}>
+			<Dialog title="Game Log" open={logOpen} onclose={() => (logOpen = false)}>
 				<MessageLog messages={gameState.messages} />
 			</Dialog>
 		</PageShell>
@@ -149,10 +165,6 @@
 		align-items: center;
 		padding-top: 15vh;
 		gap: var(--space-2);
-	}
-
-	.lobby h1 {
-		text-align: center;
 	}
 
 	.tabs {
