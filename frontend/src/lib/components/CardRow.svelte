@@ -54,18 +54,34 @@
 		 * so a mid-scroll card's shadow doesn't get clipped against the edge.
 		 */
 		scroll-padding-inline: var(--space-3);
-		/* Chrome 121+ ignores ::-webkit-scrollbar-* entirely once scrollbar-width
-		 * or scrollbar-color is set to anything but its default, and the standard
-		 * properties have no way to hide just the arrow buttons — so there's no
-		 * way to keep a styled bar without them. Hide the scrollbar outright
-		 * instead; the scroll-snapped, partially cut-off cards already show
-		 * there's more to scroll to.
+		/* Deliberately no scrollbar-width/scrollbar-color here: setting either
+		 * to a non-default value makes Chrome 121+ ignore every
+		 * ::-webkit-scrollbar-* rule below, which is the only way to control
+		 * the arrow buttons specifically.
 		 */
-		scrollbar-width: none;
 	}
 
 	.row::-webkit-scrollbar {
+		height: 8px;
+	}
+
+	.row::-webkit-scrollbar-button {
 		display: none;
+		width: 0;
+		height: 0;
+	}
+
+	.row::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	.row::-webkit-scrollbar-thumb {
+		background: var(--color-accent);
+		border-radius: var(--radius);
+	}
+
+	.row::-webkit-scrollbar-thumb:hover {
+		filter: brightness(0.9);
 	}
 
 	.slot {
