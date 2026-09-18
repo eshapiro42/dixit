@@ -55,10 +55,10 @@
 			onselect={(id) => (selected = id)}
 		/>
 		<div class="actions">
+			<Button disabled={submitting || !selected} onclick={submit}>Submit Choice</Button>
 			{#if view.mulligan_available}
 				<Button kind="ghost" disabled={!selected} onclick={askMulligan}>Mulligan</Button>
 			{/if}
-			<Button disabled={submitting || !selected} onclick={submit}>Submit Choice</Button>
 		</div>
 	</section>
 
@@ -77,5 +77,9 @@
 		display: flex;
 		gap: var(--space-3);
 		flex-wrap: wrap;
+	}
+
+	.actions :global(.ghost) {
+		margin-left: auto;
 	}
 </style>

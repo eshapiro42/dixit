@@ -55,12 +55,12 @@
 	<form onsubmit={submit}>
 		<input type="text" bind:value={prompt} placeholder="Your prompt" maxlength="200" required />
 		<div class="actions">
-			{#if view.mulligan_available}
-				<Button kind="ghost" disabled={!selected} onclick={askMulligan}>Mulligan</Button>
-			{/if}
 			<Button type="submit" disabled={submitting || !selected || !prompt.trim()}
 				>Submit Choice</Button
 			>
+			{#if view.mulligan_available}
+				<Button kind="ghost" disabled={!selected} onclick={askMulligan}>Mulligan</Button>
+			{/if}
 		</div>
 	</form>
 </section>
@@ -95,5 +95,9 @@
 		display: flex;
 		gap: var(--space-3);
 		flex-wrap: wrap;
+	}
+
+	.actions :global(.ghost) {
+		margin-left: auto;
 	}
 </style>

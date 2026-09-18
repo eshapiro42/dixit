@@ -48,7 +48,7 @@
 	}
 
 	.primary:not(:disabled):hover {
-		filter: brightness(1.08);
+		filter: brightness(0.94);
 	}
 
 	.secondary {
@@ -68,10 +68,12 @@
 
 	.ghost {
 		background: transparent;
+		border-color: var(--color-border);
 		color: var(--color-text-quiet);
 	}
 
 	.ghost:not(:disabled):hover {
+		border-color: var(--color-accent);
 		color: var(--color-text);
 	}
 </style>

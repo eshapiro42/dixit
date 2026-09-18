@@ -11,6 +11,7 @@
 	let ranked = $derived([...players].sort((a, b) => b.score - a.score));
 </script>
 
+<h2>Player Scores</h2>
 <div class="scores">
 	<table>
 		<thead>
@@ -34,6 +35,10 @@
 </div>
 
 <style>
+	h2 {
+		margin-bottom: var(--space-3);
+	}
+
 	.scores {
 		overflow-x: auto;
 	}

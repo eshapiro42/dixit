@@ -43,37 +43,27 @@
 
 <style>
 	.row {
-		--row-bg: var(--color-surface);
 		display: flex;
 		gap: var(--space-3);
 		overflow-x: auto;
-		padding: var(--space-2) var(--space-1) var(--space-3);
+		padding: var(--space-2) var(--space-3) var(--space-3);
 		margin-bottom: var(--space-2);
 		scrollbar-width: thin;
-		scrollbar-color: var(--color-border) transparent;
+		scrollbar-color: var(--color-accent) transparent;
 		scroll-snap-type: x proximity;
-		/* Edge-fade scroll cue: the outer two gradients (background-attachment:
-		 * scroll) only show once there's actually more to scroll to, since the
-		 * inner two (attachment: local) scroll with the content and cover them
-		 * at either end.
+		/* Padding alone only insets the very first/last card; scroll-padding
+		 * keeps that same breathing room around whichever card is snapped to,
+		 * so a mid-scroll card's shadow doesn't get clipped against the edge.
 		 */
-		background:
-			linear-gradient(to right, var(--row-bg) 30%, transparent),
-			linear-gradient(to left, var(--row-bg) 30%, transparent) 100% 0,
-			linear-gradient(to right, rgb(32 28 43 / 0.12), transparent),
-			linear-gradient(to left, rgb(32 28 43 / 0.12), transparent) 100% 0;
-		background-repeat: no-repeat;
-		background-color: var(--row-bg);
-		background-size:
-			32px 100%,
-			32px 100%,
-			12px 100%,
-			12px 100%;
-		background-attachment: local, local, scroll, scroll;
+		scroll-padding-inline: var(--space-3);
 	}
 
 	.row::-webkit-scrollbar {
 		height: 8px;
+	}
+
+	.row::-webkit-scrollbar-button {
+		display: none;
 	}
 
 	.row::-webkit-scrollbar-track {
@@ -81,12 +71,12 @@
 	}
 
 	.row::-webkit-scrollbar-thumb {
-		background: var(--color-border);
+		background: var(--color-accent);
 		border-radius: var(--radius);
 	}
 
 	.row::-webkit-scrollbar-thumb:hover {
-		background: var(--color-text-quiet);
+		filter: brightness(0.9);
 	}
 
 	.slot {

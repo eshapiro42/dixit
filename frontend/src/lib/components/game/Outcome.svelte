@@ -62,7 +62,6 @@
 
 <style>
 	.outcome {
-		--row-bg: var(--color-surface-sunken);
 		margin-top: var(--space-4);
 		padding: var(--space-4);
 		background: var(--color-surface-sunken);

@@ -3,11 +3,12 @@
 	--color-surface: #ffffff;
 	--color-surface-sunken: #ece8e0;
 	--color-border: #e4e0da;
-	--color-text: #201c2b;
-	--color-text-quiet: #6b6577;
-	--color-accent: #6d28d9;
-	--color-accent-contrast: #ffffff;
-	--color-accent-soft: #efe8fb;
+	--color-text: #221f1f;
+	--color-text-quiet: #6b6560;
+	--color-accent: #a78bfa;
+	/* Light lavender needs dark text on top, not white, to stay legible. */
+	--color-accent-contrast: var(--color-text);
+	--color-accent-soft: #ede4fd;
 	--color-success: #1a7f5a;
 	--color-danger: #c23b3b;
 	--color-danger-soft: #fbe9e9;
@@ -41,13 +42,14 @@
 	/* Panels and buttons are flat; elevation is reserved for things that
 	 * genuinely float above the page (cards, the log/dialog overlay).
 	 */
-	--shadow-card: 0 2px 8px rgb(32 28 43 / 0.16);
-	--shadow-card-hover: 0 6px 16px rgb(32 28 43 / 0.2);
-	--shadow-overlay: 0 12px 32px rgb(32 28 43 / 0.22);
+	--shadow-card: 0 2px 8px rgb(34 31 31 / 0.16);
+	--shadow-card-hover: 0 6px 16px rgb(34 31 31 / 0.2);
+	--shadow-overlay: 0 12px 32px rgb(34 31 31 / 0.22);
 
 	--tap: 2.75rem;
 
 	color-scheme: light;
+	accent-color: var(--color-accent);
 }
 
 * {
