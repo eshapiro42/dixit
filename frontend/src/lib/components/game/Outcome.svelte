@@ -63,8 +63,8 @@
 <style>
 	.outcome {
 		margin-top: var(--space-4);
-		padding: var(--space-4);
-		background: var(--color-surface-sunken);
+		padding-top: var(--space-4);
+		border-top: 1px solid var(--color-border);
 	}
 
 	.callout {

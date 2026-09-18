@@ -79,14 +79,14 @@
 		list-style: none;
 		margin: 0;
 		padding: 0;
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-1);
 	}
 
 	.players li {
-		padding: var(--space-2) var(--space-3);
-		background: var(--color-surface-sunken);
+		padding: var(--space-2) 0;
+	}
+
+	.players li + li {
+		border-top: 1px solid var(--color-border);
 	}
 
 	.actions {

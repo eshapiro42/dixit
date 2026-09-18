@@ -37,7 +37,10 @@
 		position: sticky;
 		top: 0;
 		z-index: 20;
-		background: var(--color-surface-sunken);
+		/* Opaque so scrolled content doesn't show through underneath it while
+		 * it's pinned; separation from the page comes from the border alone.
+		 */
+		background: var(--color-surface);
 		border-bottom: 1px solid var(--color-border);
 	}
 
