@@ -62,8 +62,8 @@
 
 <style>
 	.outcome {
-		margin-top: var(--space-4);
-		padding-top: var(--space-4);
+		margin-top: var(--space-6);
+		padding-top: var(--space-6);
 		border-top: 1px solid var(--color-border);
 	}
 

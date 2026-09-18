@@ -32,4 +32,27 @@ describe('ScoreBoard', () => {
 		});
 		expect(screen.container.textContent).not.toContain('CPU-1 ·');
 	});
+
+	it('shows a delta badge for a human player with a recorded delta', () => {
+		const screen = render(ScoreBoard, {
+			players: [{ name: 'alice', score: 5, is_cpu: false }],
+			deltas: { alice: 3 }
+		});
+		expect(screen.container.querySelector('.delta')?.textContent).toBe('+3');
+	});
+
+	it('omits the delta badge for cpu players even when a delta is recorded', () => {
+		const screen = render(ScoreBoard, {
+			players: [{ name: 'CPU-1', score: 0, is_cpu: true }],
+			deltas: { 'CPU-1': 0 }
+		});
+		expect(screen.container.querySelector('.delta')).toBeNull();
+	});
+
+	it('omits the delta badge when no deltas are given at all', () => {
+		const screen = render(ScoreBoard, {
+			players: [{ name: 'alice', score: 5, is_cpu: false }]
+		});
+		expect(screen.container.querySelector('.delta')).toBeNull();
+	});
 });

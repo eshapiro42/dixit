@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Button from '$lib/components/Button.svelte';
+	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
 	import Dialog from '$lib/components/Dialog.svelte';
 	import ErrorBanner from '$lib/components/ErrorBanner.svelte';
 	import Field from '$lib/components/Field.svelte';
@@ -39,8 +40,14 @@
 		submitting = false;
 	}
 
-	async function leaveGame(): Promise<void> {
-		if (!confirm('Leave the game?')) return;
+	let confirmingLeave = $state(false);
+
+	function askLeave(): void {
+		confirmingLeave = true;
+	}
+
+	async function confirmLeave(): Promise<void> {
+		confirmingLeave = false;
 		await gameState.leaveGame();
 		gameId = '';
 	}
@@ -62,7 +69,7 @@
 </script>
 
 {#if !checkingSession}
-	<TopBar {view} onOpenLog={() => (logOpen = true)} onLeave={leaveGame} />
+	<TopBar {view} onOpenLog={() => (logOpen = true)} onLeave={askLeave} />
 
 	{#if !view}
 		<PageShell>
@@ -105,7 +112,7 @@
 		<PageShell wide>
 			<ErrorBanner message={gameState.error} ondismiss={() => gameState.clearError()} />
 
-			<div class="board panel">
+			<div class="panel">
 				{#if !view.started}
 					<GameLobby {view} />
 				{:else}
@@ -128,18 +135,29 @@
 					{#if view.phase !== 'voting' && gameState.lastOutcome}
 						<Outcome outcome={gameState.lastOutcome} players={view.players} />
 					{/if}
+
+					<div class="section">
+						<ScoreBoard
+							players={view.players}
+							hostName={view.host}
+							deltas={gameState.lastOutcome?.scores}
+						/>
+					</div>
 				{/if}
 			</div>
 
-			{#if view.started}
-				<div class="panel score-panel">
-					<ScoreBoard players={view.players} hostName={view.host} />
-				</div>
-			{/if}
-
 			<Dialog title="Game Log" open={logOpen} onclose={() => (logOpen = false)}>
-				<MessageLog messages={gameState.messages} />
+				<MessageLog messages={gameState.messages} open={logOpen} />
 			</Dialog>
+
+			<ConfirmDialog
+				open={confirmingLeave}
+				title="Leave Game"
+				message="You'll return to the lobby form and can rejoin later with the same name and game ID."
+				confirmLabel="Leave Game"
+				onconfirm={confirmLeave}
+				oncancel={() => (confirmingLeave = false)}
+			/>
 		</PageShell>
 	{/if}
 {/if}
@@ -188,21 +206,17 @@
 		padding: var(--space-6);
 	}
 
-	.board {
-		margin-bottom: var(--space-6);
-	}
-
-	.score-panel {
-		padding: var(--space-4) var(--space-6);
+	/* Matches Outcome.svelte's own divider exactly, so every section break in
+	 * the board reads the same way: hand -> results -> scores. */
+	.section {
+		margin-top: var(--space-6);
+		padding-top: var(--space-6);
+		border-top: 1px solid var(--color-border);
 	}
 
 	@media (max-width: 480px) {
 		.panel {
 			padding: var(--space-4);
-		}
-
-		.score-panel {
-			padding: var(--space-3) var(--space-4);
 		}
 	}
 </style>

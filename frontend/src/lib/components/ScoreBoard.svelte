@@ -4,9 +4,10 @@
 	interface Props {
 		players: PlayerSummary[];
 		hostName?: string | null;
+		deltas?: Record<string, number>;
 	}
 
-	let { players, hostName = null }: Props = $props();
+	let { players, hostName = null, deltas }: Props = $props();
 
 	let ranked = $derived([...players].sort((a, b) => b.score - a.score));
 </script>
@@ -27,7 +28,12 @@
 		<tbody>
 			<tr>
 				{#each ranked as player (player.name)}
-					<td class="numeric">{player.score}</td>
+					<td class="numeric">
+						{player.score}
+						{#if !player.is_cpu && deltas?.[player.name] !== undefined}
+							<span class="delta">+{deltas[player.name]}</span>
+						{/if}
+					</td>
 				{/each}
 			</tr>
 		</tbody>
@@ -68,6 +74,18 @@
 	td {
 		font-weight: 600;
 		font-size: var(--size-lg);
+	}
+
+	.delta {
+		display: inline-block;
+		margin-left: var(--space-1);
+		padding: 0 var(--space-1);
+		border-radius: var(--radius);
+		background: var(--color-accent-soft);
+		color: var(--color-text);
+		font-size: var(--size-xs);
+		font-weight: 700;
+		vertical-align: middle;
 	}
 
 	/* Equal-width columns look good with a handful of players, but crush names

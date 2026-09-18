@@ -4,6 +4,7 @@
 
 	interface Props {
 		messages: GameMessage[];
+		open: boolean;
 	}
 
 	interface Group {
@@ -12,7 +13,7 @@
 		roundNumber: number;
 	}
 
-	let { messages }: Props = $props();
+	let { messages, open }: Props = $props();
 	let listEl: HTMLElement | undefined;
 	// Only follow new messages while already reading the bottom of the log;
 	// once the user scrolls up to read history, leave them where they are.
@@ -35,6 +36,15 @@
 	$effect(() => {
 		const count = messages.length;
 		if (count > 0 && stickToBottom) listEl?.scrollTo({ top: listEl.scrollHeight });
+	});
+
+	// While the dialog is closed the log sits under display:none, where a
+	// scrollTo() call has nothing real to measure against and quietly does
+	// nothing — so history that arrives while it's closed leaves scrollTop
+	// stale. Re-snap once it's actually visible and laid out again.
+	$effect(() => {
+		if (!open || !stickToBottom) return;
+		requestAnimationFrame(() => listEl?.scrollTo({ top: listEl.scrollHeight }));
 	});
 
 	// Messages before the first "it's your turn" announcement (room created,
@@ -76,7 +86,9 @@
 						aria-expanded={isOpen(index)}
 						onclick={() => toggle(index)}
 					>
-						<span class="chevron" class:open={isOpen(index)} aria-hidden="true">&#9656;</span>
+						<svg class="chevron" class:open={isOpen(index)} viewBox="0 0 16 16" aria-hidden="true">
+							<path d="M6 4l4 4-4 4" />
+						</svg>
 						<span class="round-title">Round {group.roundNumber}</span>
 						<span class="count numeric">{group.messages.length}</span>
 					</button>
@@ -130,6 +142,7 @@
 	}
 
 	.messages {
+		position: relative;
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-1);
@@ -139,7 +152,21 @@
 	.round .messages {
 		margin-left: var(--rule-x);
 		padding-left: calc(var(--text-x) - var(--rule-x));
-		border-left: 1px solid var(--color-border);
+	}
+
+	/* A pseudo-element instead of a plain border-left: a border always spans
+	 * the full box, right down to where the next round's divider begins,
+	 * which reads as the two lines crossing. Insetting the bottom leaves a
+	 * gap between them instead.
+	 */
+	.round .messages::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		bottom: var(--space-2);
+		left: 0;
+		width: 1px;
+		background: var(--color-accent-soft);
 	}
 
 	p {
@@ -179,15 +206,24 @@
 		color: var(--color-text);
 	}
 
+	/* An SVG (not a glyph) so the tip is exactly centered by construction:
+	 * it's vertically centered in the viewBox, so rotating the box 90° around
+	 * its own center always lands the tip exactly on the box's horizontal
+	 * center — which is where .round .messages positions the rule below it.
+	 */
 	.chevron {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
 		flex-shrink: 0;
 		width: var(--icon-col);
-		font-size: var(--size-md);
-		color: var(--color-accent);
+		height: var(--icon-col);
 		transition: transform 0.15s ease;
+	}
+
+	.chevron path {
+		fill: none;
+		stroke: var(--color-accent);
+		stroke-width: 2;
+		stroke-linecap: round;
+		stroke-linejoin: round;
 	}
 
 	.chevron.open {
