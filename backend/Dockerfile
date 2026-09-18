@@ -23,9 +23,10 @@ HEALTHCHECK --interval=5s --timeout=3s --start-period=10s --retries=12 \
 FROM base AS dev
 
 COPY backend/pyproject.toml backend/uv.lock ./
-RUN uv sync --locked --all-groups
+RUN uv sync --locked --all-groups --no-install-project
 COPY backend/ .
 COPY cards/ ./cards/
+RUN uv sync --locked --all-groups
 RUN chown -R app:app /app /opt/venv
 USER app
 
@@ -36,9 +37,10 @@ CMD ["gunicorn", "-k", "geventwebsocket.gunicorn.workers.GeventWebSocketWorker",
 FROM base AS runtime
 
 COPY backend/pyproject.toml backend/uv.lock ./
-RUN uv sync --locked --no-dev
+RUN uv sync --locked --no-dev --no-install-project
 COPY backend/ .
 COPY cards/ ./cards/
+RUN uv sync --locked --no-dev
 RUN chown -R app:app /app /opt/venv
 USER app
 
