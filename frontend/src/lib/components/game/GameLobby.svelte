@@ -29,16 +29,6 @@
 		</div>
 	</div>
 
-	<ul class="players">
-		{#each view.players as player (player.name)}
-			<li>
-				{player.name}
-				{#if player.name === view.player_name}<span class="quiet"> · You</span>{/if}
-				{#if player.name === view.creator_name}<span class="quiet"> · Creator</span>{/if}
-			</li>
-		{/each}
-	</ul>
-
 	{#if view.is_creator}
 		<div class="actions">
 			<Button kind="secondary" onclick={() => gameState.addCpu()}>Add CPU</Button>
@@ -52,6 +42,16 @@
 			Need at least {view.min_players} players, {view.min_human_players} of them human.
 		</p>
 	{/if}
+
+	<ul class="players">
+		{#each view.players as player (player.name)}
+			<li>
+				{player.name}
+				{#if player.name === view.player_name}<span class="quiet"> · You</span>{/if}
+				{#if player.name === view.creator_name}<span class="quiet"> · Creator</span>{/if}
+			</li>
+		{/each}
+	</ul>
 </section>
 
 <style>
@@ -77,7 +77,7 @@
 
 	.players {
 		list-style: none;
-		margin: 0 0 var(--space-4);
+		margin: 0;
 		padding: 0;
 		display: flex;
 		flex-direction: column;
@@ -93,5 +93,10 @@
 		display: flex;
 		gap: var(--space-3);
 		flex-wrap: wrap;
+		margin-bottom: var(--space-3);
+	}
+
+	section > p {
+		margin: 0 0 var(--space-3);
 	}
 </style>
