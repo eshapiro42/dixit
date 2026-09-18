@@ -5,7 +5,7 @@ import string
 
 from flask import Blueprint, Response, jsonify, request, send_from_directory
 
-from dixit.domain import MIN_HUMAN_PLAYERS, CardLibrary, DixitError, Game
+from dixit.domain import MIN_HUMAN_PLAYERS, CardLibrary, DixitError, Game, Phase
 from dixit.store import GameStore
 
 from . import views
@@ -58,6 +58,30 @@ def build_routes_blueprint(
         if player_name != game.creator_name:
             raise DixitError("Only the game's creator can do that.")
 
+    def phase_announcement(phase: Phase) -> str | None:
+        if phase is Phase.OTHERS_CHOOSING:
+            return "Other players, choose a card to match the prompt."
+        if phase is Phase.VOTING:
+            return "Other players, vote for which card you think matches the prompt."
+        return None
+
+    def announce_next_host(game: Game) -> None:
+        round_ = game.current_round
+        if round_ is not None:
+            notifier.message(
+                game.id, f"It is {round_.host_name}'s turn to choose a card and give a prompt."
+            )
+
+    def table_names(game: Game) -> set[str]:
+        round_ = game.current_round
+        return set(round_.table) if round_ else set()
+
+    def cpus_played_since(game: Game, before: set[str]) -> list[str]:
+        round_ = game.current_round
+        if round_ is None:
+            return []
+        return [name for name in round_.table if name not in before and game.player(name).is_cpu]
+
     def new_game_id() -> str:
         game_id = "".join(random.choices(GAME_ID_ALPHABET, k=GAME_ID_LENGTH))
         while store.exists(game_id):
@@ -74,6 +98,8 @@ def build_routes_blueprint(
         game.add_player(player_name)
         store.create(game)
         start_session(game_id, player_name)
+        notifier.message(game_id, f"{player_name} created the game room.")
+        notifier.message(game_id, "Waiting for players.")
         return jsonify(views.session_view(game, player_name))
 
     @bp.post("/games/<game_id>/join")
@@ -131,6 +157,7 @@ def build_routes_blueprint(
             require_creator(game, player_name)
             game.start()
         notifier.message(game_id, "The game has started.", emphasis=True)
+        announce_next_host(game)
         notifier.state_changed(game)
         return jsonify(ok=True)
 
@@ -143,13 +170,23 @@ def build_routes_blueprint(
         prompt = prompt_from(payload)
         with store.transaction(game_id) as game:
             player = game.player(player_name)
+            before = table_names(game)
             scored = game.submit_host_choice(player, card_id, prompt)
-            finished_round = game.current_round if scored else None
+            round_ = game.current_round
+            finished_round = round_ if scored else None
+            next_phase = round_.phase if round_ and not scored else None
+            cpus_played = cpus_played_since(game, before)
             if scored:
                 game.advance_round()
         notifier.message(game_id, f'{player_name}\'s prompt: "{prompt}"', emphasis=True)
+        for cpu_name in cpus_played:
+            notifier.message(game_id, f"{cpu_name} played a card.")
+        announcement = phase_announcement(next_phase) if next_phase else None
+        if announcement:
+            notifier.message(game_id, announcement)
         if finished_round is not None:
             notifier.round_finished(game_id, finished_round)
+            announce_next_host(game)
         notifier.state_changed(game)
         return jsonify(ok=True)
 
@@ -160,13 +197,23 @@ def build_routes_blueprint(
         card_id = card_id_from(json_body())
         with store.transaction(game_id) as game:
             player = game.player(player_name)
+            before = table_names(game)
             scored = game.submit_other_choice(player, card_id)
-            finished_round = game.current_round if scored else None
+            round_ = game.current_round
+            finished_round = round_ if scored else None
+            next_phase = round_.phase if round_ and not scored else None
+            cpus_played = cpus_played_since(game, before)
             if scored:
                 game.advance_round()
         notifier.message(game_id, f"{player_name} played a card.")
+        for cpu_name in cpus_played:
+            notifier.message(game_id, f"{cpu_name} played a card.")
+        announcement = phase_announcement(next_phase) if next_phase else None
+        if announcement:
+            notifier.message(game_id, announcement)
         if finished_round is not None:
             notifier.round_finished(game_id, finished_round)
+            announce_next_host(game)
         notifier.state_changed(game)
         return jsonify(ok=True)
 
@@ -184,6 +231,7 @@ def build_routes_blueprint(
         notifier.message(game_id, f"{player_name} voted.")
         if finished_round is not None:
             notifier.round_finished(game_id, finished_round)
+            announce_next_host(game)
         notifier.state_changed(game)
         return jsonify(ok=True)
 

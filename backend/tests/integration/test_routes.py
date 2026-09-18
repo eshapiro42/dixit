@@ -313,3 +313,39 @@ def test_leaving_after_start_only_clears_the_session(app: Flask) -> None:
 def test_leave_requires_an_active_session(client) -> None:
     response = client.post("/api/session/leave")
     assert response.status_code == 401
+
+
+def test_solo_game_log_covers_the_full_round_lifecycle(card_library) -> None:
+    flask_app = Flask(__name__)
+    flask_app.config.update(SECRET_KEY="test", TESTING=True)
+    broadcaster = FakeBroadcaster()
+    notifier = GameNotifier(broadcaster)
+    blueprint = build_routes_blueprint(
+        store=InMemoryGameStore(), library=card_library, notifier=notifier, min_human_players=1
+    )
+    flask_app.register_blueprint(blueprint)
+    register_error_handlers(flask_app)
+
+    solo = flask_app.test_client()
+    create_game(solo, "alice")
+    for _ in range(3):
+        solo.post("/api/session/add-cpu")
+    solo.post("/api/session/start")
+
+    state = solo.get("/api/session").get_json()
+    solo.post("/api/session/host-choice", json={"card_id": state["hand"][0], "prompt": "a memory"})
+
+    texts = [e.payload["text"] for e in broadcaster.emissions if e.event == "message"]
+    assert "alice created the game room." in texts
+    assert "Waiting for players." in texts
+    assert sum(text.endswith("has joined the game.") for text in texts) == 3
+    assert "The game has started." in texts
+    assert texts.count("It is alice's turn to choose a card and give a prompt.") == 2
+    assert 'alice\'s prompt: "a memory"' in texts
+    assert sum(text.endswith("played a card.") for text in texts) == 3
+
+    after = solo.get("/api/session").get_json()
+    outcome = after["previous_round_outcome"]
+    assert outcome["host"] == "alice"
+    assert set(outcome["votes"]).issubset({"CPU-1", "CPU-2", "CPU-3"})
+    assert len(outcome["votes"]) == 3
