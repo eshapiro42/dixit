@@ -26,6 +26,12 @@
 		return byCard;
 	});
 
+	let zeroRuleMessage = $derived(
+		outcome.correct_voter_count === 0
+			? `No one matched ${outcome.host}'s card, so ${outcome.host} scored 0 this round.`
+			: `Everyone matched ${outcome.host}'s card, so ${outcome.host} scored 0 this round.`
+	);
+
 	const ZERO_RULE_SEEN_KEY = 'dixit:seen-zero-rule';
 	let showZeroRuleExplainer = $state(false);
 
@@ -49,9 +55,7 @@
 	<h2>Round {outcome.round_number} Results</h2>
 	<p class="quiet">{outcome.host}'s prompt: "{outcome.prompt}"</p>
 	{#if showZeroRuleExplainer}
-		<p class="quiet callout">
-			{outcome.host} scored 0: everyone or no one matched the card this round.
-		</p>
+		<p class="quiet callout">{zeroRuleMessage}</p>
 	{/if}
 	<CardRow {cardIds} {labels} {votes} {deltas} />
 </section>

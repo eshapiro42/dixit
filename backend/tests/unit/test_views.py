@@ -32,7 +32,7 @@ def test_visible_table_contains_every_card_id_and_no_names() -> None:
 
 
 def test_round_outcome_is_fully_attributed() -> None:
-    round_ = _round(round_number=2, scores={"host": 3, "a": 3, "b": 0})
+    round_ = _round(round_number=2, scores={"host": 3, "a": 3, "b": 0}, correct_voter_count=1)
     outcome = views.round_outcome(round_)
     assert outcome == {
         "host": "host",
@@ -41,6 +41,7 @@ def test_round_outcome_is_fully_attributed() -> None:
         "table": {"host": "h.jpg", "a": "a.jpg", "b": "b.jpg"},
         "votes": {"a": "h.jpg"},
         "scores": {"host": 3, "a": 3, "b": 0},
+        "correct_voter_count": 1,
     }
 
 

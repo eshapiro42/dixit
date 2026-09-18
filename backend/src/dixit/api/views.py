@@ -18,6 +18,7 @@ def round_outcome(round_: Round) -> dict:
         "table": {name: card.id for name, card in round_.table.items()},
         "votes": dict(round_.votes),
         "scores": dict(round_.scores),
+        "correct_voter_count": round_.correct_voter_count,
     }
 
 

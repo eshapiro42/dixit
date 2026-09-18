@@ -13,6 +13,7 @@ export interface RoundOutcome {
 	table: Record<string, string>;
 	votes: Record<string, string>;
 	scores: Record<string, number>;
+	correct_voter_count: number;
 }
 
 export interface PublicView {

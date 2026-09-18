@@ -33,6 +33,7 @@ class Round:
     votes: dict[str, str] = field(default_factory=dict)
     mulligans_used: set[str] = field(default_factory=set)
     scores: dict[str, int] = field(default_factory=dict)
+    correct_voter_count: int = 0
 
     @property
     def is_scored(self) -> bool:
@@ -108,15 +109,17 @@ class Round:
     def score(self, all_players: list[Player]) -> None:
         if self.phase != Phase.VOTING:
             raise WrongPhaseError("score the round", self.phase.value)
-        deltas = self._score_deltas(all_players)
+        deltas, correct_voter_count = self._score_deltas(all_players)
         for player in all_players:
             player.score += deltas[player.name]
         self.scores = deltas
+        self.correct_voter_count = correct_voter_count
         self.phase = Phase.SCORING
 
-    def _score_deltas(self, all_players: list[Player]) -> dict[str, int]:
-        """Each player's point change this round, keyed by name. CPUs never
-        compete for score, so they're always 0.
+    def _score_deltas(self, all_players: list[Player]) -> tuple[dict[str, int], int]:
+        """Each player's point change this round, keyed by name, and how many
+        non-host players voted for the host's card. CPUs never compete for
+        score, so they're always 0.
         """
         deltas = {player.name: 0 for player in all_players}
         host_card_id = self.table[self.host_name].id
@@ -138,7 +141,7 @@ class Round:
                 continue
             own_card_id = self.table[player.name].id
             deltas[player.name] += sum(1 for vote in self.votes.values() if vote == own_card_id)
-        return deltas
+        return deltas, len(correct_voters)
 
     def to_dict(self) -> dict:
         return {
@@ -150,6 +153,7 @@ class Round:
             "votes": dict(self.votes),
             "mulligans_used": sorted(self.mulligans_used),
             "scores": dict(self.scores),
+            "correct_voter_count": self.correct_voter_count,
         }
 
     @classmethod
@@ -163,4 +167,5 @@ class Round:
             votes=dict(data["votes"]),
             mulligans_used=set(data["mulligans_used"]),
             scores=dict(data["scores"]),
+            correct_voter_count=data["correct_voter_count"],
         )

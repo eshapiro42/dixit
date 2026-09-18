@@ -245,6 +245,24 @@ class TestScore:
         round_.score(players)
         assert round_.scores == {"host": 3, "a": 4, "b": 0}
 
+    def test_records_how_many_voted_correctly(self) -> None:
+        round_ = self._table_and_votes()
+        round_.votes = {"a": "h.jpg", "b": "a.jpg"}
+        round_.score([Player(name="host"), Player(name="a"), Player(name="b")])
+        assert round_.correct_voter_count == 1
+
+    def test_correct_voter_count_is_zero_when_nobody_finds_the_card(self) -> None:
+        round_ = self._table_and_votes()
+        round_.votes = {"a": "b.jpg", "b": "a.jpg"}
+        round_.score([Player(name="host"), Player(name="a"), Player(name="b")])
+        assert round_.correct_voter_count == 0
+
+    def test_correct_voter_count_equals_the_field_when_everyone_finds_it(self) -> None:
+        round_ = self._table_and_votes()
+        round_.votes = {"a": "h.jpg", "b": "h.jpg"}
+        round_.score([Player(name="host"), Player(name="a"), Player(name="b")])
+        assert round_.correct_voter_count == 2
+
 
 def test_round_trip_through_dict() -> None:
     round_ = Round(
@@ -256,6 +274,7 @@ def test_round_trip_through_dict() -> None:
         votes={"a": "h.jpg"},
         mulligans_used={"a"},
         scores={"host": 3, "a": 4},
+        correct_voter_count=1,
     )
     restored = Round.from_dict(round_.to_dict())
     assert restored == round_
