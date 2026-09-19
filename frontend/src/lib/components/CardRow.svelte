@@ -1,8 +1,9 @@
 <script lang="ts">
 	import Card from './Card.svelte';
-	import { zoomState } from '../game/zoom.svelte';
+	import { getZoomState, ZOOM_MIN, type ZoomKind } from '../game/zoom.svelte';
 
 	interface Props {
+		kind: ZoomKind;
 		cardIds: string[];
 		selectedId?: string | null;
 		selectable?: boolean;
@@ -13,6 +14,7 @@
 	}
 
 	let {
+		kind,
 		cardIds,
 		selectedId = null,
 		selectable = false,
@@ -21,9 +23,17 @@
 		votes,
 		deltas
 	}: Props = $props();
+
+	let zoom = $derived(getZoomState(kind));
 </script>
 
-<div class="row" role="list" style:--zoom={zoomState.value}>
+<div
+	class="row"
+	role="list"
+	data-zoom-kind={kind}
+	style:--zoom={zoom.value}
+	style:--zoom-min={ZOOM_MIN}
+>
 	{#each cardIds as cardId, index (cardId)}
 		<div class="slot" role="listitem">
 			<Card
@@ -46,14 +56,15 @@
 		display: flex;
 		gap: var(--space-3);
 		overflow-x: auto;
-		padding: var(--space-2) var(--space-3) var(--space-3);
-		margin-bottom: var(--space-2);
-		scroll-snap-type: x proximity;
-		/* Padding alone only insets the very first/last card; scroll-padding
-		 * keeps that same breathing room around whichever card is snapped to,
-		 * so a mid-scroll card's shadow doesn't get clipped against the edge.
+		/* No horizontal padding: the selected-card ring is an inset shadow (see
+		 * Card.svelte) rather than an outline, so nothing ever renders beyond a
+		 * card's own box - the first/last card's edge can sit flush with the
+		 * scrollport boundary and still never get clipped, which is what keeps
+		 * it in exact alignment with sibling elements like the prompt field.
 		 */
-		scroll-padding-inline: var(--space-3);
+		padding: var(--space-3) 0;
+		margin: var(--space-4) 0;
+		scroll-snap-type: x proximity;
 		/* Deliberately no scrollbar-width/scrollbar-color here: setting either
 		 * to a non-default value makes Chrome 121+ ignore every
 		 * ::-webkit-scrollbar-* rule below, which is the only way to control
@@ -62,7 +73,7 @@
 	}
 
 	.row::-webkit-scrollbar {
-		height: 8px;
+		height: var(--accent-line);
 	}
 
 	.row::-webkit-scrollbar-button {

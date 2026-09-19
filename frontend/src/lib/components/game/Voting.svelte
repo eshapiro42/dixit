@@ -3,14 +3,17 @@
 	import { gameState } from '../../game/state.svelte';
 	import Button from '../Button.svelte';
 	import CardRow from '../CardRow.svelte';
-	import Clue from '../Clue.svelte';
-	import Waiting from '../Waiting.svelte';
+	import PanelHeader from '../PanelHeader.svelte';
+	import PromptCaption from '../PromptCaption.svelte';
+	import Text from '../Text.svelte';
+	import ZoomControl from '../ZoomControl.svelte';
 
 	let { view }: { view: SessionView } = $props();
 	let selected = $state<string | null>(null);
 	let submitting = $state(false);
 
 	let isHost = $derived(view.host === view.player_name);
+	let canVote = $derived(!isHost && !view.has_voted);
 
 	async function submit(): Promise<void> {
 		if (!selected) return;
@@ -20,22 +23,28 @@
 	}
 </script>
 
-{#if isHost}
-	<Waiting detail="Waiting for votes ({view.votes_cast} of {view.votes_needed})." />
-{:else if view.has_voted}
-	<Waiting detail="Waiting for the other players to vote." />
-{:else}
-	<section class="action-needed">
-		{#if view.host && view.prompt}
-			<Clue host={view.host} prompt={view.prompt} />
-		{/if}
-		<h2>Table</h2>
-		<CardRow
-			cardIds={view.table ?? []}
-			selectable
-			selectedId={selected}
-			onselect={(id) => (selected = id)}
-		/>
+<section class:action-needed={canVote}>
+	<PanelHeader>
+		<Text variant="heading">Table</Text>
+		<ZoomControl kind="table" />
+	</PanelHeader>
+	{#if view.host && view.prompt}
+		<PromptCaption host={view.host} prompt={view.prompt} />
+	{/if}
+	<CardRow
+		kind="table"
+		cardIds={view.table ?? []}
+		selectable={canVote}
+		selectedId={selected}
+		onselect={(id) => (selected = selected === id ? null : id)}
+	/>
+	{#if isHost}
+		<Text as="p" variant="caption"
+			>Waiting for votes ({view.votes_cast} of {view.votes_needed}).</Text
+		>
+	{:else if view.has_voted}
+		<Text as="p" variant="caption">Waiting for the other players to vote.</Text>
+	{:else}
 		<Button disabled={submitting || !selected} onclick={submit}>Submit Vote</Button>
-	</section>
-{/if}
+	{/if}
+</section>

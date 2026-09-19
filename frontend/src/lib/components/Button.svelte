@@ -28,9 +28,18 @@
 		border: 1px solid transparent;
 		font-family: inherit;
 		font-size: var(--size-sm);
-		font-weight: 600;
+		font-weight: var(--weight-medium);
 		text-decoration: none;
 		cursor: pointer;
+		/* The button's own height comes from min-height, not the label's line
+		 * box, so trimming that line box to the label's actual glyph metrics
+		 * only affects how it's centered within the button - not the
+		 * button's size - making that centering line up with other
+		 * geometrically-centered elements (e.g. the zoom slider's track)
+		 * regardless of which font a given browser substitutes in.
+		 */
+		text-box-trim: trim-both;
+		text-box-edge: cap alphabetic;
 		transition:
 			background-color 0.15s ease,
 			border-color 0.15s ease,
@@ -38,7 +47,7 @@
 	}
 
 	.button:disabled {
-		opacity: 0.5;
+		opacity: var(--opacity-faded);
 		cursor: not-allowed;
 	}
 
@@ -63,7 +72,7 @@
 
 	.danger {
 		background: var(--color-danger);
-		color: white;
+		color: var(--color-danger-contrast);
 	}
 
 	.ghost {

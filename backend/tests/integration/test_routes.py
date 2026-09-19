@@ -170,6 +170,24 @@ def test_a_full_round_reaches_scoring_and_starts_the_next(app: Flask) -> None:
     assert final_state["previous_round_outcome"]["host"] == host_name
 
 
+def test_others_choosing_announcement_is_logged_only_once(app: Flask) -> None:
+    lobby = _started_lobby(app)
+    clients = lobby["clients"]
+    host_name, host = _current_host(clients)
+    others = [c for name, c in clients.items() if name != host_name]
+    assert len(others) >= 2
+
+    host_hand = host.get("/api/session").get_json()["hand"]
+    host.post("/api/session/host-choice", json={"card_id": host_hand[0], "prompt": "a memory"})
+
+    for other in others:
+        hand = other.get("/api/session").get_json()["hand"]
+        other.post("/api/session/play", json={"card_id": hand[0]})
+
+    texts = [m["text"] for m in host.get("/api/session").get_json()["messages"]]
+    assert texts.count("Other players, choose a card to match the prompt.") == 1
+
+
 def test_cannot_vote_for_your_own_card(app: Flask) -> None:
     lobby = _started_lobby(app)
     clients = lobby["clients"]
@@ -305,7 +323,7 @@ def test_leaving_after_start_only_clears_the_session(app: Flask) -> None:
 
     creator = clients["alice"]
     state = creator.get("/api/session").get_json()
-    assert {p["name"] for p in state["players"]} == {"alice", "bob", "carol", "CPU-1"}
+    assert {p["name"] for p in state["players"]} == {"alice", "bob", "carol", "CPU 1"}
 
 
 def test_leave_requires_an_active_session(client) -> None:
@@ -356,12 +374,12 @@ def test_solo_game_log_covers_the_full_round_lifecycle(card_library) -> None:
     assert "The game has started." in texts
     assert texts.count("It is alice's turn to choose a card and give a prompt.") == 2
     assert 'alice\'s prompt: "a memory"' in texts
-    assert "CPU-1, CPU-2, and CPU-3 played cards." in texts
+    assert "CPU 1, CPU 2, and CPU 3 played cards." in texts
 
     after = solo.get("/api/session").get_json()
     outcome = after["previous_round_outcome"]
     assert outcome["host"] == "alice"
-    assert set(outcome["votes"]).issubset({"CPU-1", "CPU-2", "CPU-3"})
+    assert set(outcome["votes"]).issubset({"CPU 1", "CPU 2", "CPU 3"})
     assert len(outcome["votes"]) == 3
 
 
@@ -394,4 +412,4 @@ def test_two_cpus_playing_together_are_joined_with_and(card_library) -> None:
     other.post("/api/session/play", json={"card_id": other_hand[0]})
 
     texts = [e.payload["text"] for e in broadcaster.emissions if e.event == "message"]
-    assert "CPU-1 and CPU-2 played cards." in texts
+    assert "CPU 1 and CPU 2 played cards." in texts

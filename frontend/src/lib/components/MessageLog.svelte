@@ -1,6 +1,8 @@
 <script lang="ts">
 	import type { GameMessage } from '../api/types';
+	import Badge from './Badge.svelte';
 	import Button from './Button.svelte';
+	import Text from './Text.svelte';
 
 	interface Props {
 		messages: GameMessage[];
@@ -90,13 +92,17 @@
 							<path d="M6 4l4 4-4 4" />
 						</svg>
 						<span class="round-title">Round {group.roundNumber}</span>
-						<span class="count numeric">{group.messages.length}</span>
+						<Badge tone="soft" class="count">{group.messages.length}</Badge>
 					</button>
 				{/if}
 				{#if !group.isRound || isOpen(index)}
 					<div class="messages">
 						{#each group.messages as message, messageIndex (messageIndex)}
-							<p class:emphasis={message.emphasis}>{message.text}</p>
+							{#if message.emphasis}
+								<Text as="p" variant="body" class="log-emphasis">{message.text}</Text>
+							{:else}
+								<Text as="p" variant="caption">{message.text}</Text>
+							{/if}
 						{/each}
 					</div>
 				{/if}
@@ -125,7 +131,7 @@
 	}
 
 	.log {
-		--icon-col: 1.25rem;
+		--icon-col: var(--size-lg);
 		/* Where the round's connecting rule sits: under the chevron's center. */
 		--rule-x: calc(var(--space-2) + var(--icon-col) / 2);
 		/* Where message text sits: clearly past the round title's own indent
@@ -138,7 +144,6 @@
 		flex: 1 1 auto;
 		min-height: 0;
 		overflow-y: auto;
-		font-size: var(--size-sm);
 	}
 
 	.messages {
@@ -169,14 +174,8 @@
 		background: var(--color-accent-soft);
 	}
 
-	p {
-		margin: 0;
-		color: var(--color-text-quiet);
-	}
-
-	p.emphasis {
-		color: var(--color-text);
-		font-weight: 600;
+	.messages :global(.log-emphasis) {
+		font-weight: var(--weight-medium);
 	}
 
 	.round-toggle {
@@ -187,11 +186,12 @@
 		margin: 0;
 		padding: var(--space-3) var(--space-2) var(--space-2);
 		border: none;
-		border-top: 1px solid var(--color-border);
+		border-top: var(--border-width) solid var(--color-border);
 		border-radius: var(--radius);
 		background: none;
-		font: inherit;
-		font-weight: 500;
+		font-family: inherit;
+		font-size: var(--size-sm);
+		font-weight: var(--weight-medium);
 		color: var(--color-text-quiet);
 		text-align: left;
 		cursor: pointer;
@@ -202,7 +202,7 @@
 	}
 
 	.round-toggle.current {
-		font-weight: 700;
+		font-weight: var(--weight-bold);
 		color: var(--color-text);
 	}
 
@@ -234,15 +234,11 @@
 		flex: 1 1 auto;
 	}
 
-	.count {
+	.round-toggle :global(.count) {
 		flex-shrink: 0;
 		min-width: 1.5em;
-		padding: 0 var(--space-1);
-		border-radius: var(--radius);
-		background: var(--color-accent-soft);
 		color: var(--color-text-quiet);
 		font-size: var(--size-xs);
-		font-weight: 600;
 		text-align: center;
 	}
 

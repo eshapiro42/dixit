@@ -9,7 +9,7 @@ export interface PlayerSummary {
 export interface RoundOutcome {
 	host: string;
 	round_number: number;
-	prompt: string | null;
+	prompt: string;
 	table: Record<string, string>;
 	votes: Record<string, string>;
 	scores: Record<string, number>;

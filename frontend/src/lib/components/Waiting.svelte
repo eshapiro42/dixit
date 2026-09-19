@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Text from './Text.svelte';
+
 	interface Props {
 		detail: string;
 	}
@@ -7,6 +9,6 @@
 </script>
 
 <section>
-	<h2>Waiting</h2>
-	<p class="quiet">{detail}</p>
+	<Text variant="heading">Waiting</Text>
+	<Text as="p" variant="caption">{detail}</Text>
 </section>

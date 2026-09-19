@@ -4,8 +4,13 @@
 	import Button from '../Button.svelte';
 	import CardRow from '../CardRow.svelte';
 	import ConfirmDialog from '../ConfirmDialog.svelte';
+	import PanelHeader from '../PanelHeader.svelte';
+	import Text from '../Text.svelte';
+	import ZoomControl from '../ZoomControl.svelte';
 
 	let { view }: { view: SessionView } = $props();
+
+	const promptId = $props.id();
 
 	let selected = $state<string | null>(null);
 	let prompt = $state('');
@@ -43,20 +48,32 @@
 </script>
 
 <section class="action-needed">
-	<h2>Your Hand</h2>
+	<PanelHeader>
+		<Text variant="heading">Your Hand</Text>
+		<ZoomControl kind="hand" />
+	</PanelHeader>
 
 	<CardRow
+		kind="hand"
 		cardIds={view.hand}
 		selectable
 		selectedId={selected}
-		onselect={(id) => (selected = id)}
+		onselect={(id) => (selected = selected === id ? null : id)}
 	/>
 
 	<form onsubmit={submit}>
-		<input type="text" bind:value={prompt} placeholder="Your prompt" maxlength="200" required />
+		<Text as="label" variant="label" for={promptId} class="sr-only">Your prompt</Text>
+		<input
+			id={promptId}
+			type="text"
+			bind:value={prompt}
+			placeholder="Your prompt"
+			maxlength="200"
+			required
+		/>
 		<div class="actions">
 			<Button type="submit" disabled={submitting || !selected || !prompt.trim()}
-				>Submit Choice</Button
+				>Submit</Button
 			>
 			{#if view.mulligan_available}
 				<Button kind="ghost" disabled={!selected} onclick={askMulligan}>Mulligan</Button>
@@ -83,12 +100,17 @@
 
 	input {
 		min-height: var(--tap);
-		padding: 0 var(--space-3);
+		padding: 0 var(--space-4);
 		border-radius: var(--radius);
 		border: 1px solid var(--color-border);
 		background: var(--color-surface);
 		color: var(--color-text);
 		font: inherit;
+	}
+
+	input:focus-visible {
+		outline: 2px solid var(--color-accent);
+		outline-offset: 1px;
 	}
 
 	.actions {

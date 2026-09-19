@@ -2,6 +2,8 @@
 	import type { SessionView } from '../../api/types';
 	import { gameState } from '../../game/state.svelte';
 	import Button from '../Button.svelte';
+	import Stat from '../Stat.svelte';
+	import Text from '../Text.svelte';
 
 	let { view }: { view: SessionView } = $props();
 
@@ -22,9 +24,9 @@
 
 <section>
 	<div class="invite">
-		<span class="quiet">Game ID</span>
+		<Text as="span" variant="label">Game ID</Text>
 		<div class="invite-row">
-			<span class="code numeric">{view.game_id}</span>
+			<Stat size="hero">{view.game_id}</Stat>
 			<Button kind="secondary" onclick={copyGameId}>{copied ? 'Copied!' : 'Copy'}</Button>
 		</div>
 	</div>
@@ -35,20 +37,20 @@
 			<Button disabled={!view.playable} onclick={() => gameState.start()}>Start Game</Button>
 		</div>
 	{:else}
-		<p class="quiet">Waiting for the creator to start the game.</p>
+		<Text as="p" variant="caption">Waiting for the creator to start the game.</Text>
 	{/if}
 	{#if !view.playable}
-		<p class="quiet">
+		<Text as="p" variant="caption">
 			Need at least {view.min_players} players, {view.min_human_players} of them human.
-		</p>
+		</Text>
 	{/if}
 
 	<ul class="players">
 		{#each view.players as player (player.name)}
 			<li>
 				{player.name}
-				{#if player.name === view.player_name}<span class="quiet"> · You</span>{/if}
-				{#if player.name === view.creator_name}<span class="quiet"> · Creator</span>{/if}
+				{#if player.name === view.player_name}<Text as="span" variant="tag">· You</Text>{/if}
+				{#if player.name === view.creator_name}<Text as="span" variant="tag">· Creator</Text>{/if}
 			</li>
 		{/each}
 	</ul>
@@ -68,13 +70,6 @@
 		gap: var(--space-3);
 	}
 
-	.code {
-		font-family: var(--font-mono);
-		font-size: var(--size-2xl);
-		font-weight: 600;
-		letter-spacing: 0.05em;
-	}
-
 	.players {
 		list-style: none;
 		margin: 0;
@@ -86,7 +81,7 @@
 	}
 
 	.players li + li {
-		border-top: 1px solid var(--color-border);
+		border-top: var(--border-width) solid var(--color-border);
 	}
 
 	.actions {
@@ -96,7 +91,7 @@
 		margin-bottom: var(--space-3);
 	}
 
-	section > p {
+	section > :global(p) {
 		margin: 0 0 var(--space-3);
 	}
 </style>

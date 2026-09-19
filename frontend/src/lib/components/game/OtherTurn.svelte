@@ -3,14 +3,18 @@
 	import { gameState } from '../../game/state.svelte';
 	import Button from '../Button.svelte';
 	import CardRow from '../CardRow.svelte';
-	import Clue from '../Clue.svelte';
 	import ConfirmDialog from '../ConfirmDialog.svelte';
-	import Waiting from '../Waiting.svelte';
+	import PanelHeader from '../PanelHeader.svelte';
+	import PromptCaption from '../PromptCaption.svelte';
+	import Text from '../Text.svelte';
+	import ZoomControl from '../ZoomControl.svelte';
 
 	let { view }: { view: SessionView } = $props();
 	let selected = $state<string | null>(null);
 	let submitting = $state(false);
 	let confirmingMulligan = $state(false);
+
+	let canPlay = $derived(!view.has_played);
 
 	// Clears a selection once its card leaves the hand, so a card played (and
 	// discarded) last round can't linger as an enabled-but-invalid selection.
@@ -40,37 +44,41 @@
 	}
 </script>
 
-{#if view.has_played}
-	<Waiting detail="Waiting for the other players to choose." />
-{:else}
-	<section class="action-needed">
-		{#if view.host && view.prompt}
-			<Clue host={view.host} prompt={view.prompt} />
-		{/if}
-		<h2>Your Hand</h2>
-		<CardRow
-			cardIds={view.hand}
-			selectable
-			selectedId={selected}
-			onselect={(id) => (selected = id)}
-		/>
+<section class:action-needed={canPlay}>
+	<PanelHeader>
+		<Text variant="heading">Your Hand</Text>
+		<ZoomControl kind="hand" />
+	</PanelHeader>
+	{#if view.host && view.prompt}
+		<PromptCaption host={view.host} prompt={view.prompt} />
+	{/if}
+	<CardRow
+		kind="hand"
+		cardIds={view.hand}
+		selectable={canPlay}
+		selectedId={selected}
+		onselect={(id) => (selected = selected === id ? null : id)}
+	/>
+	{#if canPlay}
 		<div class="actions">
-			<Button disabled={submitting || !selected} onclick={submit}>Submit Choice</Button>
+			<Button disabled={submitting || !selected} onclick={submit}>Submit</Button>
 			{#if view.mulligan_available}
 				<Button kind="ghost" disabled={!selected} onclick={askMulligan}>Mulligan</Button>
 			{/if}
 		</div>
-	</section>
+	{:else}
+		<Text as="p" variant="caption">Waiting for the other players to choose.</Text>
+	{/if}
+</section>
 
-	<ConfirmDialog
-		open={confirmingMulligan}
-		title="Mulligan"
-		message="This will discard the selected card and draw a replacement."
-		confirmLabel="Mulligan"
-		onconfirm={confirmMulligan}
-		oncancel={() => (confirmingMulligan = false)}
-	/>
-{/if}
+<ConfirmDialog
+	open={confirmingMulligan}
+	title="Mulligan"
+	message="This will discard the selected card and draw a replacement."
+	confirmLabel="Mulligan"
+	onconfirm={confirmMulligan}
+	oncancel={() => (confirmingMulligan = false)}
+/>
 
 <style>
 	.actions {

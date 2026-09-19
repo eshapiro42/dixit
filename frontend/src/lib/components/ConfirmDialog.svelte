@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Button from './Button.svelte';
 	import Dialog from './Dialog.svelte';
+	import Text from './Text.svelte';
 
 	interface Props {
 		open: boolean;
@@ -15,7 +16,7 @@
 </script>
 
 <Dialog {title} {open} onclose={oncancel}>
-	<p class="message">{message}</p>
+	<Text as="p" variant="body" class="confirm-message">{message}</Text>
 	<div class="actions">
 		<Button kind="secondary" onclick={oncancel}>Cancel</Button>
 		<Button kind="danger" onclick={onconfirm}>{confirmLabel}</Button>
@@ -23,7 +24,7 @@
 </Dialog>
 
 <style>
-	.message {
+	:global(.confirm-message) {
 		margin: 0 0 var(--space-4);
 	}
 

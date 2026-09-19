@@ -165,7 +165,7 @@ def build_routes_blueprint(
         player_name = current_player_name()
         with store.transaction(game_id) as game:
             require_creator(game, player_name)
-            cpu_name = f"CPU-{game.num_cpu_players + 1}"
+            cpu_name = f"CPU {game.num_cpu_players + 1}"
             game.add_player(cpu_name, is_cpu=True)
             game.log(f"{cpu_name} has joined the game.")
         notifier.message(game_id, f"{cpu_name} has joined the game.")
@@ -230,6 +230,7 @@ def build_routes_blueprint(
         with store.transaction(game_id) as game:
             player = game.player(player_name)
             before = table_names(game)
+            phase_before = game.current_round.phase if game.current_round else None
             scored = game.submit_other_choice(player, card_id)
             round_ = game.current_round
             finished_round = round_ if scored else None
@@ -239,7 +240,16 @@ def build_routes_blueprint(
             game.log(f"{player_name} played a card.")
             if played:
                 game.log(played)
-            announcement = phase_announcement(next_phase) if next_phase else None
+            # Every "other" player hitting this route while the round is still
+            # collecting cards leaves the phase unchanged at OTHERS_CHOOSING -
+            # only the LAST one actually moves it to VOTING. Without comparing
+            # against the phase beforehand, phase_announcement() would fire
+            # (and get logged) on every single play, not just that transition.
+            announcement = (
+                phase_announcement(next_phase)
+                if next_phase and next_phase is not phase_before
+                else None
+            )
             if announcement:
                 game.log(announcement)
             if scored:

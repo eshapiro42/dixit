@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Text from './Text.svelte';
+
 	interface Props {
 		id: string;
 		label: string;
@@ -19,10 +21,10 @@
 </script>
 
 <div class="field">
-	<label for={id}>
+	<Text as="label" variant="label" for={id}>
 		{label}
-		{#if required}<span aria-hidden="true">*</span>{/if}
-	</label>
+		{#if required}<span class="required-marker" aria-hidden="true">*</span>{/if}
+	</Text>
 	<input {id} type="text" bind:value {required} {maxlength} {placeholder} autocomplete="off" />
 </div>
 
@@ -33,25 +35,20 @@
 		gap: var(--space-2);
 	}
 
-	label {
-		font-size: var(--size-sm);
-		font-weight: 600;
-		color: var(--color-text-quiet);
-	}
-
-	label span {
+	.required-marker {
 		color: var(--color-danger);
 	}
 
 	input {
 		min-height: var(--tap);
-		padding: 0 var(--space-3);
+		padding: 0 var(--space-4);
 		border-radius: var(--radius);
 		border: 1px solid var(--color-border);
 		background: var(--color-surface);
 		color: var(--color-text);
 		font-family: inherit;
 		font-size: var(--size-md);
+		font-weight: var(--weight-normal);
 	}
 
 	input:focus-visible {

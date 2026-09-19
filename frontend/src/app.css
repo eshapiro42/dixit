@@ -11,6 +11,7 @@
 	--color-success: #1a7f5a;
 	--color-danger: #c23b3b;
 	--color-danger-soft: #fbe9e9;
+	--color-danger-contrast: #ffffff;
 	--color-warning: #b6791f;
 
 	--font-sans:
@@ -46,9 +47,33 @@
 	--shadow-overlay: 0 12px 32px rgb(34 31 31 / 0.22);
 
 	--tap: 2.75rem;
+	--border-width: 1px;
+	/* The one "accent-colored line" thickness, shared by every place a thin
+	 * accent stroke shows up (the active-panel bar, a selected card's ring,
+	 * the card carousel's scrollbar) so they can never drift apart again.
+	 */
+	--accent-line: 3px;
+
+	--weight-normal: 400;
+	--weight-medium: 600;
+	--weight-bold: 700;
+
+	/* The one faded/disabled treatment for the accent color, shared by
+	 * disabled controls and decorative accent marks alike.
+	 */
+	--opacity-faded: 0.5;
 
 	color-scheme: light;
 	accent-color: var(--color-accent);
+	/* Reserve the scrollbar's space unconditionally: without this, crossing
+	 * the "content just barely fits the viewport" boundary toggles a
+	 * classic (non-overlay) scrollbar on/off, which changes the page's
+	 * available width and shifts every right-aligned element - including
+	 * mid-drag on the zoom slider, which reads as a sudden jump since the
+	 * slider's value is computed from the pointer's position relative to
+	 * its (now shifted) track.
+	 */
+	scrollbar-gutter: stable;
 }
 
 * {
@@ -69,8 +94,16 @@ h1,
 h2,
 h3 {
 	font-family: var(--font-serif);
-	font-weight: 600;
+	font-weight: var(--weight-medium);
 	margin: 0;
+}
+
+h1 {
+	font-size: var(--size-xl);
+}
+
+h2 {
+	font-size: var(--size-lg);
 }
 
 .quiet {
@@ -107,7 +140,7 @@ h3 {
 	top: 0.15em;
 	bottom: 0.15em;
 	left: calc(-1 * var(--space-4));
-	width: 3px;
+	width: var(--accent-line);
 	background: var(--color-accent);
 }
 

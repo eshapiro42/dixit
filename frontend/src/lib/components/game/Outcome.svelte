@@ -1,6 +1,11 @@
 <script lang="ts">
 	import type { PlayerSummary, RoundOutcome } from '../../api/types';
 	import CardRow from '../CardRow.svelte';
+	import Divider from '../Divider.svelte';
+	import PanelHeader from '../PanelHeader.svelte';
+	import PromptCaption from '../PromptCaption.svelte';
+	import Text from '../Text.svelte';
+	import ZoomControl from '../ZoomControl.svelte';
 
 	let { outcome, players }: { outcome: RoundOutcome; players: PlayerSummary[] } = $props();
 
@@ -51,23 +56,21 @@
 	});
 </script>
 
-<section class="outcome">
-	<h2>Round {outcome.round_number} Results</h2>
-	<p class="quiet">{outcome.host}'s prompt: "{outcome.prompt}"</p>
+<Divider spacing="section" />
+<section>
+	<PanelHeader>
+		<Text variant="heading">Round {outcome.round_number} Results</Text>
+		<ZoomControl kind="results" />
+	</PanelHeader>
+	<PromptCaption host={outcome.host} prompt={outcome.prompt} />
 	{#if showZeroRuleExplainer}
-		<p class="quiet callout">{zeroRuleMessage}</p>
+		<Text as="p" variant="caption" class="callout">{zeroRuleMessage}</Text>
 	{/if}
-	<CardRow {cardIds} {labels} {votes} {deltas} />
+	<CardRow kind="results" {cardIds} {labels} {votes} {deltas} />
 </section>
 
 <style>
-	.outcome {
-		margin-top: var(--space-6);
-		padding-top: var(--space-6);
-		border-top: 1px solid var(--color-border);
-	}
-
-	.callout {
+	:global(.callout) {
 		max-width: 40em;
 	}
 </style>

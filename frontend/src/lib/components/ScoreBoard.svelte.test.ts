@@ -10,8 +10,8 @@ describe('ScoreBoard', () => {
 				{ name: 'bob', score: 9, is_cpu: false }
 			]
 		});
-		const names = screen.container.querySelectorAll('th');
-		const scores = screen.container.querySelectorAll('td');
+		const names = screen.container.querySelectorAll('[role="columnheader"]');
+		const scores = screen.container.querySelectorAll('[role="cell"]');
 		expect(names[0].textContent).toContain('bob');
 		expect(names[1].textContent).toContain('alice');
 		expect(scores[0].textContent?.trim()).toBe('9');

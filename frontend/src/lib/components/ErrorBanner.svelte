@@ -1,4 +1,7 @@
 <script lang="ts">
+	import IconButton from './IconButton.svelte';
+	import Text from './Text.svelte';
+
 	interface Props {
 		message: string | null;
 		ondismiss?: () => void;
@@ -9,8 +12,8 @@
 
 {#if message}
 	<div class="banner" role="alert">
-		<span>{message}</span>
-		<button type="button" aria-label="Dismiss" onclick={ondismiss}>&times;</button>
+		<Text as="span" variant="body" class="banner-message">{message}</Text>
+		<IconButton label="Dismiss" tone="danger" onclick={() => ondismiss?.()} />
 	</div>
 {/if}
 
@@ -24,16 +27,12 @@
 		border-radius: var(--radius);
 		background: var(--color-danger-soft);
 		color: var(--color-danger);
-		font-size: var(--size-sm);
 	}
 
-	button {
-		background: none;
-		border: none;
+	/* Text's "body" variant sets its own color; override back to the banner's
+	 * danger red, which the plain dismiss icon still inherits from .banner.
+	 */
+	.banner :global(.banner-message) {
 		color: inherit;
-		font-size: var(--size-lg);
-		line-height: 1;
-		cursor: pointer;
-		padding: 0 var(--space-1);
 	}
 </style>
