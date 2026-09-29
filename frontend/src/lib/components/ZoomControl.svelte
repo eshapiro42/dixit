@@ -40,7 +40,6 @@
 </script>
 
 <div class="zoom-control">
-	<Text as="label" variant="label" for={zoomId} class="zoom-label">Zoom</Text>
 	<input
 		id={zoomId}
 		type="range"
