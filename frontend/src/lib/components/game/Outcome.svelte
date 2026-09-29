@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { PlayerSummary, RoundOutcome } from '../../api/types';
+	import type { RoundOutcome } from '../../api/types';
 	import CardRow from '../CardRow.svelte';
 	import Divider from '../Divider.svelte';
 	import PanelHeader from '../PanelHeader.svelte';
@@ -7,7 +7,7 @@
 	import Text from '../Text.svelte';
 	import ZoomControl from '../ZoomControl.svelte';
 
-	let { outcome, players }: { outcome: RoundOutcome; players: PlayerSummary[] } = $props();
+	let { outcome }: { outcome: RoundOutcome } = $props();
 
 	let cardIds = $derived(Object.values(outcome.table));
 	let labels = $derived(
@@ -17,16 +17,6 @@
 		const byCard: Record<string, string[]> = {};
 		for (const [voter, cardId] of Object.entries(outcome.votes)) {
 			(byCard[cardId] ??= []).push(voter);
-		}
-		return byCard;
-	});
-	// CPUs never compete for score, so they get no delta badge at all.
-	let cpuNames = $derived(new Set(players.filter((p) => p.is_cpu).map((p) => p.name)));
-	let deltas = $derived.by(() => {
-		const byCard: Record<string, number> = {};
-		for (const [name, cardId] of Object.entries(outcome.table)) {
-			if (cpuNames.has(name)) continue;
-			byCard[cardId] = outcome.scores[name] ?? 0;
 		}
 		return byCard;
 	});
@@ -66,7 +56,7 @@
 	{#if showZeroRuleExplainer}
 		<Text as="p" variant="caption" class="callout">{zeroRuleMessage}</Text>
 	{/if}
-	<CardRow kind="results" {cardIds} {labels} {votes} {deltas} />
+	<CardRow kind="results" {cardIds} {labels} {votes} />
 </section>
 
 <style>

@@ -141,7 +141,7 @@
 					{/if}
 
 					{#if view.phase !== 'voting' && gameState.lastOutcome}
-						<Outcome outcome={gameState.lastOutcome} players={view.players} />
+						<Outcome outcome={gameState.lastOutcome} />
 					{/if}
 
 					<Divider spacing="section" />
