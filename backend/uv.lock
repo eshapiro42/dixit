@@ -232,6 +232,7 @@ dependencies = [
     { name = "gevent" },
     { name = "gevent-websocket" },
     { name = "gunicorn" },
+    { name = "packaging" },
     { name = "redis" },
 ]
 
@@ -254,6 +255,7 @@ requires-dist = [
     { name = "gevent", specifier = ">=26.9.0" },
     { name = "gevent-websocket", specifier = ">=0.10.1" },
     { name = "gunicorn", specifier = ">=26.2.0" },
+    { name = "packaging", specifier = ">=26.0" },
     { name = "redis", specifier = ">=8.1.0" },
 ]
 

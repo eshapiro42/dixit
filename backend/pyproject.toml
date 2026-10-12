@@ -12,6 +12,7 @@ dependencies = [
     "gevent>=26.9.0",
     "gevent-websocket>=0.10.1",
     "gunicorn>=26.2.0",
+    "packaging>=26.0",
     "redis>=8.1.0",
 ]
 
