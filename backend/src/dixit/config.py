@@ -17,6 +17,7 @@ class Config:
     redis_url: str
     cards_dir: Path
     min_human_players: int = MIN_HUMAN_PLAYERS
+    allowed_origins: tuple[str, ...] = ()
 
     @classmethod
     def from_env(cls) -> Config:
@@ -28,6 +29,11 @@ class Config:
             redis_url=_require("REDIS_URL"),
             cards_dir=Path(_require("CARDS_DIR")),
             min_human_players=min_human_players,
+            allowed_origins=tuple(
+                origin.strip()
+                for origin in os.environ.get("ALLOWED_ORIGINS", "").split(",")
+                if origin.strip()
+            ),
         )
 
 

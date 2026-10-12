@@ -26,7 +26,14 @@ def create_app(config: Config | None = None) -> Flask:
 
     library = CardLibrary(config.cards_dir)
     store = RedisGameStore(redis.Redis.from_url(config.redis_url))
-    socketio = SocketIO(app, message_queue=config.redis_url)
+    # Behind TLS-terminating proxies the app sees plain http, so the default
+    # same-origin check rejects https browsers; ALLOWED_ORIGINS names them.
+    socketio = SocketIO(
+        app,
+        message_queue=config.redis_url,
+        # None (the default) means same-origin only; the type stubs omit it.
+        cors_allowed_origins=list(config.allowed_origins) or None,  # type: ignore[arg-type]
+    )
     notifier = GameNotifier(SocketIOBroadcaster(socketio))
 
     blueprint = build_routes_blueprint(
