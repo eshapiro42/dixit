@@ -1,5 +1,3 @@
-import { SvelteMap } from 'svelte/reactivity';
-
 export const ZOOM_MIN = 0.6;
 export const ZOOM_MAX = 2;
 
@@ -40,7 +38,9 @@ class ZoomState {
 	}
 }
 
-const zoomStates = new SvelteMap<ZoomKind, ZoomState>();
+// Filled while rendering, which a reactive map forbids.
+// eslint-disable-next-line svelte/prefer-svelte-reactivity
+const zoomStates = new Map<ZoomKind, ZoomState>();
 
 export function getZoomState(kind: ZoomKind): ZoomState {
 	let state = zoomStates.get(kind);
