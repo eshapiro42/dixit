@@ -21,7 +21,7 @@ requires = ["uv_build>=0.12.3,<0.13.0"]
 build-backend = "uv_build"
 
 [tool.uv]
-required-version = "==0.12.3"
+required-version = "==0.12.18"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
