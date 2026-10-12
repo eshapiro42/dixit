@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { bunnyMaskUrl } from '../bunny';
 	import IconButton from './IconButton.svelte';
 	import { getZoomState, ZOOM_MIN, ZOOM_MAX, type ZoomKind } from '../game/zoom.svelte';
 
@@ -34,7 +35,7 @@
 	}
 </script>
 
-<div class="zoom-control">
+<div class="zoom-control" style:--bunny-mask={bunnyMaskUrl()}>
 	<input
 		id={zoomId}
 		type="range"
@@ -73,14 +74,16 @@
 		border-radius: var(--radius);
 	}
 
+	/* The thumb is the bunny: a mask lets it take the accent color. */
 	.zoom-control input[type='range']::-webkit-slider-thumb {
 		-webkit-appearance: none;
-		width: 10px;
-		height: 10px;
-		margin-top: calc((var(--accent-line) - 10px) / 2);
-		border-radius: 50%;
-		background: var(--color-accent);
+		width: 14px;
+		height: 24px;
+		margin-top: calc((var(--accent-line) - 24px) / 2);
 		border: none;
+		background: var(--color-accent);
+		-webkit-mask: var(--bunny-mask) center / contain no-repeat;
+		mask: var(--bunny-mask) center / contain no-repeat;
 		cursor: pointer;
 	}
 
@@ -95,11 +98,12 @@
 	}
 
 	.zoom-control input[type='range']::-moz-range-thumb {
-		width: 10px;
-		height: 10px;
-		border-radius: 50%;
-		background: var(--color-accent);
+		width: 14px;
+		height: 24px;
 		border: none;
+		border-radius: 0;
+		background: var(--color-accent);
+		mask: var(--bunny-mask) center / contain no-repeat;
 		cursor: pointer;
 	}
 
