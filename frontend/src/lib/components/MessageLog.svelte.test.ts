@@ -31,14 +31,29 @@ function withRounds(): GameMessage[] {
 }
 
 describe('MessageLog', () => {
-	it('always shows pre-game messages and collapses every past round but the current one', () => {
+	it('collapses the lobby and every past round once the game has started, keeping the latest open', () => {
 		const screen = render(MessageLog, { messages: withRounds(), open: true });
 		const text = screen.container.textContent ?? '';
-		expect(text).toContain('alice created the game room.');
+		expect(text).toContain('Lobby');
+		expect(text).not.toContain('alice created the game room.');
 		expect(text).toContain('Round 1');
 		expect(text).toContain('Round 2');
 		expect(text).not.toContain('bob played a card.');
 		expect(text).toContain('alice played a card.');
+	});
+
+	it('keeps the lobby open while the game has not started', () => {
+		const screen = render(MessageLog, { messages: messages(3), open: true });
+
+		expect(screen.container.textContent).toContain('message 0');
+	});
+
+	it('expands the collapsed lobby when its toggle is clicked', async () => {
+		const screen = render(MessageLog, { messages: withRounds(), open: true });
+
+		await screen.getByRole('button', { name: /Lobby/ }).click();
+
+		await expect.poll(() => screen.container.textContent).toContain('alice created the game room.');
 	});
 
 	it('expands a collapsed round when its toggle is clicked', async () => {
