@@ -1,0 +1,122 @@
+from dixit.api import views
+from dixit.domain import Card, Phase, Player, Round
+
+
+def _round(**overrides) -> Round:
+    defaults = dict(
+        host_name="host",
+        phase=Phase.VOTING,
+        prompt="a memory",
+        table={
+            "host": Card(id="h.jpg"),
+            "a": Card(id="a.jpg"),
+            "b": Card(id="b.jpg"),
+        },
+        votes={"a": "h.jpg"},
+    )
+    defaults.update(overrides)
+    return Round(**defaults)
+
+
+def test_visible_table_is_none_outside_voting() -> None:
+    round_ = _round(phase=Phase.OTHERS_CHOOSING)
+    assert views.visible_table(round_) is None
+
+
+def test_visible_table_contains_every_card_id_and_no_names() -> None:
+    round_ = _round()
+    table = views.visible_table(round_)
+    assert table is not None
+    assert set(table) == {"h.jpg", "a.jpg", "b.jpg"}
+    assert len(table) == 3
+
+
+def test_round_outcome_is_fully_attributed() -> None:
+    round_ = _round(round_number=2, scores={"host": 3, "a": 3, "b": 0}, correct_voter_count=1)
+    outcome = views.round_outcome(round_)
+    assert outcome == {
+        "host": "host",
+        "round_number": 2,
+        "prompt": "a memory",
+        "table": {"host": "h.jpg", "a": "a.jpg", "b": "b.jpg"},
+        "votes": {"a": "h.jpg"},
+        "scores": {"host": 3, "a": 3, "b": 0},
+        "correct_voter_count": 1,
+    }
+
+
+def test_has_played_true_once_on_the_table() -> None:
+    round_ = _round()
+    assert views.has_played(round_, Player(name="a")) is True
+    assert views.has_played(round_, Player(name="carol")) is False
+
+
+def test_has_voted_true_once_recorded() -> None:
+    round_ = _round()
+    assert views.has_voted(round_, Player(name="a")) is True
+    assert views.has_voted(round_, Player(name="b")) is False
+
+
+class TestMulliganAvailable:
+    def test_host_before_choosing(self) -> None:
+        round_ = _round(phase=Phase.HOST_CHOOSING, table={})
+        assert views.mulligan_available(round_, Player(name="host")) is True
+
+    def test_host_after_choosing(self) -> None:
+        round_ = _round(phase=Phase.OTHERS_CHOOSING)
+        assert views.mulligan_available(round_, Player(name="host")) is False
+
+    def test_other_before_playing(self) -> None:
+        round_ = _round(phase=Phase.OTHERS_CHOOSING, table={"host": Card(id="h.jpg")})
+        assert views.mulligan_available(round_, Player(name="carol")) is True
+
+    def test_other_after_playing(self) -> None:
+        round_ = _round(phase=Phase.OTHERS_CHOOSING)
+        assert views.mulligan_available(round_, Player(name="a")) is False
+
+    def test_already_used(self) -> None:
+        round_ = _round(phase=Phase.HOST_CHOOSING, table={}, mulligans_used={"host"})
+        assert views.mulligan_available(round_, Player(name="host")) is False
+
+
+def test_public_view_never_leaks_a_hand_or_votes(started_game) -> None:
+    public = views.public_view(started_game)
+    assert "hand" not in public
+    assert "votes" not in public
+
+
+def test_public_view_carries_the_configured_player_minimums(card_library) -> None:
+    from dixit.domain import MIN_PLAYERS, Game
+
+    game = Game.new("ABCD", card_library, creator_name="alice", min_human_players=1)
+    assert views.public_view(game)["min_human_players"] == 1
+    assert views.public_view(game)["min_players"] == MIN_PLAYERS
+
+
+def test_private_view_carries_only_the_viewers_hand(started_game) -> None:
+    viewer = started_game.human_players[0]
+    private = views.private_view(started_game, viewer)
+    assert private["hand"] == [card.id for card in viewer.hand]
+
+
+def test_public_view_carries_the_creator_name(started_game) -> None:
+    assert views.public_view(started_game)["creator_name"] == "alice"
+
+
+def test_public_view_tracks_vote_progress(started_game) -> None:
+    public = views.public_view(started_game)
+    # alice, bob, carol are human; whichever one hosts doesn't vote, so 2 are needed.
+    assert public["votes_needed"] == 2
+    assert public["votes_cast"] == 0
+
+    host = started_game.host
+    other = next(p for p in started_game.human_players if p.name != host.name)
+    started_game.submit_host_choice(host, host.hand[0].id, "a prompt")
+    for player in started_game.human_players:
+        if player.name != host.name:
+            started_game.submit_other_choice(player, player.hand[0].id)
+    candidates = [
+        card for name, card in started_game.current_round.table.items() if name != other.name
+    ]
+    started_game.submit_vote(other, candidates[0].id)
+    assert views.public_view(started_game)["votes_cast"] == 1

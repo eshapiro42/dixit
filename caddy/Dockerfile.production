@@ -1,0 +1,18 @@
+FROM node:24-slim AS frontend-build
+
+# Recent Node images don't reliably ship Corepack enabled by default, so pin
+# and install pnpm directly rather than depending on `corepack enable`.
+RUN npm install -g pnpm@12.4.2
+WORKDIR /app
+COPY frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./
+RUN pnpm install --frozen-lockfile
+COPY frontend/ .
+RUN pnpm build
+
+FROM caddy:2-alpine
+
+COPY caddy/Caddyfile.production /etc/caddy/Caddyfile
+COPY --from=frontend-build /app/build /srv/frontend
+
+HEALTHCHECK --interval=5s --timeout=3s --start-period=10s --retries=12 \
+    CMD wget --spider -q http://localhost/ || exit 1

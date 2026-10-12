@@ -1,0 +1,46 @@
+name: Docker Compose Smoke Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  dev-stack:
+    runs-on: ubuntu-latest
+    env:
+      MIN_HUMAN_PLAYERS: 1
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Build and start the dev stack, waiting for every service to be healthy
+        run: docker compose up --build -d --wait --wait-timeout 180
+
+      - name: Smoke-test the stack through Caddy
+        run: |
+          curl -sf http://127.0.0.1:8080/ > /dev/null
+          status=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/api/session)
+          test "$status" = "401"
+
+      - name: Show service logs on failure
+        if: failure()
+        run: docker compose logs
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v
+
+  production-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Build the production images
+        env:
+          SECRET_KEY: ci-smoke-test-secret
+        run: docker compose -f compose.production.yaml build
