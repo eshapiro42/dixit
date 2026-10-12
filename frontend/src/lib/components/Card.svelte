@@ -72,7 +72,7 @@
 </script>
 
 <div class="card-wrap">
-	{#if label}<Text as="span" variant="tag" class="card-name">{label}</Text>{/if}
+	{#if label}<Text as="span" variant="tag" class="card-name" title={label}>{label}</Text>{/if}
 	<div class="frame" use:hoverPreview>
 		{#if selectable}
 			<button
@@ -112,6 +112,7 @@
 	}
 
 	.card {
+		position: relative;
 		display: block;
 		width: 100%;
 		aspect-ratio: 363 / 527;
@@ -124,9 +125,7 @@
 		);
 		overflow: hidden;
 		background: var(--color-surface);
-		/* Inset so the ring is never clipped by the carousel's edge or shifts the layout. */
-		--ring: inset 0 0 0 0 transparent;
-		box-shadow: var(--ring), var(--shadow-card);
+		box-shadow: var(--shadow-card);
 		cursor: default;
 		transition:
 			transform 0.15s ease,
@@ -134,36 +133,54 @@
 			opacity 0.15s ease;
 	}
 
+	/* An overlay, so the image can't paint over the ring; inset, so the carousel can't clip it. */
+	.card::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		box-shadow: inset 0 0 0 var(--accent-line) var(--color-accent);
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.15s ease;
+	}
+
+	.card.selected::after {
+		opacity: 1;
+	}
+
 	button.card {
 		cursor: pointer;
 	}
 
-	button.card:hover {
-		transform: translateY(-4px);
-		box-shadow: var(--ring), var(--shadow-card-hover);
+	button.card:focus-visible {
+		outline: 2px solid var(--color-focus);
+		outline-offset: -5px;
 	}
 
 	button.card:active {
 		transform: scale(0.97);
 	}
 
-	.card.selected {
-		--ring: inset 0 0 0 var(--accent-line) var(--color-accent);
-	}
+	@media (hover: hover) and (pointer: fine) {
+		button.card:hover {
+			transform: translateY(-4px);
+			box-shadow: var(--shadow-card-hover);
+		}
 
-	/* Reuse the selection ring instead of the browser's default focus outline. */
-	button.card:focus-visible {
-		outline: none;
-		--ring: inset 0 0 0 var(--accent-line) var(--color-accent);
+		/* The badge is a sibling of .card (overflow clips children), so mirror the hover lift. */
+		button.card:hover ~ :global(.check) {
+			transform: translateY(-4px);
+		}
+
+		/* A resting dim, not a lock: hover to see any card at full strength. */
+		button.card.dimmed:hover {
+			opacity: 1;
+		}
 	}
 
 	.card.dimmed {
 		opacity: 0.55;
-	}
-
-	/* A resting dim, not a lock: hover to see any card at full strength. */
-	button.card.dimmed:hover {
-		opacity: 1;
 	}
 
 	img {
@@ -189,25 +206,26 @@
 		transition: transform 0.15s ease;
 	}
 
-	/* The badge is a sibling of .card (overflow clips children), so mirror the hover lift. */
-	button.card:hover ~ :global(.check) {
-		transform: translateY(-4px);
-	}
-
 	.frame :global(.delta) {
 		left: var(--space-2);
 	}
 
+	/* One line each, so a long name can't push a card out of line with its neighbours. */
+	.card-wrap :global(.card-name),
 	.card-wrap :global(.card-caption) {
 		display: block;
-		margin-top: var(--space-1);
+		overflow: hidden;
 		text-align: center;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.card-wrap :global(.card-caption) {
+		margin-top: var(--space-1);
 	}
 
 	.card-wrap :global(.card-name) {
-		display: block;
 		margin-bottom: var(--space-1);
-		text-align: center;
 		font-weight: var(--weight-bold);
 		color: var(--color-text);
 	}

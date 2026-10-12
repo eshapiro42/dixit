@@ -1,17 +1,11 @@
 <script lang="ts">
 	import type { SessionView } from '../../api/types';
 	import CardRow from '../CardRow.svelte';
-	import PanelHeader from '../PanelHeader.svelte';
-	import Text from '../Text.svelte';
-	import ZoomControl from '../ZoomControl.svelte';
+	import GamePanel from './GamePanel.svelte';
 
 	let { view }: { view: SessionView } = $props();
 </script>
 
-<section>
-	<PanelHeader>
-		<Text variant="heading">Your Hand</Text>
-		<ZoomControl kind="hand" />
-	</PanelHeader>
+<GamePanel title="Your Hand" zoomKind="hand">
 	<CardRow kind="hand" cardIds={view.hand} />
-</section>
+</GamePanel>

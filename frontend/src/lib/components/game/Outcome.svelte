@@ -2,10 +2,8 @@
 	import type { RoundOutcome } from '../../api/types';
 	import CardRow from '../CardRow.svelte';
 	import Divider from '../Divider.svelte';
-	import PanelHeader from '../PanelHeader.svelte';
-	import PromptCaption from '../PromptCaption.svelte';
 	import Text from '../Text.svelte';
-	import ZoomControl from '../ZoomControl.svelte';
+	import GamePanel from './GamePanel.svelte';
 
 	let { outcome }: { outcome: RoundOutcome } = $props();
 
@@ -47,17 +45,16 @@
 </script>
 
 <Divider spacing="section" />
-<section>
-	<PanelHeader>
-		<Text variant="heading">Round {outcome.round_number} Results</Text>
-		<ZoomControl kind="table" />
-	</PanelHeader>
-	<PromptCaption host={outcome.host} prompt={outcome.prompt} />
+<GamePanel
+	title="Round {outcome.round_number} Results"
+	zoomKind="table"
+	prompt={{ host: outcome.host, text: outcome.prompt }}
+>
 	{#if showZeroRuleExplainer}
 		<Text as="p" variant="caption" class="callout">{zeroRuleMessage}</Text>
 	{/if}
 	<CardRow kind="table" {cardIds} {labels} {votes} />
-</section>
+</GamePanel>
 
 <style>
 	:global(.callout) {

@@ -3,100 +3,71 @@
 	import { gameState } from '../../game/state.svelte';
 	import Badge from '../Badge.svelte';
 	import Button from '../Button.svelte';
-	import Divider from '../Divider.svelte';
+	import InviteCode from '../InviteCode.svelte';
 	import PanelHeader from '../PanelHeader.svelte';
-	import Stat from '../Stat.svelte';
 	import Text from '../Text.svelte';
 
 	let { view }: { view: SessionView } = $props();
-
-	let copied = $state(false);
-	let copyTimeout: ReturnType<typeof setTimeout> | undefined;
-
-	async function copyGameId(): Promise<void> {
-		try {
-			await navigator.clipboard.writeText(view.game_id);
-		} catch {
-			return;
-		}
-		copied = true;
-		clearTimeout(copyTimeout);
-		copyTimeout = setTimeout(() => (copied = false), 1500);
-	}
 </script>
 
-<section>
-	<div class="toolbar">
-		{#if view.is_creator}
-			<div class="actions">
-				<Button kind="secondary" onclick={() => gameState.addCpu()}>Add CPU</Button>
-				<Button disabled={!view.playable} onclick={() => gameState.start()}>Start Game</Button>
-			</div>
-		{/if}
+<section class="lobby">
+	<InviteCode gameId={view.game_id} />
 
-		<div class="invite">
-			<Text as="span" variant="label">Game ID</Text>
-			<Stat size="hero">{view.game_id}</Stat>
-			<Button kind="secondary" onclick={copyGameId}>{copied ? 'Copied!' : 'Copy'}</Button>
+	{#if view.is_creator}
+		<div class="actions">
+			<Button kind="secondary" onclick={() => gameState.addCpu()}>Add CPU</Button>
+			<Button disabled={!view.playable} onclick={() => gameState.start()}>Start Game</Button>
 		</div>
-	</div>
-
+	{/if}
 	{#if !view.playable}
-		<Text as="p" variant="caption" class="requirement">
+		<Text as="p" variant="caption">
 			Need at least {view.min_players} players, {view.min_human_players} of them human.
 		</Text>
 	{/if}
 
-	<Divider spacing="section" />
-
-	<PanelHeader>
-		<Text variant="heading">Players</Text>
-		<Text as="span" variant="label">{view.players.length} joined</Text>
-	</PanelHeader>
-	<ul class="players">
-		{#each view.players as player (player.name)}
-			<li>
-				<span class="player-name">{player.name}</span>
-				<span class="tags">
-					{#if player.is_cpu}<Badge>CPU</Badge>{/if}
-					{#if player.name === view.creator_name}<Badge>Creator</Badge>{/if}
-					{#if player.name === view.player_name}<Badge tone="solid">You</Badge>{/if}
-				</span>
-			</li>
-		{/each}
-	</ul>
+	<div>
+		<PanelHeader align="baseline">
+			<Text variant="heading">Players</Text>
+			<Text as="span" variant="label">{view.players.length} joined</Text>
+		</PanelHeader>
+		<ul class="players">
+			{#each view.players as player (player.name)}
+				<li>
+					<span class="player-name" title={player.name}>{player.name}</span>
+					<span class="tags">
+						{#if player.is_cpu}<Badge>CPU</Badge>{/if}
+						{#if player.name === view.creator_name}<Badge>Creator</Badge>{/if}
+						{#if player.name === view.player_name}<Badge tone="solid">You</Badge>{/if}
+					</span>
+				</li>
+			{/each}
+		</ul>
+	</div>
 </section>
 
 <style>
-	.toolbar {
+	.lobby {
 		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		flex-wrap: wrap;
-		gap: var(--space-3) var(--space-6);
+		flex-direction: column;
+		gap: var(--space-4);
+		max-width: var(--measure-lobby);
+		margin: 0 auto;
+	}
+
+	.lobby > :global(p) {
+		margin: 0;
 	}
 
 	.actions {
-		display: flex;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
 		gap: var(--space-3);
-		flex-wrap: wrap;
-	}
-
-	.invite {
-		display: flex;
-		align-items: center;
-		gap: var(--space-3);
-		margin-left: auto;
-	}
-
-	section > :global(.requirement) {
-		margin-top: var(--space-3);
 	}
 
 	.players {
-		list-style: none;
 		margin: 0;
 		padding: 0;
+		list-style: none;
 		border-top: var(--border-width) solid var(--color-border);
 	}
 
@@ -111,11 +82,16 @@
 	}
 
 	.player-name {
+		min-width: 0;
+		overflow: hidden;
 		font-weight: var(--weight-medium);
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.tags {
 		display: flex;
+		flex-shrink: 0;
 		gap: var(--space-2);
 	}
 

@@ -18,8 +18,13 @@ class ThemeState {
 		return this.#value;
 	}
 
+	/** What switching would give you, for button labels and icons. */
+	get other(): Theme {
+		return this.#value === 'dark' ? 'light' : 'dark';
+	}
+
 	toggle(): void {
-		this.#value = this.#value === 'dark' ? 'light' : 'dark';
+		this.#value = this.other;
 		document.documentElement.dataset.theme = this.#value;
 		try {
 			localStorage.setItem(STORAGE_KEY, this.#value);

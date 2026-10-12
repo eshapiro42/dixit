@@ -1,31 +1,23 @@
 import { describe, expect, it } from 'vitest';
-import { phaseLabel, waitingMessage } from './phase';
+import { phaseSummary, waitingMessage } from './phase';
 
-describe('phaseLabel', () => {
-	it('names the host during host_choosing', () => {
-		expect(phaseLabel('host_choosing', 'alice')).toBe('alice is choosing a card and a prompt');
+describe('phaseSummary', () => {
+	it('names the host while they are choosing', () => {
+		expect(phaseSummary('host_choosing', 'alice')).toBe('Choosing: alice');
 	});
 
 	it('falls back when there is no host yet', () => {
-		expect(phaseLabel('host_choosing', null)).toBe(
-			'The storyteller is choosing a card and a prompt'
-		);
+		expect(phaseSummary('host_choosing', null)).toBe('Choosing: storyteller');
 	});
 
-	it('describes others_choosing without the prompt', () => {
-		expect(phaseLabel('others_choosing', 'alice')).toBe('Other players are choosing cards');
+	it('keeps the other phases to a couple of words', () => {
+		expect(phaseSummary('others_choosing', 'alice')).toBe('Choosing cards');
+		expect(phaseSummary('voting', 'alice')).toBe('Voting');
+		expect(phaseSummary('scoring', 'alice')).toBe('Scoring');
 	});
 
-	it('describes voting without the prompt', () => {
-		expect(phaseLabel('voting', 'alice')).toBe('Voting');
-	});
-
-	it('describes scoring', () => {
-		expect(phaseLabel('scoring', 'alice')).toBe('Scoring the round');
-	});
-
-	it('describes the lobby when there is no phase yet', () => {
-		expect(phaseLabel(null, null)).toBe('Waiting for the game to start');
+	it('calls the pre-game state the lobby', () => {
+		expect(phaseSummary(null, null)).toBe('Lobby');
 	});
 });
 

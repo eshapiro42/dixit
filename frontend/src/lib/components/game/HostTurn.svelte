@@ -1,123 +1,81 @@
 <script lang="ts">
 	import type { SessionView } from '../../api/types';
+	import { PendingAction } from '../../game/pending.svelte';
+	import { CardSelection } from '../../game/selection.svelte';
 	import { gameState } from '../../game/state.svelte';
+	import ActionBar from '../ActionBar.svelte';
 	import Button from '../Button.svelte';
 	import CardRow from '../CardRow.svelte';
-	import ConfirmDialog from '../ConfirmDialog.svelte';
-	import PanelHeader from '../PanelHeader.svelte';
-	import Text from '../Text.svelte';
-	import ZoomControl from '../ZoomControl.svelte';
+	import Field from '../Field.svelte';
+	import MulliganControl from '../MulliganControl.svelte';
+	import GamePanel from './GamePanel.svelte';
 
 	let { view }: { view: SessionView } = $props();
 
 	const promptId = $props.id();
-
-	let selected = $state<string | null>(null);
+	const selection = new CardSelection(
+		() => view.hand,
+		() => (prompt = '')
+	);
+	const submission = new PendingAction();
 	let prompt = $state('');
-	let submitting = $state(false);
-	let confirmingMulligan = $state(false);
 
-	// A solo-host round resolves entirely server-side, so this component never
-	// remounts between rounds; clear a selection once its card leaves the hand.
-	$effect(() => {
-		if (selected !== null && !view.hand.includes(selected)) {
-			selected = null;
-			prompt = '';
-		}
-	});
+	let hint = $derived(
+		!selection.selectedId
+			? 'Pick a card from your hand.'
+			: !prompt.trim()
+				? 'Write a prompt for your card.'
+				: null
+	);
 
 	async function submit(event: SubmitEvent): Promise<void> {
 		event.preventDefault();
-		if (!selected || !prompt.trim()) return;
-		submitting = true;
-		await gameState.hostChoice(selected, prompt.trim());
-		submitting = false;
-	}
-
-	function askMulligan(): void {
-		if (!selected) return;
-		confirmingMulligan = true;
-	}
-
-	async function confirmMulligan(): Promise<void> {
-		confirmingMulligan = false;
-		if (!selected) return;
-		await gameState.mulligan(selected);
-		selected = null;
+		const cardId = selection.selectedId;
+		if (!cardId || !prompt.trim()) return;
+		await submission.run(() => gameState.hostChoice(cardId, prompt.trim()));
 	}
 </script>
 
-<section class="action-needed">
-	<PanelHeader>
-		<Text variant="heading">Your Hand</Text>
-		<ZoomControl kind="hand" />
-	</PanelHeader>
-
+<GamePanel title="Your Hand" zoomKind="hand" actionNeeded>
 	<CardRow
 		kind="hand"
 		cardIds={view.hand}
 		selectable
-		selectedId={selected}
-		onselect={(id) => (selected = selected === id ? null : id)}
+		selectedId={selection.selectedId}
+		onselect={(id) => selection.toggle(id)}
 	/>
 
 	<form onsubmit={submit}>
-		<Text as="label" variant="label" for={promptId} class="sr-only">Your prompt</Text>
-		<input
+		<Field
 			id={promptId}
-			type="text"
+			label="Your prompt"
+			hideLabel
 			bind:value={prompt}
 			placeholder="Your prompt"
-			maxlength="200"
+			maxlength={200}
 			required
+			enterkeyhint="send"
 		/>
-		<div class="actions">
-			<Button type="submit" disabled={submitting || !selected || !prompt.trim()}>Submit</Button>
-			{#if view.mulligan_available}
-				<Button kind="ghost" disabled={!selected} onclick={askMulligan}>Mulligan</Button>
-			{/if}
-		</div>
+		<ActionBar {hint}>
+			{#snippet primary()}
+				<Button
+					type="submit"
+					disabled={submission.pending || !selection.selectedId || !prompt.trim()}>Submit</Button
+				>
+			{/snippet}
+			{#snippet secondary()}
+				{#if view.mulligan_available}
+					<MulliganControl {selection} />
+				{/if}
+			{/snippet}
+		</ActionBar>
 	</form>
-</section>
-
-<ConfirmDialog
-	open={confirmingMulligan}
-	title="Mulligan"
-	message="This will discard the selected card and draw a replacement."
-	confirmLabel="Mulligan"
-	onconfirm={confirmMulligan}
-	oncancel={() => (confirmingMulligan = false)}
-/>
+</GamePanel>
 
 <style>
 	form {
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-3);
-	}
-
-	input {
-		min-height: var(--tap);
-		padding: 0 var(--space-4);
-		border-radius: var(--radius);
-		border: 1px solid var(--color-border);
-		background: var(--color-surface);
-		color: var(--color-text);
-		font: inherit;
-	}
-
-	input:focus-visible {
-		outline: 2px solid var(--color-accent);
-		outline-offset: 1px;
-	}
-
-	.actions {
-		display: flex;
-		gap: var(--space-3);
-		flex-wrap: wrap;
-	}
-
-	.actions :global(.ghost) {
-		margin-left: auto;
 	}
 </style>

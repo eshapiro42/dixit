@@ -15,18 +15,12 @@
 
 <style>
 	.shell {
-		max-width: 960px;
+		max-width: 60rem;
 		margin: 0 auto;
-		padding: var(--space-4);
+		padding: var(--space-4) var(--page-gutter);
 	}
 
 	.shell.wide {
-		max-width: 1400px;
-	}
-
-	@media (max-width: 480px) {
-		.shell {
-			padding: var(--space-2);
-		}
+		max-width: var(--page-max);
 	}
 </style>

@@ -34,7 +34,7 @@ test('creating a game shows the in-game lobby without changing the URL', async (
 	await page.getByLabel('Your Name').fill('alice');
 	await page.getByRole('button', { name: "Let's Move It" }).click();
 
-	await expect(page.getByText('Game ID: ABCD')).toBeVisible();
+	await expect(page.getByRole('button', { name: /Game ID: ABCD/ })).toBeVisible();
 	await expect(page).toHaveURL('/');
 });
 
@@ -56,4 +56,29 @@ test('a server error from joining is shown and dismissible', async ({ page }) =>
 	await expect(banner).toContainText('Game NOPE was not found.');
 	await banner.getByRole('button', { name: 'Dismiss' }).click();
 	await expect(banner).not.toBeVisible();
+});
+
+test('a join link opens the Join tab with the game ID filled in, then clears the URL', async ({
+	page
+}) => {
+	await page.route('**/api/session', (route) =>
+		route.fulfill({ status: 401, json: { error: 'no session' } })
+	);
+	await page.route('**/api/games/*/join', (route) =>
+		route.fulfill({ status: 200, json: SESSION_VIEW })
+	);
+
+	await page.goto('/?game=abcd');
+
+	await expect(page.getByRole('tab', { name: 'Join a Game' })).toHaveAttribute(
+		'aria-selected',
+		'true'
+	);
+	await expect(page.getByLabel('Game ID')).toHaveValue('ABCD');
+
+	await page.getByLabel('Your Name').fill('alice');
+	await page.getByRole('button', { name: "Let's Groove It" }).click();
+
+	await expect(page.getByRole('button', { name: /Game ID: ABCD/ })).toBeVisible();
+	await expect(page).toHaveURL('/');
 });

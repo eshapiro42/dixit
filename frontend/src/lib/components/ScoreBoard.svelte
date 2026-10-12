@@ -14,105 +14,144 @@
 
 	let { players, hostName = null, deltas }: Props = $props();
 
-	let ranked = $derived([...players].sort((a, b) => b.score - a.score));
+	// CPUs never score, so they trail the ranked humans without a rank.
+	let ordered = $derived([
+		...players.filter((p) => !p.is_cpu).sort((a, b) => b.score - a.score),
+		...players.filter((p) => p.is_cpu)
+	]);
 </script>
 
 <PanelHeader>
 	<Text variant="heading">Player Scores</Text>
 </PanelHeader>
-<!-- A real <table> lays out columns as equal-width slots (or auto-sized ones
-     that still don't support gap-based distribution) - neither gives every
-     entry its own natural width while spacing them like flexbox/grid
-     space-between. Built as a grid instead, with explicit ARIA table roles
-     since the row groupings are visual grid tracks now, not <tr> elements. -->
-<div class="scores" role="table">
-	<div class="scores-row" role="row">
-		{#each ranked as player, index (player.name)}
-			<div
-				class="scores-cell scores-cell--header"
-				role="columnheader"
-				style:grid-row="1"
-				style:grid-column={index + 1}
-			>
-				{#if player.name === hostName}
-					<BunnyIcon class="storyteller-badge" />
-					<span class="sr-only">Storyteller</span>
-				{/if}
-				<span class="player-name">{player.name}</span>
-			</div>
-		{/each}
-	</div>
-	<div class="scores-row" role="row">
-		{#each ranked as player, index (player.name)}
-			<div class="scores-cell" role="cell" style:grid-row="2" style:grid-column={index + 1}>
-				{#if player.is_cpu}
-					<span class="score-na" aria-hidden="true">&ndash;</span>
-					<span class="sr-only">CPUs don't score points</span>
-				{:else}
-					<span class="score-cell">
+<div class="scoreboard">
+	<!-- One list, two layouts: a ranked list when narrow, one column per player when wide. -->
+	<ol class="scores" role="list" aria-label="Player scores">
+		{#each ordered as player, index (player.name)}
+			<li class="entry">
+				<span class="rank" aria-hidden="true">{player.is_cpu ? '' : index + 1}</span>
+				<span class="who">
+					{#if player.name === hostName}
+						<BunnyIcon class="storyteller-badge" />
+						<span class="sr-only">Storyteller</span>
+					{/if}
+					<span class="player-name" title={player.name}>{player.name}</span>
+				</span>
+				<span class="points">
+					{#if player.is_cpu}
+						<span class="score-na" aria-hidden="true">&ndash;</span>
+						<span class="sr-only">CPUs don't score points</span>
+					{:else}
 						<Stat>{player.score}</Stat>
 						{#if deltas?.[player.name] !== undefined}
 							<Badge tone="solid" size="delta" class="delta">+{deltas[player.name]}</Badge>
 						{/if}
-					</span>
-				{/if}
-			</div>
+					{/if}
+				</span>
+			</li>
 		{/each}
-	</div>
+	</ol>
 </div>
 
 <style>
+	.scoreboard {
+		container-type: inline-size;
+	}
+
 	.scores {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.entry {
 		display: grid;
-		grid-auto-columns: max-content;
-		justify-content: space-between;
-		column-gap: var(--space-4);
-		row-gap: var(--space-2);
-		overflow-x: auto;
+		grid-template-columns: var(--size-lg) minmax(0, 1fr) auto;
+		align-items: center;
+		gap: var(--space-3);
+		min-height: var(--tap);
+		border-top: var(--border-width) solid var(--color-border);
 	}
 
-	/* display: contents keeps role="row" for assistive tech while the cells become the grid items. */
-	.scores-row {
-		display: contents;
+	.entry:last-child {
+		border-bottom: var(--border-width) solid var(--color-border);
 	}
 
-	.scores-cell {
+	.rank {
+		color: var(--color-text-quiet);
+		font-size: var(--size-sm);
+		font-weight: var(--weight-medium);
 		text-align: center;
+	}
+
+	.who {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		min-width: 0;
+		font-weight: var(--weight-medium);
+	}
+
+	.player-name {
+		overflow: hidden;
+		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
 
-	/* Bottom-aligned so names share a baseline whether or not a storyteller badge sits above. */
-	.scores-cell--header {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: flex-end;
-		font-size: var(--size-md);
-		font-weight: var(--weight-medium);
-	}
-
-	.score-na {
-		font-size: var(--size-sm);
-		font-weight: var(--weight-medium);
-		color: var(--color-text-quiet);
-	}
-
-	.scores-cell :global(.storyteller-badge) {
-		height: 1.3em;
-		width: auto;
-		margin-bottom: var(--space-1);
-		fill: var(--color-accent);
-	}
-
-	.score-cell {
+	.points {
 		display: inline-flex;
 		align-items: center;
 		gap: var(--space-1);
+		min-height: 1.5rem;
 	}
 
-	@media (max-width: 480px) {
+	.score-na {
+		color: var(--color-text-quiet);
+		font-size: var(--size-sm);
+		font-weight: var(--weight-medium);
+	}
+
+	.who :global(.storyteller-badge) {
+		flex-shrink: 0;
+		height: 1.1em;
+		width: auto;
+		fill: var(--color-accent);
+	}
+
+	@container (min-width: 40rem) {
 		.scores {
-			column-gap: var(--space-3);
+			display: flex;
+			align-items: flex-end;
+			justify-content: space-between;
+			gap: var(--space-4);
+		}
+
+		.entry {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: var(--space-2);
+			min-height: 0;
+			min-width: 0;
+			border: none;
+		}
+
+		.entry:last-child {
+			border: none;
+		}
+
+		.rank {
+			display: none;
+		}
+
+		.who {
+			flex-direction: column;
+			gap: var(--space-1);
+			max-width: 14rem;
+		}
+
+		.who :global(.storyteller-badge) {
+			height: 1.3em;
 		}
 	}
 </style>

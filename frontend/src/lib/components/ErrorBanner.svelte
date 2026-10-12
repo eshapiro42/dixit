@@ -13,7 +13,7 @@
 {#if message}
 	<div class="banner" role="alert">
 		<Text as="span" variant="body" class="banner-message">{message}</Text>
-		<IconButton label="Dismiss" tone="danger" onclick={() => ondismiss?.()} />
+		<IconButton icon="close" label="Dismiss" tone="danger" onclick={() => ondismiss?.()} />
 	</div>
 {/if}
 

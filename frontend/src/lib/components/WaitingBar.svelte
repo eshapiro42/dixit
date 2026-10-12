@@ -2,43 +2,48 @@
 	let { message }: { message: string | null } = $props();
 </script>
 
+<!-- The live region stays mounted so a new message is announced when it changes. -->
+<div class="sr-only" role="status">{message ?? ''}</div>
+
 {#if message}
-	<div class="spacer" aria-hidden="true"></div>
-	<div class="waiting-bar" role="status" aria-live="polite">
-		<span class="pulse" aria-hidden="true"></span>
-		{#key message}
-			<span class="text">{message}</span>
-		{/key}
+	<!-- Sticky, not fixed, so it never covers the end of the page. -->
+	<div class="dock">
+		<div class="waiting-bar">
+			<span class="pulse" aria-hidden="true"></span>
+			{#key message}
+				<span class="text">{message}</span>
+			{/key}
+		</div>
 	</div>
 {/if}
 
 <style>
-	/* Keeps the end of the page from sitting behind the bar. */
-	.spacer {
-		height: calc(var(--tap) + var(--space-6));
+	.dock {
+		position: sticky;
+		bottom: max(var(--space-4), env(safe-area-inset-bottom));
+		z-index: var(--z-pill);
+		display: flex;
+		justify-content: center;
+		margin-top: var(--space-4);
+		pointer-events: none;
 	}
 
-	/* Floating, slightly transparent pill; the blur keeps text legible over scrolling cards. */
 	.waiting-bar {
-		position: fixed;
-		bottom: var(--space-4);
-		left: 50%;
-		z-index: 30;
 		display: flex;
 		align-items: center;
 		gap: var(--space-3);
-		max-width: calc(100vw - 2 * var(--space-4));
+		max-width: 100%;
 		padding: var(--space-3) var(--space-4);
-		border: var(--border-width) solid var(--color-border);
-		border-radius: 999px;
-		background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+		border: var(--border-width) solid var(--color-border-strong);
+		border-radius: var(--radius);
+		background: color-mix(in srgb, var(--color-surface-raised) 88%, transparent);
 		backdrop-filter: blur(10px);
 		-webkit-backdrop-filter: blur(10px);
 		box-shadow: var(--shadow-overlay);
 		color: var(--color-text);
 		font-size: var(--size-sm);
 		font-weight: var(--weight-medium);
-		transform: translateX(-50%);
+		pointer-events: auto;
 		animation: bar-in 0.2s ease-out;
 	}
 
@@ -58,11 +63,7 @@
 	@keyframes bar-in {
 		from {
 			opacity: 0;
-			transform: translate(-50%, 8px);
-		}
-		to {
-			opacity: 1;
-			transform: translate(-50%, 0);
+			transform: translateY(8px);
 		}
 	}
 
@@ -73,22 +74,9 @@
 	}
 
 	@keyframes pulse {
-		0%,
-		100% {
-			opacity: 1;
-			transform: scale(1);
-		}
 		50% {
 			opacity: 0.4;
 			transform: scale(0.8);
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.waiting-bar,
-		.text,
-		.pulse {
-			animation: none;
 		}
 	}
 </style>

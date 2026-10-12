@@ -16,7 +16,7 @@
 </script>
 
 <Dialog {title} {open} onclose={oncancel}>
-	<Text as="p" variant="body" class="confirm-message">{message}</Text>
+	<Text as="p" variant="body">{message}</Text>
 	<div class="actions">
 		<Button kind="secondary" onclick={oncancel}>Cancel</Button>
 		<Button kind="danger" onclick={onconfirm}>{confirmLabel}</Button>
@@ -24,13 +24,10 @@
 </Dialog>
 
 <style>
-	:global(.confirm-message) {
-		margin: 0 0 var(--space-4);
-	}
-
 	.actions {
 		display: flex;
 		justify-content: flex-end;
 		gap: var(--space-3);
+		margin-top: var(--space-4);
 	}
 </style>

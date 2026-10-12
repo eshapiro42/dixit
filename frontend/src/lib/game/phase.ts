@@ -1,17 +1,18 @@
 import type { Phase, SessionView } from '../api/types';
 
-export function phaseLabel(phase: Phase | null, host: string | null): string {
+/** A few words for the top bar; the fuller sentences live in waitingMessage. */
+export function phaseSummary(phase: Phase | null, host: string | null): string {
 	switch (phase) {
 		case 'host_choosing':
-			return `${host ?? 'The storyteller'} is choosing a card and a prompt`;
+			return `Choosing: ${host ?? 'storyteller'}`;
 		case 'others_choosing':
-			return 'Other players are choosing cards';
+			return 'Choosing cards';
 		case 'voting':
 			return 'Voting';
 		case 'scoring':
-			return 'Scoring the round';
+			return 'Scoring';
 		default:
-			return 'Waiting for the game to start';
+			return 'Lobby';
 	}
 }
 
@@ -45,4 +46,11 @@ export function waitingMessage(view: WaitingView): string | null {
 		default:
 			return null;
 	}
+}
+
+/** The storyteller's prompt with who wrote it, or null before there is one. */
+export function currentPrompt(
+	view: Pick<SessionView, 'host' | 'prompt'>
+): { host: string; text: string } | null {
+	return view.host && view.prompt ? { host: view.host, text: view.prompt } : null;
 }

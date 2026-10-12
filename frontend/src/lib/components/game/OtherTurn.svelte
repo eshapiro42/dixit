@@ -1,91 +1,51 @@
 <script lang="ts">
 	import type { SessionView } from '../../api/types';
+	import { PendingAction } from '../../game/pending.svelte';
+	import { CardSelection } from '../../game/selection.svelte';
+	import { currentPrompt } from '../../game/phase';
 	import { gameState } from '../../game/state.svelte';
+	import ActionBar from '../ActionBar.svelte';
 	import Button from '../Button.svelte';
 	import CardRow from '../CardRow.svelte';
-	import ConfirmDialog from '../ConfirmDialog.svelte';
-	import PanelHeader from '../PanelHeader.svelte';
-	import PromptCaption from '../PromptCaption.svelte';
-	import Text from '../Text.svelte';
-	import ZoomControl from '../ZoomControl.svelte';
+	import MulliganControl from '../MulliganControl.svelte';
+	import GamePanel from './GamePanel.svelte';
 
 	let { view }: { view: SessionView } = $props();
-	let selected = $state<string | null>(null);
-	let submitting = $state(false);
-	let confirmingMulligan = $state(false);
+
+	const selection = new CardSelection(() => view.hand);
+	const submission = new PendingAction();
 
 	let canPlay = $derived(!view.has_played);
 
-	// Clears a selection once its card leaves the hand, so a card played (and
-	// discarded) last round can't linger as an enabled-but-invalid selection.
-	$effect(() => {
-		if (selected !== null && !view.hand.includes(selected)) {
-			selected = null;
-		}
-	});
-
 	async function submit(): Promise<void> {
-		if (!selected) return;
-		submitting = true;
-		await gameState.play(selected);
-		submitting = false;
-	}
-
-	function askMulligan(): void {
-		if (!selected) return;
-		confirmingMulligan = true;
-	}
-
-	async function confirmMulligan(): Promise<void> {
-		confirmingMulligan = false;
-		if (!selected) return;
-		await gameState.mulligan(selected);
-		selected = null;
+		const cardId = selection.selectedId;
+		if (!cardId) return;
+		await submission.run(() => gameState.play(cardId));
 	}
 </script>
 
-<section class:action-needed={canPlay}>
-	<PanelHeader>
-		<Text variant="heading">Your Hand</Text>
-		<ZoomControl kind="hand" />
-	</PanelHeader>
-	{#if view.host && view.prompt}
-		<PromptCaption host={view.host} prompt={view.prompt} />
-	{/if}
+<GamePanel title="Your Hand" zoomKind="hand" actionNeeded={canPlay} prompt={currentPrompt(view)}>
 	<CardRow
 		kind="hand"
 		cardIds={view.hand}
 		selectable={canPlay}
-		selectedId={selected}
-		onselect={(id) => (selected = selected === id ? null : id)}
+		selectedId={selection.selectedId}
+		onselect={(id) => selection.toggle(id)}
 	/>
-	{#if canPlay}
-		<div class="actions">
-			<Button disabled={submitting || !selected} onclick={submit}>Submit</Button>
-			{#if view.mulligan_available}
-				<Button kind="ghost" disabled={!selected} onclick={askMulligan}>Mulligan</Button>
-			{/if}
-		</div>
-	{/if}
-</section>
-
-<ConfirmDialog
-	open={confirmingMulligan}
-	title="Mulligan"
-	message="This will discard the selected card and draw a replacement."
-	confirmLabel="Mulligan"
-	onconfirm={confirmMulligan}
-	oncancel={() => (confirmingMulligan = false)}
-/>
-
-<style>
-	.actions {
-		display: flex;
-		gap: var(--space-3);
-		flex-wrap: wrap;
-	}
-
-	.actions :global(.ghost) {
-		margin-left: auto;
-	}
-</style>
+	{#snippet actions()}
+		{#if canPlay}
+			<ActionBar hint={selection.selectedId ? null : 'Pick the card that best matches the prompt.'}>
+				{#snippet primary()}
+					<Button disabled={submission.pending || !selection.selectedId} onclick={submit}
+						>Submit</Button
+					>
+				{/snippet}
+				{#snippet secondary()}
+					{#if view.mulligan_available}
+						<MulliganControl {selection} />
+					{/if}
+				{/snippet}
+			</ActionBar>
+		{/if}
+	{/snippet}
+</GamePanel>

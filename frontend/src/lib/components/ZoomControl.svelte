@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconButton from './IconButton.svelte';
 	import { getZoomState, ZOOM_MIN, ZOOM_MAX, type ZoomKind } from '../game/zoom.svelte';
 
 	interface Props {
@@ -41,8 +42,11 @@
 		max={ZOOM_MAX}
 		step="any"
 		bind:value={zoom.value}
+		aria-label="Card size"
+		aria-valuetext="{Math.round(zoom.value * 100)}%"
 		ondblclick={fitToViewport}
 	/>
+	<IconButton icon="fit" label="Fit cards to screen" onclick={fitToViewport} />
 </div>
 
 <style>
@@ -61,11 +65,6 @@
 		background: transparent;
 		margin: 0;
 		cursor: pointer;
-	}
-
-	.zoom-control input[type='range']:focus-visible {
-		outline: 2px solid var(--color-accent);
-		outline-offset: 2px;
 	}
 
 	.zoom-control input[type='range']::-webkit-slider-runnable-track {
