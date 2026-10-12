@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import random
 import re
-import string
 
 from flask import Blueprint, Response, jsonify, request, send_from_directory
 
@@ -13,7 +12,8 @@ from . import views
 from .notifier import GameNotifier
 from .session import current_game_id, current_player_name, end_session, start_session
 
-GAME_ID_ALPHABET = string.ascii_uppercase + string.digits
+# No 0/O, 1/I, 5/S or 8/B, which are easy to mix up when reading a code aloud.
+GAME_ID_ALPHABET = "ACDEFGHJKLMNPQRTUVWXYZ234679"
 GAME_ID_LENGTH = 4
 MAX_NAME_LENGTH = 32
 MAX_PROMPT_LENGTH = 200

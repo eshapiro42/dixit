@@ -459,3 +459,11 @@ def test_session_view_lists_every_finished_round_outcome(app: Flask) -> None:
     outcomes = state["round_outcomes"]
     assert [o["round_number"] for o in outcomes] == [1, 2]
     assert state["previous_round_outcome"]["round_number"] == 2
+
+
+def test_game_ids_avoid_look_alike_characters(client) -> None:
+    for _ in range(40):
+        game_id = create_game(client, "alice")["game_id"]
+        assert len(game_id) == 4
+        assert not set(game_id) & set("01IOSB58")
+        client.post("/api/session/leave")
