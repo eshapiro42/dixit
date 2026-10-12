@@ -1,17 +1,18 @@
 import type { Phase, SessionView } from '../api/types';
 
-export function phaseLabel(phase: Phase | null, host: string | null): string {
+/** A few words for the top bar; the fuller sentences live in waitingMessage. */
+export function phaseSummary(phase: Phase | null, host: string | null): string {
 	switch (phase) {
 		case 'host_choosing':
-			return `${host ?? 'The storyteller'} is choosing a card and a prompt`;
+			return `Choosing: ${host ?? 'storyteller'}`;
 		case 'others_choosing':
-			return 'Other players are choosing cards';
+			return 'Choosing cards';
 		case 'voting':
 			return 'Voting';
 		case 'scoring':
-			return 'Scoring the round';
+			return 'Scoring';
 		default:
-			return 'Waiting for the game to start';
+			return 'Lobby';
 	}
 }
 
@@ -45,4 +46,33 @@ export function waitingMessage(view: WaitingView): string | null {
 		default:
 			return null;
 	}
+}
+
+/** The storyteller's prompt with who wrote it, or null before there is one. */
+export function currentPrompt(
+	view: Pick<SessionView, 'host' | 'prompt'>
+): { host: string; text: string } | null {
+	return view.host && view.prompt ? { host: view.host, text: view.prompt } : null;
+}
+
+type LobbyView = Pick<SessionView, 'players' | 'min_players' | 'min_human_players' | 'is_creator'>;
+
+/** What's still missing before the game can start, or null once it can. */
+export function startHint(view: LobbyView): string | null {
+	const humans = view.players.filter((player) => !player.is_cpu).length;
+	const humansNeeded = view.min_human_players - humans;
+	const playersNeeded = view.min_players - view.players.length;
+
+	if (humansNeeded > 0) {
+		const people = humansNeeded === 1 ? 'person' : 'people';
+		return view.is_creator
+			? `Invite ${humansNeeded} more ${people} to start.`
+			: `Waiting for ${humansNeeded} more ${people} to join.`;
+	}
+	if (playersNeeded > 0) {
+		return view.is_creator
+			? `Add ${playersNeeded} more ${playersNeeded === 1 ? 'player or CPU' : 'players or CPUs'} to start.`
+			: `Waiting for ${playersNeeded} more ${playersNeeded === 1 ? 'player' : 'players'} to join.`;
+	}
+	return null;
 }

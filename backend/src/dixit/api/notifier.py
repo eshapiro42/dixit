@@ -20,6 +20,9 @@ class GameNotifier:
             payload = views.private_view(game, player)
             self._broadcaster.to_player(game.id, player.name, "you", payload)
 
+    def player_removed(self, game_id: str, player_name: str, removed_by: str) -> None:
+        self._broadcaster.to_player(game_id, player_name, "removed", {"by": removed_by})
+
     def round_finished(self, game_id: str, finished_round: Round) -> None:
         self._broadcaster.to_game(game_id, "round_outcome", views.round_outcome(finished_round))
 

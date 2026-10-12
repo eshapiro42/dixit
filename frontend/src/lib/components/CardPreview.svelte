@@ -52,7 +52,7 @@
 <style>
 	.preview {
 		position: fixed;
-		z-index: 40;
+		z-index: var(--z-preview);
 		pointer-events: none;
 		border-radius: 16px;
 		overflow: hidden;
@@ -76,12 +76,6 @@
 		to {
 			opacity: 1;
 			transform: scale(1);
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.preview {
-			animation: none;
 		}
 	}
 </style>

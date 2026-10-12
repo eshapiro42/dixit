@@ -1,31 +1,23 @@
 import { describe, expect, it } from 'vitest';
-import { phaseLabel, waitingMessage } from './phase';
+import { phaseSummary, startHint, waitingMessage } from './phase';
 
-describe('phaseLabel', () => {
-	it('names the host during host_choosing', () => {
-		expect(phaseLabel('host_choosing', 'alice')).toBe('alice is choosing a card and a prompt');
+describe('phaseSummary', () => {
+	it('names the host while they are choosing', () => {
+		expect(phaseSummary('host_choosing', 'alice')).toBe('Choosing: alice');
 	});
 
 	it('falls back when there is no host yet', () => {
-		expect(phaseLabel('host_choosing', null)).toBe(
-			'The storyteller is choosing a card and a prompt'
-		);
+		expect(phaseSummary('host_choosing', null)).toBe('Choosing: storyteller');
 	});
 
-	it('describes others_choosing without the prompt', () => {
-		expect(phaseLabel('others_choosing', 'alice')).toBe('Other players are choosing cards');
+	it('keeps the other phases to a couple of words', () => {
+		expect(phaseSummary('others_choosing', 'alice')).toBe('Choosing cards');
+		expect(phaseSummary('voting', 'alice')).toBe('Voting');
+		expect(phaseSummary('scoring', 'alice')).toBe('Scoring');
 	});
 
-	it('describes voting without the prompt', () => {
-		expect(phaseLabel('voting', 'alice')).toBe('Voting');
-	});
-
-	it('describes scoring', () => {
-		expect(phaseLabel('scoring', 'alice')).toBe('Scoring the round');
-	});
-
-	it('describes the lobby when there is no phase yet', () => {
-		expect(phaseLabel(null, null)).toBe('Waiting for the game to start');
+	it('calls the pre-game state the lobby', () => {
+		expect(phaseSummary(null, null)).toBe('Lobby');
 	});
 });
 
@@ -71,5 +63,40 @@ describe('waitingMessage', () => {
 		const lobby = { ...base, started: false, phase: null };
 		expect(waitingMessage(lobby)).toBe('Waiting for the creator to start the game.');
 		expect(waitingMessage({ ...lobby, is_creator: true })).toBeNull();
+	});
+});
+
+describe('startHint', () => {
+	const human = (name: string) => ({ name, score: 0, is_cpu: false });
+	const cpu = (name: string) => ({ name, score: 0, is_cpu: true });
+	const lobby = (players: ReturnType<typeof human>[], isCreator = true) => ({
+		players,
+		min_players: 4,
+		min_human_players: 3,
+		is_creator: isCreator
+	});
+
+	it('asks the creator to invite people while humans are short', () => {
+		expect(startHint(lobby([human('a')]))).toBe('Invite 2 more people to start.');
+		expect(startHint(lobby([human('a'), human('b')]))).toBe('Invite 1 more person to start.');
+	});
+
+	it('asks the creator to fill the remaining seats once there are enough humans', () => {
+		const three = [human('a'), human('b'), human('c')];
+		expect(startHint(lobby(three))).toBe('Add 1 more player or CPU to start.');
+	});
+
+	it('counts CPUs as players but not as people', () => {
+		const players = [human('a'), human('b'), cpu('CPU 1'), cpu('CPU 2')];
+		expect(startHint(lobby(players))).toBe('Invite 1 more person to start.');
+	});
+
+	it('is null once the game can start', () => {
+		const ready = [human('a'), human('b'), human('c'), cpu('CPU 1')];
+		expect(startHint(lobby(ready))).toBeNull();
+	});
+
+	it('words it as waiting for everyone who is not the creator', () => {
+		expect(startHint(lobby([human('a')], false))).toBe('Waiting for 2 more people to join.');
 	});
 });

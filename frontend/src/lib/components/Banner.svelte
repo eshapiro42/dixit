@@ -4,16 +4,23 @@
 
 	interface Props {
 		message: string | null;
+		/** Errors interrupt screen readers; notices wait politely. */
+		tone?: 'error' | 'notice';
 		ondismiss?: () => void;
 	}
 
-	let { message, ondismiss }: Props = $props();
+	let { message, tone = 'error', ondismiss }: Props = $props();
 </script>
 
 {#if message}
-	<div class="banner" role="alert">
+	<div class="banner {tone}" role={tone === 'error' ? 'alert' : 'status'}>
 		<Text as="span" variant="body" class="banner-message">{message}</Text>
-		<IconButton label="Dismiss" tone="danger" onclick={() => ondismiss?.()} />
+		<IconButton
+			icon="close"
+			label="Dismiss"
+			tone={tone === 'error' ? 'danger' : 'default'}
+			onclick={() => ondismiss?.()}
+		/>
 	</div>
 {/if}
 
@@ -25,13 +32,19 @@
 		gap: var(--space-3);
 		padding: var(--space-3) var(--space-4);
 		border-radius: var(--radius);
+	}
+
+	.error {
 		background: var(--color-danger-soft);
 		color: var(--color-danger);
 	}
 
-	/* Text's "body" variant sets its own color; override back to the banner's
-	 * danger red, which the plain dismiss icon still inherits from .banner.
-	 */
+	.notice {
+		background: var(--color-accent-soft);
+		color: var(--color-text);
+	}
+
+	/* Text's body variant sets its own color, so hand it back to the banner. */
 	.banner :global(.banner-message) {
 		color: inherit;
 	}

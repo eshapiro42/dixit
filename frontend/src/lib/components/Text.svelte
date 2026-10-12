@@ -2,7 +2,7 @@
 	import type { Snippet } from 'svelte';
 
 	type Variant = 'title' | 'heading' | 'body' | 'caption' | 'label' | 'tag' | 'button-label';
-	type Tag = 'h1' | 'h2' | 'p' | 'span' | 'label' | 'div';
+	type Tag = 'h1' | 'h2' | 'p' | 'span' | 'label' | 'div' | 'figcaption';
 
 	const DEFAULT_TAG: Record<Variant, Tag> = {
 		title: 'h1',
@@ -17,16 +17,18 @@
 	interface Props {
 		variant: Variant;
 		as?: Tag;
+		id?: string;
 		for?: string;
+		title?: string;
 		class?: string;
 		children: Snippet;
 	}
 
-	let { variant, as, for: htmlFor, class: className = '', children }: Props = $props();
+	let { variant, as, id, for: htmlFor, title, class: className = '', children }: Props = $props();
 	let tag = $derived(as ?? DEFAULT_TAG[variant]);
 </script>
 
-<svelte:element this={tag} class="text text--{variant} {className}" for={htmlFor}>
+<svelte:element this={tag} class="text text--{variant} {className}" {id} for={htmlFor} {title}>
 	{@render children()}
 </svelte:element>
 

@@ -56,6 +56,7 @@
 		display: flex;
 		gap: var(--space-3);
 		overflow-x: auto;
+		overscroll-behavior-x: contain;
 		/* No horizontal padding: the inset selection ring never overflows a card. */
 		padding: var(--space-3) 0;
 		margin: var(--space-4) 0;
@@ -88,7 +89,7 @@
 
 	.slot {
 		flex: 0 0 auto;
-		width: calc(clamp(90px, 22vw, 150px) * var(--zoom, 1));
+		width: calc(clamp(90px, min(38vw, 32vh), 150px) * var(--zoom, 1));
 		scroll-snap-align: start;
 	}
 </style>

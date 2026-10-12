@@ -4,7 +4,7 @@ from flask import Flask
 from dixit.api.errors import register_error_handlers
 from dixit.api.notifier import GameNotifier
 from dixit.api.routes import build_routes_blueprint
-from dixit.realtime import FakeBroadcaster
+from dixit.realtime import FakeBroadcaster, player_room
 from dixit.store import InMemoryGameStore
 
 
@@ -459,3 +459,97 @@ def test_session_view_lists_every_finished_round_outcome(app: Flask) -> None:
     outcomes = state["round_outcomes"]
     assert [o["round_number"] for o in outcomes] == [1, 2]
     assert state["previous_round_outcome"]["round_number"] == 2
+
+
+def test_game_ids_avoid_look_alike_characters(client) -> None:
+    for _ in range(40):
+        game_id = create_game(client, "alice")["game_id"]
+        assert len(game_id) == 4
+        assert not set(game_id) & set("01IOSB58")
+        client.post("/api/session/leave")
+
+
+def _lobby_with(app: Flask, *names: str):
+    creator = app.test_client()
+    created = create_game(creator, "alice")
+    clients = {"alice": creator}
+    for name in names:
+        client = app.test_client()
+        join_game(client, created["game_id"], name)
+        clients[name] = client
+    return clients
+
+
+def _player_names(client) -> list[str]:
+    return [p["name"] for p in client.get("/api/session").get_json()["players"]]
+
+
+def test_creator_can_remove_a_player_from_the_lobby(app: Flask, broadcaster) -> None:
+    clients = _lobby_with(app, "bob", "carol")
+    game_id = clients["alice"].get("/api/session").get_json()["game_id"]
+    broadcaster.emissions.clear()
+
+    response = clients["alice"].post("/api/session/remove-player", json={"player_name": "bob"})
+
+    assert response.status_code == 200
+    assert _player_names(clients["alice"]) == ["alice", "carol"]
+    removed = [e for e in broadcaster.emissions if e.event == "removed"]
+    assert len(removed) == 1
+    assert removed[0].room == player_room(game_id, "bob")
+    assert removed[0].payload == {"by": "alice"}
+
+
+def test_removed_player_no_longer_has_a_session(app: Flask) -> None:
+    clients = _lobby_with(app, "bob")
+
+    clients["alice"].post("/api/session/remove-player", json={"player_name": "bob"})
+
+    assert clients["bob"].get("/api/session").status_code == 404
+
+
+def test_only_the_creator_can_remove_players(app: Flask) -> None:
+    clients = _lobby_with(app, "bob", "carol")
+
+    response = clients["bob"].post("/api/session/remove-player", json={"player_name": "carol"})
+
+    assert response.status_code == 400
+    assert _player_names(clients["alice"]) == ["alice", "bob", "carol"]
+
+
+def test_the_creator_cannot_be_removed(app: Flask) -> None:
+    clients = _lobby_with(app)
+
+    response = clients["alice"].post("/api/session/remove-player", json={"player_name": "alice"})
+
+    assert response.status_code == 400
+    assert _player_names(clients["alice"]) == ["alice"]
+
+
+def test_removing_someone_who_is_not_in_the_game_is_rejected(app: Flask) -> None:
+    clients = _lobby_with(app)
+
+    response = clients["alice"].post("/api/session/remove-player", json={"player_name": "zed"})
+
+    assert response.status_code == 404
+
+
+def test_players_cannot_be_removed_after_the_game_starts(app: Flask) -> None:
+    lobby = _started_lobby(app)
+    creator = lobby["clients"]["alice"]
+
+    response = creator.post("/api/session/remove-player", json={"player_name": "bob"})
+
+    assert response.status_code == 400
+
+
+def test_a_cpu_can_be_removed_and_new_cpus_never_duplicate_a_name(app: Flask, broadcaster) -> None:
+    creator = _lobby_with(app)["alice"]
+    creator.post("/api/session/add-cpu")
+    creator.post("/api/session/add-cpu")
+    broadcaster.emissions.clear()
+
+    creator.post("/api/session/remove-player", json={"player_name": "CPU 1"})
+    creator.post("/api/session/add-cpu")
+
+    assert _player_names(creator) == ["alice", "CPU 2", "CPU 1"]
+    assert not [e for e in broadcaster.emissions if e.event == "removed"]

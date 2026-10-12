@@ -8,6 +8,8 @@ class GameState {
 	lastOutcome = $state<RoundOutcome | null>(null);
 	outcomes = $state<RoundOutcome[]>([]);
 	error = $state<string | null>(null);
+	/** Something that happened to the player, shown on the lobby form (not a failure). */
+	notice = $state<string | null>(null);
 
 	private connected = false;
 	// Bumped by enterSession/leaveGame so a run() call that resolves after the
@@ -20,6 +22,10 @@ class GameState {
 
 	clearError(): void {
 		this.error = null;
+	}
+
+	clearNotice(): void {
+		this.notice = null;
 	}
 
 	async createGame(playerName: string): Promise<void> {
@@ -42,6 +48,10 @@ class GameState {
 
 	async addCpu(): Promise<void> {
 		await this.run(() => api.addCpu());
+	}
+
+	async removePlayer(playerName: string): Promise<void> {
+		await this.run(() => api.removePlayer(playerName));
 	}
 
 	async start(): Promise<void> {
@@ -113,11 +123,20 @@ class GameState {
 		socket.on('message', (data) => {
 			this.messages.push(data);
 		});
+		socket.on('removed', (data) => {
+			void this.handleRemoved(data.by);
+		});
+	}
+
+	private async handleRemoved(by: string): Promise<void> {
+		await this.leaveGame();
+		this.notice = `${by} removed you from the game.`;
 	}
 
 	private async run<T>(action: () => Promise<T>): Promise<T | undefined> {
 		const generation = this.generation;
 		this.error = null;
+		this.notice = null;
 		try {
 			return await action();
 		} catch (err) {

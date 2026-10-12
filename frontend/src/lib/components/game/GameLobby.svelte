@@ -1,121 +1,126 @@
 <script lang="ts">
 	import type { SessionView } from '../../api/types';
+	import { startHint } from '../../game/phase';
 	import { gameState } from '../../game/state.svelte';
 	import Badge from '../Badge.svelte';
 	import Button from '../Button.svelte';
-	import Divider from '../Divider.svelte';
+	import IconButton from '../IconButton.svelte';
+	import InviteCode from '../InviteCode.svelte';
 	import PanelHeader from '../PanelHeader.svelte';
-	import Stat from '../Stat.svelte';
 	import Text from '../Text.svelte';
 
 	let { view }: { view: SessionView } = $props();
 
-	let copied = $state(false);
-	let copyTimeout: ReturnType<typeof setTimeout> | undefined;
-
-	async function copyGameId(): Promise<void> {
-		try {
-			await navigator.clipboard.writeText(view.game_id);
-		} catch {
-			return;
-		}
-		copied = true;
-		clearTimeout(copyTimeout);
-		copyTimeout = setTimeout(() => (copied = false), 1500);
-	}
+	let hint = $derived(startHint(view));
 </script>
 
-<section>
-	<div class="toolbar">
-		{#if view.is_creator}
+<section class="lobby">
+	<InviteCode gameId={view.game_id} />
+
+	{#if view.is_creator}
+		<div class="start">
 			<div class="actions">
 				<Button kind="secondary" onclick={() => gameState.addCpu()}>Add CPU</Button>
 				<Button disabled={!view.playable} onclick={() => gameState.start()}>Start Game</Button>
 			</div>
-		{/if}
-
-		<div class="invite">
-			<Text as="span" variant="label">Game ID</Text>
-			<Stat size="hero">{view.game_id}</Stat>
-			<Button kind="secondary" onclick={copyGameId}>{copied ? 'Copied!' : 'Copy'}</Button>
+			{#if hint}<Text as="p" variant="caption">{hint}</Text>{/if}
 		</div>
-	</div>
-
-	{#if !view.playable}
-		<Text as="p" variant="caption" class="requirement">
-			Need at least {view.min_players} players, {view.min_human_players} of them human.
-		</Text>
+	{:else if hint}
+		<Text as="p" variant="caption">{hint}</Text>
 	{/if}
 
-	<Divider spacing="section" />
-
-	<PanelHeader>
-		<Text variant="heading">Players</Text>
-		<Text as="span" variant="label">{view.players.length} joined</Text>
-	</PanelHeader>
-	<ul class="players">
-		{#each view.players as player (player.name)}
-			<li>
-				<span class="player-name">{player.name}</span>
-				<span class="tags">
-					{#if player.is_cpu}<Badge>CPU</Badge>{/if}
-					{#if player.name === view.creator_name}<Badge>Creator</Badge>{/if}
-					{#if player.name === view.player_name}<Badge tone="solid">You</Badge>{/if}
-				</span>
-			</li>
-		{/each}
-	</ul>
+	<div>
+		<PanelHeader align="baseline">
+			<Text variant="heading">Players</Text>
+			<Text as="span" variant="label">{view.players.length} joined</Text>
+		</PanelHeader>
+		<ul class="players" class:manage={view.is_creator}>
+			{#each view.players as player (player.name)}
+				<li>
+					<span class="player-name" title={player.name}>{player.name}</span>
+					<span class="tags">
+						{#if player.is_cpu}<Badge>CPU</Badge>{/if}
+						{#if player.name === view.creator_name}<Badge>Creator</Badge>{/if}
+						{#if player.name === view.player_name}<Badge tone="solid">You</Badge>{/if}
+					</span>
+					{#if view.is_creator && player.name !== view.creator_name}
+						<IconButton
+							icon="close"
+							label="Remove {player.name}"
+							onclick={() => gameState.removePlayer(player.name)}
+						/>
+					{/if}
+				</li>
+			{/each}
+		</ul>
+	</div>
 </section>
 
 <style>
-	.toolbar {
+	.lobby {
 		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		flex-wrap: wrap;
-		gap: var(--space-3) var(--space-6);
+		flex-direction: column;
+		gap: var(--space-4);
+		width: 100%;
+		max-width: var(--measure-lobby);
+		margin: 0 auto;
+	}
+
+	.lobby > :global(p) {
+		margin: 0;
+	}
+
+	.start {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.start > :global(p) {
+		margin: 0;
 	}
 
 	.actions {
-		display: flex;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
 		gap: var(--space-3);
-		flex-wrap: wrap;
-	}
-
-	.invite {
-		display: flex;
-		align-items: center;
-		gap: var(--space-3);
-		margin-left: auto;
-	}
-
-	section > :global(.requirement) {
-		margin-top: var(--space-3);
 	}
 
 	.players {
-		list-style: none;
 		margin: 0;
 		padding: 0;
+		list-style: none;
 		border-top: var(--border-width) solid var(--color-border);
 	}
 
 	.players li {
-		display: flex;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
 		align-items: center;
-		justify-content: space-between;
 		gap: var(--space-3);
 		min-height: var(--tap);
 		padding: var(--space-2) var(--space-3);
 		border-bottom: var(--border-width) solid var(--color-border);
 	}
 
+	/* Room for a remove button on every row, so the tags line up whether or not it has one. */
+	.players.manage li {
+		grid-template-columns: minmax(0, 1fr) auto var(--tap);
+		min-height: calc(var(--tap) + 2 * var(--space-2) + var(--border-width));
+		padding-inline-end: var(--space-1);
+	}
+
 	.player-name {
+		min-width: 0;
+		overflow: hidden;
 		font-weight: var(--weight-medium);
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.tags {
 		display: flex;
+		flex-shrink: 0;
 		gap: var(--space-2);
 	}
 

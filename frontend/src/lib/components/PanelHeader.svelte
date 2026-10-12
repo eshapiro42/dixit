@@ -2,13 +2,15 @@
 	import type { Snippet } from 'svelte';
 
 	interface Props {
+		/** Baseline suits plain text; the default end suits a taller control beside the heading. */
+		align?: 'end' | 'baseline';
 		children: Snippet;
 	}
 
-	let { children }: Props = $props();
+	let { align = 'end', children }: Props = $props();
 </script>
 
-<div class="panel-header">
+<div class="panel-header {align}">
 	{@render children()}
 </div>
 
@@ -22,5 +24,9 @@
 		gap: var(--space-2) var(--space-3);
 		/* The single gap between a heading and whatever follows it. */
 		margin-bottom: var(--space-6);
+	}
+
+	.baseline {
+		align-items: baseline;
 	}
 </style>

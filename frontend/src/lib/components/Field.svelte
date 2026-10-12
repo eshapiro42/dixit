@@ -1,31 +1,31 @@
 <script lang="ts">
+	import type { HTMLInputAttributes } from 'svelte/elements';
 	import Text from './Text.svelte';
 
-	interface Props {
+	interface Props extends Omit<HTMLInputAttributes, 'value' | 'id'> {
 		id: string;
 		label: string;
 		value: string;
-		required?: boolean;
-		maxlength?: number;
-		placeholder?: string;
+		hideLabel?: boolean;
 	}
 
 	let {
 		id,
 		label,
 		value = $bindable(),
+		hideLabel = false,
 		required = false,
-		maxlength,
-		placeholder
+		class: className = '',
+		...rest
 	}: Props = $props();
 </script>
 
 <div class="field">
-	<Text as="label" variant="label" for={id}>
+	<Text as="label" variant="label" for={id} class={hideLabel ? 'sr-only' : ''}>
 		{label}
-		{#if required}<span class="required-marker" aria-hidden="true">*</span>{/if}
+		{#if required && !hideLabel}<span class="required-marker" aria-hidden="true">*</span>{/if}
 	</Text>
-	<input {id} type="text" bind:value {required} {maxlength} {placeholder} autocomplete="off" />
+	<input {id} type="text" bind:value {required} autocomplete="off" class={className} {...rest} />
 </div>
 
 <style>
@@ -43,16 +43,11 @@
 		min-height: var(--tap);
 		padding: 0 var(--space-4);
 		border-radius: var(--radius);
-		border: 1px solid var(--color-border);
+		border: var(--border-width) solid var(--color-border-strong);
 		background: var(--color-surface);
 		color: var(--color-text);
 		font-family: inherit;
 		font-size: var(--size-md);
 		font-weight: var(--weight-normal);
-	}
-
-	input:focus-visible {
-		outline: 2px solid var(--color-accent);
-		outline-offset: 1px;
 	}
 </style>

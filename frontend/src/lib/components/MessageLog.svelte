@@ -47,7 +47,7 @@
 		requestAnimationFrame(() => listEl?.scrollTo({ top: listEl.scrollHeight }));
 	});
 
-	// Messages before the first turn announcement form one open group; each round after is collapsible.
+	// Pre-game messages form a lobby group; each round after is its own. Only the latest opens by default.
 	let groups = $derived.by((): Group[] => {
 		const result: Group[] = [];
 		let current: Group | null = null;
@@ -82,32 +82,29 @@
 <div class="log-wrapper">
 	<div class="log" bind:this={listEl} onscroll={trackScrollPosition}>
 		{#each groups as group, index (index)}
-			<section class="group" class:round={group.isRound}>
-				{#if !group.isRound}
-					<h3 class="group-title">Lobby</h3>
-				{:else}
-					<button
-						type="button"
-						class="round-toggle"
-						class:current={index === groups.length - 1}
-						aria-expanded={isOpen(index)}
-						onclick={() => toggle(index)}
-					>
-						<svg class="chevron" class:open={isOpen(index)} viewBox="0 0 16 16" aria-hidden="true">
-							<path d="M6 4l4 4-4 4" />
-						</svg>
-						<span class="round-heading">
-							<span class="round-title">Round {group.roundNumber}</span>
-							{#if group.outcome && !isOpen(index)}
-								<span class="round-summary">
-									{group.outcome.host}'s prompt: &ldquo;{group.outcome.prompt}&rdquo;
-								</span>
-							{/if}
-						</span>
-						<Badge tone="soft" class="count">{group.messages.length}</Badge>
-					</button>
-				{/if}
-				{#if !group.isRound || isOpen(index)}
+			<section class="group">
+				<button
+					type="button"
+					class="round-toggle"
+					class:current={index === groups.length - 1}
+					aria-expanded={isOpen(index)}
+					onclick={() => toggle(index)}
+				>
+					<svg class="chevron" class:open={isOpen(index)} viewBox="0 0 16 16" aria-hidden="true">
+						<path d="M6 4l4 4-4 4" />
+					</svg>
+					<span class="round-heading">
+						<span class="round-title">{group.isRound ? `Round ${group.roundNumber}` : 'Lobby'}</span
+						>
+						{#if group.outcome && !isOpen(index)}
+							<span class="round-summary">
+								{group.outcome.host}'s prompt: &ldquo;{group.outcome.prompt}&rdquo;
+							</span>
+						{/if}
+					</span>
+					<Badge tone="soft" class="count">{group.messages.length}</Badge>
+				</button>
+				{#if isOpen(index)}
 					<div class="messages">
 						{#each group.messages as message, messageIndex (messageIndex)}
 							{#if message.emphasis}
@@ -166,13 +163,13 @@
 		padding-bottom: var(--space-1);
 	}
 
-	.round .messages {
+	.messages {
 		margin-left: var(--rule-x);
 		padding-left: calc(var(--text-x) - var(--rule-x));
 	}
 
 	/* Inset from the bottom so it doesn't run into the next round's divider. */
-	.round .messages::before {
+	.messages::before {
 		content: '';
 		position: absolute;
 		top: 0;
@@ -192,7 +189,8 @@
 		gap: var(--space-2);
 		width: 100%;
 		margin: 0;
-		padding: var(--space-3) var(--space-2) var(--space-2);
+		min-height: var(--tap);
+		padding: var(--space-2);
 		border: none;
 		border-top: var(--border-width) solid var(--color-border);
 		border-radius: var(--radius);
@@ -205,7 +203,13 @@
 		cursor: pointer;
 	}
 
-	.round-toggle:hover {
+	@media (hover: hover) {
+		.round-toggle:hover {
+			background: var(--color-accent-soft);
+		}
+	}
+
+	.round-toggle:active {
 		background: var(--color-accent-soft);
 	}
 
@@ -255,15 +259,6 @@
 		white-space: nowrap;
 	}
 
-	.group-title {
-		margin: 0;
-		padding: var(--space-2) 0;
-		font-family: var(--font-sans);
-		font-size: var(--size-sm);
-		font-weight: var(--weight-bold);
-		color: var(--color-text);
-	}
-
 	.results {
 		display: flex;
 		flex-direction: column;
@@ -283,8 +278,15 @@
 
 	.jump-to-latest {
 		position: absolute;
+		inset-inline: 0;
 		bottom: var(--space-2);
-		left: 50%;
-		transform: translateX(-50%);
+		display: flex;
+		justify-content: center;
+		pointer-events: none;
+	}
+
+	.jump-to-latest :global(.button) {
+		pointer-events: auto;
+		white-space: nowrap;
 	}
 </style>

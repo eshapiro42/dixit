@@ -13,6 +13,7 @@
 
 	let { title, open, wide = false, onclose, children }: Props = $props();
 	let dialogEl: HTMLDialogElement | undefined = $state();
+	const titleId = $props.id();
 
 	$effect(() => {
 		if (!dialogEl) return;
@@ -33,10 +34,16 @@
 	}
 </script>
 
-<dialog bind:this={dialogEl} class:wide onclose={() => onclose()} onclick={handleDialogClick}>
+<dialog
+	bind:this={dialogEl}
+	aria-labelledby={titleId}
+	class:wide
+	onclose={() => onclose()}
+	onclick={handleDialogClick}
+>
 	<div class="header">
-		<Text variant="heading">{title}</Text>
-		<IconButton label="Close" onclick={() => onclose()} />
+		<Text variant="heading" id={titleId}>{title}</Text>
+		<IconButton icon="close" label="Close" onclick={() => onclose()} />
 	</div>
 	<div class="content">
 		{@render children()}
@@ -45,34 +52,51 @@
 
 <style>
 	dialog {
-		border: none;
+		width: min(30rem, calc(100% - 2 * var(--space-4)));
+		max-height: calc(100dvh - 2 * var(--space-4));
+		padding: var(--space-4) var(--space-4) var(--space-6);
+		border: var(--border-width) solid var(--color-border);
 		border-radius: var(--radius);
-		padding: var(--space-6);
+		background: var(--color-surface-raised);
+		color: var(--color-text);
 		box-shadow: var(--shadow-overlay);
-		max-width: 480px;
-		width: 90vw;
+		overscroll-behavior: contain;
+	}
+
+	dialog[open] {
+		display: flex;
+		flex-direction: column;
 	}
 
 	dialog.wide {
-		max-width: 640px;
+		width: min(40rem, calc(100% - 2 * var(--space-4)));
 	}
 
 	dialog::backdrop {
-		background: rgb(0 0 0 / 0.4);
+		background: var(--color-backdrop);
+	}
+
+	@media (min-width: 40rem) {
+		dialog {
+			padding: var(--space-6);
+		}
 	}
 
 	.header {
 		display: flex;
+		flex-shrink: 0;
 		align-items: center;
 		justify-content: space-between;
 		gap: var(--space-4);
-		margin-bottom: var(--space-4);
+		margin-bottom: var(--space-2);
 	}
 
 	.content {
 		display: flex;
 		flex-direction: column;
-		max-height: 60vh;
+		flex: 1 1 auto;
+		min-height: 0;
 		overflow-y: auto;
+		overscroll-behavior: contain;
 	}
 </style>

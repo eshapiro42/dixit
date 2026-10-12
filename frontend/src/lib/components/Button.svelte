@@ -6,13 +6,21 @@
 		type?: 'button' | 'submit';
 		disabled?: boolean;
 		onclick?: (event: MouseEvent) => void;
+		class?: string;
 		children: Snippet;
 	}
 
-	let { kind = 'primary', type = 'button', disabled = false, onclick, children }: Props = $props();
+	let {
+		kind = 'primary',
+		type = 'button',
+		disabled = false,
+		onclick,
+		class: className = '',
+		children
+	}: Props = $props();
 </script>
 
-<button class="button {kind}" {type} {disabled} {onclick}>
+<button class="button {kind} {className}" {type} {disabled} {onclick}>
 	{@render children()}
 </button>
 
@@ -50,18 +58,14 @@
 		color: var(--color-accent-contrast);
 	}
 
-	.primary:not(:disabled):hover {
+	.primary:not(:disabled):active {
 		filter: brightness(0.94);
 	}
 
 	.secondary {
 		background: var(--color-surface);
-		border-color: var(--color-border);
+		border-color: var(--color-border-strong);
 		color: var(--color-text);
-	}
-
-	.secondary:not(:disabled):hover {
-		border-color: var(--color-accent);
 	}
 
 	.danger {
@@ -71,12 +75,22 @@
 
 	.ghost {
 		background: transparent;
-		border-color: var(--color-border);
+		border-color: var(--color-border-strong);
 		color: var(--color-text-quiet);
 	}
 
-	.ghost:not(:disabled):hover {
-		border-color: var(--color-accent);
-		color: var(--color-text);
+	@media (hover: hover) {
+		.primary:not(:disabled):hover {
+			filter: brightness(0.94);
+		}
+
+		.secondary:not(:disabled):hover,
+		.ghost:not(:disabled):hover {
+			border-color: var(--color-accent);
+		}
+
+		.ghost:not(:disabled):hover {
+			color: var(--color-text);
+		}
 	}
 </style>

@@ -6,6 +6,7 @@ interface ServerToClientEvents {
 	you: (data: PrivateView) => void;
 	message: (data: GameMessage) => void;
 	round_outcome: (data: RoundOutcome) => void;
+	removed: (data: { by: string }) => void;
 }
 
 let socket: Socket<ServerToClientEvents> | undefined;
