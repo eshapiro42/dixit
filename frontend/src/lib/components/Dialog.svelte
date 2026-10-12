@@ -20,11 +20,7 @@
 		if (!open && dialogEl.open) dialogEl.close();
 	});
 
-	// Closes on a genuine backdrop click. The dialog element itself is also
-	// the click target for a click that lands in the dialog's own padding
-	// (not just the true backdrop), so a target check alone isn't enough -
-	// only close when the click coordinates actually fall outside the
-	// dialog's rendered box.
+	// A click in the dialog's padding also targets the dialog, so check the coordinates.
 	function handleDialogClick(event: MouseEvent): void {
 		if (!dialogEl || event.target !== dialogEl) return;
 		const rect = dialogEl.getBoundingClientRect();

@@ -25,6 +25,7 @@
 			<span class="status-line">
 				<span class="game-id">
 					<span class="dot" aria-hidden="true">&middot;</span>
+					<!-- eslint-disable-next-line svelte/no-useless-mustaches -- keeps the trailing space prettier would strip -->
 					<Text as="span" variant="label" class="sr-only">{'Game ID: '}</Text>
 					<Text as="span" variant="label" class="numeric">{view.game_id}</Text>
 				</span>
@@ -55,15 +56,7 @@
 		border-bottom: 1px solid var(--color-border);
 	}
 
-	/* Every direct child is centered as a block against the tallest one (the
-	 * buttons, at --tap height) so the bar reads as vertically balanced. The
-	 * game ID and status text still need to share a baseline with EACH OTHER
-	 * the way running text would, but comparing baselines across the whole
-	 * row - including a 44px-tall button - would just shove that pair up
-	 * near the top of the bar instead of centering them in it. Scoping
-	 * align-items: baseline to their own wrapper (.status-line) gets both:
-	 * the pair lines up with each other, and the pair as a unit still
-	 * centers in the bar like everything else. */
+	/* Baseline alignment is scoped to .status-line so the pair centers in the bar as a unit. */
 	.inner {
 		display: flex;
 		align-items: center;
@@ -80,12 +73,7 @@
 		align-items: center;
 		flex-shrink: 0;
 		padding: 0 var(--space-2);
-		/* .inner's own column-gap lands between every pair of its direct
-		 * children, including this one and .status-line - on top of the
-		 * padding above, which would double the space before the dot vs.
-		 * after it. Cancel that one contribution so the padding above stays
-		 * the sole source of that gap, keeping it equal to .game-id's own
-		 * internal gap on the dot's other side. */
+		/* Cancels .inner's column-gap here so the dot gets the same space on both sides. */
 		margin-right: calc(-1 * var(--space-4));
 	}
 
@@ -112,9 +100,7 @@
 		align-items: baseline;
 		flex: 1 1 auto;
 		min-width: 0;
-		/* Same token as .game-id's own internal gap below, so the dot between
-		 * the game ID and the status text sits centered exactly like the one
-		 * between "Dixit" and the game ID does. */
+		/* Matches .game-id's gap so both dots are centered between their neighbors. */
 		gap: var(--space-2);
 	}
 
@@ -128,10 +114,7 @@
 		display: inline-flex;
 		align-items: baseline;
 		flex-shrink: 0;
-		/* .wordmark-wrap's own right padding is the gap before the dot; this
-		 * gap after it needs to match that same token so the dot actually
-		 * sits centered between "Dixit" and the code instead of hugging
-		 * whichever side happens to get the leftover margin. */
+		/* Must match .wordmark-wrap's right padding so the dot is centered. */
 		gap: var(--space-2);
 	}
 
@@ -157,11 +140,7 @@
 		white-space: nowrap;
 	}
 
-	/* In-game, the buttons (--tap tall) set the bar's height; without a game
-	 * there are none, so the wordmark alone would leave the bar shorter on the
-	 * create/join screen. Matching its minimum to the buttons keeps the bar one
-	 * height throughout. (On narrow screens the buttons wrap to their own row,
-	 * so there's nothing to match.) */
+	/* Without the buttons the bar would be shorter on the create/join screen. */
 	@media (min-width: 481px) {
 		.wordmark-wrap {
 			min-height: var(--tap);

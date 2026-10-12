@@ -71,9 +71,7 @@
 		overflow-x: auto;
 	}
 
-	/* Unwraps from grid-item participation so its own cells become the actual
-	 * (shared-track) grid items instead, while staying in the DOM as a real
-	 * role="row" element for assistive tech. */
+	/* display: contents keeps role="row" for assistive tech while the cells become the grid items. */
 	.scores-row {
 		display: contents;
 	}
@@ -83,11 +81,7 @@
 		white-space: nowrap;
 	}
 
-	/* Column instead of inline, and bottom-aligned: a column with no
-	 * storyteller badge is just its name, but one with a badge is a name plus
-	 * an icon stacked above it, and the two need to sit on the same shared
-	 * baseline regardless - like a token that's been physically set down on
-	 * top of whoever currently holds it, rather than a label next to a name. */
+	/* Bottom-aligned so names share a baseline whether or not a storyteller badge sits above. */
 	.scores-cell--header {
 		display: flex;
 		flex-direction: column;

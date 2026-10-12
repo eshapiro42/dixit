@@ -34,15 +34,7 @@
 		justify-content: center;
 		font-weight: var(--weight-bold);
 		line-height: 1;
-		/* line-height alone still centers the font's full ascent/descent box,
-		 * not the actual glyph ink - for a font whose ascent and descent aren't
-		 * symmetric around its cap height (most of them), that leaves the text
-		 * looking off-center within an otherwise-centered box, and which way it
-		 * leans is font-specific. Trimming the box to the glyph's own edges
-		 * makes flex centering land on the ink itself instead. No-op in
-		 * browsers that don't support it yet - falls back to the line-height
-		 * behavior above.
-		 */
+		/* Trim to the glyph edges so flex centering lands on the ink, not the font's line box. */
 		text-box-trim: trim-both;
 		text-box-edge: cap alphabetic;
 	}
@@ -56,9 +48,7 @@
 		border-radius: 50%;
 	}
 
-	/* The score-delta "+N" badge specifically: one shared size so the version
-	 * on the storyteller's card and the version next to a score in the table
-	 * are pixel-identical, not two independently-tuned lookalikes. */
+	/* Shared size for the "+N" score delta. */
 	.badge--delta {
 		height: 22px;
 		padding: 0 var(--space-2);

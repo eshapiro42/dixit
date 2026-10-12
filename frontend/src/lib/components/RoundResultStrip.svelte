@@ -30,8 +30,7 @@
 		width: 56px;
 	}
 
-	/* Names are longer than a thumbnail is wide; clip rather than wrap so
-	 * every card in the strip keeps the same height. */
+	/* Clip long names so every thumbnail keeps the same height. */
 	.thumb :global(.card-name) {
 		overflow: hidden;
 		white-space: nowrap;

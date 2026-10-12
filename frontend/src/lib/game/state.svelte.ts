@@ -30,11 +30,7 @@ class GameState {
 		await this.run(async () => this.enterSession(await api.joinGame(gameId, playerName), true));
 	}
 
-	/** Silently recover the session: on first load (no view yet) or after a
-	 * socket reconnect (view already present, so history is kept rather than
-	 * wiped by what's really just a resync). No session yet is the expected
-	 * outcome for a first-time visitor, not an error worth showing.
-	 */
+	/* Recovers the session quietly. No session yet is normal for a first visit. */
 	async tryResume(): Promise<boolean> {
 		try {
 			this.enterSession(await api.session(), !this.inGame);
@@ -68,9 +64,7 @@ class GameState {
 		await this.run(() => api.mulligan(cardId));
 	}
 
-	/** Leave the current game and return to the lobby form. The session is cleared
-	 * locally even if the request fails: there's nothing useful to retry here.
-	 */
+	/* Clears the session locally even if the request fails. */
 	async leaveGame(): Promise<void> {
 		this.generation++;
 		try {

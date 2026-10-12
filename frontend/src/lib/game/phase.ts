@@ -28,8 +28,7 @@ type WaitingView = Pick<
 	| 'votes_needed'
 >;
 
-/** What this player is currently waiting on someone else to do, or null when
- * the ball is in their own court (or there's nothing to wait for). */
+/** What this player is waiting on someone else for, or null. */
 export function waitingMessage(view: WaitingView): string | null {
 	if (!view.started) {
 		return view.is_creator ? null : 'Waiting for the creator to start the game.';

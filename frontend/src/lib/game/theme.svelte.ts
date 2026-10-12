@@ -10,8 +10,7 @@ class ThemeState {
 	#value = $state<Theme>('light');
 
 	constructor() {
-		// app.html has already set the attribute (from storage or the system
-		// preference) before first paint; this just mirrors it into state.
+		// app.html has already applied the theme before first paint.
 		if (typeof document !== 'undefined') this.#value = currentTheme();
 	}
 

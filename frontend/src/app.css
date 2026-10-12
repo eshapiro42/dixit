@@ -33,52 +33,34 @@
 	--space-6: 1.5rem;
 	--space-8: 2rem;
 
-	/* Square everywhere except playing cards, which get their own radius below
-	 * so they read as physical objects instead of UI chrome.
-	 */
+	/* Square corners everywhere except playing cards. */
 	--radius: 0;
 	--radius-card: 12px;
 
-	/* Panels and buttons are flat; elevation is reserved for things that
-	 * genuinely float above the page (cards, the log/dialog overlay).
-	 */
+	/* Elevation is only for things that float above the page. */
 	--shadow-card: 0 2px 8px rgb(34 31 31 / 0.16);
 	--shadow-card-hover: 0 6px 16px rgb(34 31 31 / 0.2);
 	--shadow-overlay: 0 12px 32px rgb(34 31 31 / 0.22);
 
 	--tap: 2.75rem;
 	--border-width: 1px;
-	/* The one "accent-colored line" thickness, shared by every place a thin
-	 * accent stroke shows up (the active-panel bar, a selected card's ring,
-	 * the card carousel's scrollbar) so they can never drift apart again.
-	 */
+	/* Shared thickness for every thin accent stroke. */
 	--accent-line: 3px;
 
 	--weight-normal: 400;
 	--weight-medium: 600;
 	--weight-bold: 700;
 
-	/* The one faded/disabled treatment for the accent color, shared by
-	 * disabled controls and decorative accent marks alike.
-	 */
+	/* Shared faded treatment for disabled controls and decorative accents. */
 	--opacity-faded: 0.5;
 
 	color-scheme: light;
 	accent-color: var(--color-accent);
-	/* Reserve the scrollbar's space unconditionally: without this, crossing
-	 * the "content just barely fits the viewport" boundary toggles a
-	 * classic (non-overlay) scrollbar on/off, which changes the page's
-	 * available width and shifts every right-aligned element - including
-	 * mid-drag on the zoom slider, which reads as a sudden jump since the
-	 * slider's value is computed from the pointer's position relative to
-	 * its (now shifted) track.
-	 */
+	/* Stops a scrollbar appearing mid-drag from shifting right-aligned controls. */
 	scrollbar-gutter: stable;
 }
 
-/* A deep, slightly plum-tinted dark rather than neutral gray, so the lavender
- * accent reads as part of the page instead of a sticker on it. The accent
- * itself is unchanged; everything else is rebalanced around it. */
+/* Plum-tinted dark so the lavender accent fits in. */
 :root[data-theme='dark'] {
 	--color-bg: #17141d;
 	--color-surface: #17141d;
@@ -151,9 +133,7 @@ h2 {
 	font-variant-numeric: tabular-nums;
 }
 
-/* Marks the section a player can currently act on: a persistent accent bar in
- * the margin, plus a one-time flash when it first appears (a new turn starting).
- */
+/* Accent bar and a one-time flash on the section the player can act on. */
 .action-needed {
 	position: relative;
 	animation: action-flash 1s ease-out;

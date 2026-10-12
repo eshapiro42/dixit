@@ -28,8 +28,7 @@
 		accessibleLabel
 	}: Props = $props();
 
-	// Long enough that sweeping the mouse across a row of cards doesn't flash
-	// previews, short enough to feel responsive to someone who actually wants one.
+	// Long enough that sweeping across a row doesn't flash previews.
 	const PREVIEW_DELAY_MS = 600;
 
 	let previewAnchor = $state<DOMRect | null>(null);
@@ -55,8 +54,7 @@
 		node.addEventListener('pointerenter', onEnter);
 		node.addEventListener('pointerleave', hide);
 		node.addEventListener('pointerdown', hide);
-		// Capture: the carousel scrolls inside its own container, and scroll
-		// events don't bubble.
+		// Capture, since the carousel's scroll events don't bubble.
 		window.addEventListener('scroll', hide, true);
 		window.addEventListener('keydown', onKeydown);
 
@@ -119,28 +117,14 @@
 		aspect-ratio: 363 / 527;
 		padding: 0;
 		border: none;
-		/* --radius-card is tuned for the card's size at minimum zoom; scale it
-		 * with --zoom so the corner stays proportional to the card instead of
-		 * shrinking toward a plain rectangle as the card grows. Capped so the
-		 * curve can never grow past where the (fixed-distance, non-scaling)
-		 * check/delta badges sit - past that point the corner's own rounding
-		 * would cut into the badge instead of just the card's artwork.
-		 */
+		/* Scales the corner with zoom, capped so it never reaches the fixed-position badges. */
 		border-radius: min(
 			calc(var(--radius-card) * var(--zoom, var(--zoom-min, 0.6)) / var(--zoom-min, 0.6)),
 			20px
 		);
 		overflow: hidden;
 		background: var(--color-surface);
-		/* The selected-state ring lives in its own layer (transparent unless
-		 * .selected) so it composes with whichever ambient shadow is active
-		 * instead of the two fighting over the box-shadow property. It's an
-		 * INSET ring rather than an outline: an outline would render outside
-		 * the card's own box, which a carousel with its cards flush against
-		 * the scrollport edge (for exact alignment with sibling elements) has
-		 * no room to show without either clipping it or jumping the layout to
-		 * make room only when selected.
-		 */
+		/* Inset so the ring is never clipped by the carousel's edge or shifts the layout. */
 		--ring: inset 0 0 0 0 transparent;
 		box-shadow: var(--ring), var(--shadow-card);
 		cursor: default;
@@ -167,10 +151,7 @@
 		--ring: inset 0 0 0 var(--accent-line) var(--color-accent);
 	}
 
-	/* A modifier-key click (Shift/Ctrl/Cmd) is treated by browsers as a
-	 * focus-visible-worthy interaction, so it was painting the platform's
-	 * raw default outline - reuse the same inset ring the selected state
-	 * already uses instead of suppressing focus styling altogether. */
+	/* Reuse the selection ring instead of the browser's default focus outline. */
 	button.card:focus-visible {
 		outline: none;
 		--ring: inset 0 0 0 var(--accent-line) var(--color-accent);
@@ -180,8 +161,7 @@
 		opacity: 0.55;
 	}
 
-	/* Lets a player glance at any other card at full strength without having
-	 * to select it first - the dim is just a resting state, not a lock. */
+	/* A resting dim, not a lock: hover to see any card at full strength. */
 	button.card.dimmed:hover {
 		opacity: 1;
 	}
@@ -209,10 +189,7 @@
 		transition: transform 0.15s ease;
 	}
 
-	/* The check badge is a sibling of .card, not a child of it (a child would
-	 * get clipped by .card's own overflow: hidden corner rounding), so it
-	 * doesn't move with .card's own hover lift for free - carry the same
-	 * translate over by hand so it visibly stays attached to the card. */
+	/* The badge is a sibling of .card (overflow clips children), so mirror the hover lift. */
 	button.card:hover ~ :global(.check) {
 		transform: translateY(-4px);
 	}

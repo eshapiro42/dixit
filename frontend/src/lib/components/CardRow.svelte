@@ -56,20 +56,11 @@
 		display: flex;
 		gap: var(--space-3);
 		overflow-x: auto;
-		/* No horizontal padding: the selected-card ring is an inset shadow (see
-		 * Card.svelte) rather than an outline, so nothing ever renders beyond a
-		 * card's own box - the first/last card's edge can sit flush with the
-		 * scrollport boundary and still never get clipped, which is what keeps
-		 * it in exact alignment with sibling elements like the prompt field.
-		 */
+		/* No horizontal padding: the inset selection ring never overflows a card. */
 		padding: var(--space-3) 0;
 		margin: var(--space-4) 0;
 		scroll-snap-type: x proximity;
-		/* Deliberately no scrollbar-width/scrollbar-color here: setting either
-		 * to a non-default value makes Chrome 121+ ignore every
-		 * ::-webkit-scrollbar-* rule below, which is the only way to control
-		 * the arrow buttons specifically.
-		 */
+		/* Setting scrollbar-width or scrollbar-color makes Chrome ignore the ::-webkit-scrollbar rules below. */
 	}
 
 	.row::-webkit-scrollbar {

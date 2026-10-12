@@ -35,20 +35,10 @@
 		margin: 0;
 	}
 
-	/* title/heading otherwise add nothing beyond the tag itself: the global
-	 * h1/h2/h3 rule in app.css already pins family/weight/size for every
-	 * heading in the app, so an <h1>/<h2> here inherits it for free.
-	 */
+	/* title and heading inherit their look from the global h1/h2 rule. */
 
 	.text--title {
-		/* Only "title" (the single Dixit wordmark) needs this: it's the one
-		 * heading that gets vertically centered against unrelated sibling
-		 * content instead of sitting in its own block, so its line box's
-		 * font-metric ascent/descent padding (invisible slack a plain center
-		 * alignment can't distinguish from real content) would otherwise throw
-		 * that centering off - trimming it to the glyphs' own edges fixes that
-		 * regardless of which font actually renders.
-		 */
+		/* Trim the wordmark's line box so it centers optically in the top bar. */
 		text-box-trim: trim-both;
 		text-box-edge: cap alphabetic;
 	}

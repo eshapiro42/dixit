@@ -13,14 +13,12 @@
 {/if}
 
 <style>
-	/* Keeps the last bit of the page from ending up hidden behind the bar. */
+	/* Keeps the end of the page from sitting behind the bar. */
 	.spacer {
 		height: calc(var(--tap) + var(--space-6));
 	}
 
-	/* A floating, slightly see-through pill rather than a full-width strip: it
-	 * stays out of the way of content on wide screens, and the blur keeps text
-	 * legible when cards scroll underneath it. */
+	/* Floating, slightly transparent pill; the blur keeps text legible over scrolling cards. */
 	.waiting-bar {
 		position: fixed;
 		bottom: var(--space-4);

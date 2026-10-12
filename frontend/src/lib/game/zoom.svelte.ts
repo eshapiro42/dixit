@@ -1,3 +1,5 @@
+import { SvelteMap } from 'svelte/reactivity';
+
 export const ZOOM_MIN = 0.6;
 export const ZOOM_MAX = 2;
 
@@ -14,14 +16,7 @@ function loadStoredZoom(kind: ZoomKind): number {
 	}
 }
 
-/** One independent zoom preference per card carousel kind (hand/table)
- * rather than a single shared one, so sizing the table doesn't also resize
- * the hand. A round's results continue the table it was voted on, so both
- * share "table". Persists per kind via local storage and stays shared
- * across whichever components currently show that kind (e.g. HostTurn and
- * OtherTurn both show "hand"), so it holds steady across rounds instead of
- * resetting whenever the showing component remounts.
- */
+/* One persisted zoom per carousel kind. Results share "table" since they continue it. */
 class ZoomState {
 	#kind: ZoomKind;
 	#value = $state(1);
@@ -45,7 +40,7 @@ class ZoomState {
 	}
 }
 
-const zoomStates = new Map<ZoomKind, ZoomState>();
+const zoomStates = new SvelteMap<ZoomKind, ZoomState>();
 
 export function getZoomState(kind: ZoomKind): ZoomState {
 	let state = zoomStates.get(kind);

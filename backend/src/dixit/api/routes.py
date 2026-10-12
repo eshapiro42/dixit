@@ -244,11 +244,7 @@ def build_routes_blueprint(
             game.log(f"{player_name} played a card.")
             if played:
                 game.log(played)
-            # Every "other" player hitting this route while the round is still
-            # collecting cards leaves the phase unchanged at OTHERS_CHOOSING -
-            # only the LAST one actually moves it to VOTING. Without comparing
-            # against the phase beforehand, phase_announcement() would fire
-            # (and get logged) on every single play, not just that transition.
+            # The phase only changes when the last player plays, so announce on a change.
             announcement = (
                 phase_announcement(next_phase)
                 if next_phase and next_phase is not phase_before

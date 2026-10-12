@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { getZoomState, ZOOM_MIN, ZOOM_MAX, type ZoomKind } from '../game/zoom.svelte';
-	import Text from './Text.svelte';
 
 	interface Props {
 		kind: ZoomKind;
@@ -11,12 +10,7 @@
 
 	const zoomId = $props.id();
 
-	// Sizes this specific carousel's row so its cards exactly fill the
-	// available width - no leftover space, no horizontal scrollbar - by
-	// reading the row's actual layout (padding, gap, current card width)
-	// rather than duplicating CardRow's own sizing formula here. Scoped to
-	// this control's own kind since more than one carousel (e.g. the hand and
-	// a round's results) can be on screen, each with its own zoom, at once.
+	// Fits this kind's row to the available width, reading its real layout.
 	function fitToViewport(): void {
 		const row = document.querySelector<HTMLElement>(`.row[data-zoom-kind="${kind}"]`);
 		if (!row) return;
@@ -58,26 +52,7 @@
 		gap: var(--space-2);
 	}
 
-	/* Text's shared "label" variant sizes its line box from font-relative
-	 * line-height, which (like the badge text elsewhere) can sit optically
-	 * off-center from a geometrically-centered sibling depending on which
-	 * font a browser substitutes in. Scoped locally rather than changed on
-	 * the shared variant itself, which many other unrelated layouts also
-	 * depend on for their own spacing.
-	 */
-	.zoom-control :global(.zoom-label) {
-		text-box-trim: trim-both;
-		text-box-edge: cap alphabetic;
-	}
-
-	/* Fully custom track/thumb instead of the platform's native range-input
-	 * chrome: the native rendering is what was producing the blue
-	 * drag-highlight and the gray track border neither of which is
-	 * something CSS here ever asked for - it's just each OS/browser's
-	 * default. Matches the card carousel's scrollbar (--accent-line
-	 * thickness, transparent-ish flat track, solid accent handle) instead
-	 * of inventing a second, different-looking slider style.
-	 */
+	/* Custom track and thumb to match the card carousel's scrollbar. */
 	.zoom-control input[type='range'] {
 		-webkit-appearance: none;
 		appearance: none;

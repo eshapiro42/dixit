@@ -20,11 +20,9 @@
 
 	let { messages, outcomes = [], open }: Props = $props();
 	let listEl: HTMLElement | undefined;
-	// Only follow new messages while already reading the bottom of the log;
-	// once the user scrolls up to read history, leave them where they are.
+	// Follow new messages only while the reader is at the bottom.
 	let stickToBottom = $state(true);
-	// Which round groups the user has manually toggled, overriding the default
-	// (every past round collapsed, the round in progress expanded).
+	// Rounds toggled by hand; the default is past rounds collapsed, current one open.
 	let openOverrides = $state<Record<number, boolean>>({});
 
 	function trackScrollPosition(): void {
@@ -43,18 +41,13 @@
 		if (count > 0 && stickToBottom) listEl?.scrollTo({ top: listEl.scrollHeight });
 	});
 
-	// While the dialog is closed the log sits under display:none, where a
-	// scrollTo() call has nothing real to measure against and quietly does
-	// nothing — so history that arrives while it's closed leaves scrollTop
-	// stale. Re-snap once it's actually visible and laid out again.
+	// scrollTo does nothing under display:none, so re-snap once the dialog is visible.
 	$effect(() => {
 		if (!open || !stickToBottom) return;
 		requestAnimationFrame(() => listEl?.scrollTo({ top: listEl.scrollHeight }));
 	});
 
-	// Messages before the first "it's your turn" announcement (room created,
-	// players joining, game started) are one always-visible group; each round
-	// after that becomes its own collapsible group.
+	// Messages before the first turn announcement form one open group; each round after is collapsible.
 	let groups = $derived.by((): Group[] => {
 		const result: Group[] = [];
 		let current: Group | null = null;
@@ -142,11 +135,7 @@
 </div>
 
 <style>
-	/* A flex item of Dialog's .content, which is itself a bounded-height flex
-	 * column: min-height: 0 is what lets this actually shrink to fit instead
-	 * of growing to its content's full height, so .log below gets a real
-	 * boundary to scroll within instead of leaving that to .content.
-	 */
+	/* min-height: 0 lets this shrink so .log is the scroll container. */
 	.log-wrapper {
 		position: relative;
 		display: flex;
@@ -157,11 +146,9 @@
 
 	.log {
 		--icon-col: var(--size-lg);
-		/* Where the round's connecting rule sits: under the chevron's center. */
+		/* The connecting rule sits under the chevron's center. */
 		--rule-x: calc(var(--space-2) + var(--icon-col) / 2);
-		/* Where message text sits: clearly past the round title's own indent
-		 * (button padding + icon column + its gap to the title), so a round's
-		 * messages always read as nested deeper than the "Round N" heading. */
+		/* Message text sits deeper than the round title. */
 		--text-x: calc(var(--space-2) + var(--icon-col) + var(--space-2) + var(--space-3));
 
 		display: flex;
@@ -184,11 +171,7 @@
 		padding-left: calc(var(--text-x) - var(--rule-x));
 	}
 
-	/* A pseudo-element instead of a plain border-left: a border always spans
-	 * the full box, right down to where the next round's divider begins,
-	 * which reads as the two lines crossing. Insetting the bottom leaves a
-	 * gap between them instead.
-	 */
+	/* Inset from the bottom so it doesn't run into the next round's divider. */
 	.round .messages::before {
 		content: '';
 		position: absolute;
@@ -231,11 +214,7 @@
 		color: var(--color-text);
 	}
 
-	/* An SVG (not a glyph) so the tip is exactly centered by construction:
-	 * it's vertically centered in the viewBox, so rotating the box 90° around
-	 * its own center always lands the tip exactly on the box's horizontal
-	 * center — which is where .round .messages positions the rule below it.
-	 */
+	/* An SVG so rotating it keeps the tip centered on the rule. */
 	.chevron {
 		flex-shrink: 0;
 		width: var(--icon-col);

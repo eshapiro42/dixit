@@ -31,13 +31,7 @@
 		font-weight: var(--weight-medium);
 		text-decoration: none;
 		cursor: pointer;
-		/* The button's own height comes from min-height, not the label's line
-		 * box, so trimming that line box to the label's actual glyph metrics
-		 * only affects how it's centered within the button - not the
-		 * button's size - making that centering line up with other
-		 * geometrically-centered elements (e.g. the zoom slider's track)
-		 * regardless of which font a given browser substitutes in.
-		 */
+		/* Trim the label's line box so it centers optically without changing the button's size. */
 		text-box-trim: trim-both;
 		text-box-edge: cap alphabetic;
 		transition:
