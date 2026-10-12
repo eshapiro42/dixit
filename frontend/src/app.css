@@ -76,6 +76,31 @@
 	scrollbar-gutter: stable;
 }
 
+/* A deep, slightly plum-tinted dark rather than neutral gray, so the lavender
+ * accent reads as part of the page instead of a sticker on it. The accent
+ * itself is unchanged; everything else is rebalanced around it. */
+:root[data-theme='dark'] {
+	--color-bg: #17141d;
+	--color-surface: #17141d;
+	--color-border: #332e40;
+	--color-text: #ece8f3;
+	--color-text-quiet: #a49eb0;
+	/* The lavender accent stays light in dark mode, so it still takes dark text. */
+	--color-accent-contrast: #1c1726;
+	--color-accent-soft: #2b2342;
+	--color-success: #52c892;
+	--color-danger: #f07a7a;
+	--color-danger-soft: #3b2128;
+	--color-danger-contrast: #2a0f12;
+	--color-warning: #e3aa52;
+
+	--shadow-card: 0 2px 8px rgb(0 0 0 / 0.5);
+	--shadow-card-hover: 0 6px 16px rgb(0 0 0 / 0.6);
+	--shadow-overlay: 0 12px 32px rgb(0 0 0 / 0.65);
+
+	color-scheme: dark;
+}
+
 * {
 	box-sizing: border-box;
 }

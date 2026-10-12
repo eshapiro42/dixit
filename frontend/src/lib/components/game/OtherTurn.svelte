@@ -66,8 +66,6 @@
 				<Button kind="ghost" disabled={!selected} onclick={askMulligan}>Mulligan</Button>
 			{/if}
 		</div>
-	{:else}
-		<Text as="p" variant="caption">Waiting for the other players to choose.</Text>
 	{/if}
 </section>
 

@@ -43,6 +43,7 @@ export interface PrivateView {
 
 export interface SessionView extends PublicView, PrivateView {
 	previous_round_outcome: RoundOutcome | null;
+	round_outcomes: RoundOutcome[];
 	messages: GameMessage[];
 }
 

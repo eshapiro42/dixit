@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-svelte';
-import type { GameMessage } from '../api/types';
+import type { GameMessage, RoundOutcome } from '../api/types';
 import MessageLog from './MessageLog.svelte';
 
 function messages(count: number): GameMessage[] {
@@ -47,6 +47,29 @@ describe('MessageLog', () => {
 		await screen.getByRole('button', { name: /Round 1/ }).click();
 
 		await expect.poll(() => screen.container.textContent).toContain('bob played a card.');
+	});
+
+	it("shows a finished round's prompt when collapsed and its cards once expanded", async () => {
+		const outcome: RoundOutcome = {
+			host: 'alice',
+			round_number: 1,
+			prompt: 'a quiet storm',
+			table: { alice: '1.jpg', bob: '2.jpg' },
+			votes: { bob: '1.jpg' },
+			scores: { alice: 3, bob: 1 },
+			correct_voter_count: 1
+		};
+		const screen = render(MessageLog, {
+			messages: withRounds(),
+			outcomes: [outcome],
+			open: true
+		});
+		expect(screen.container.textContent).toContain('a quiet storm');
+		expect(screen.container.querySelectorAll('.thumb')).toHaveLength(0);
+
+		await screen.getByRole('button', { name: /Round 1/ }).click();
+
+		await expect.poll(() => screen.container.querySelectorAll('.thumb').length).toBe(2);
 	});
 
 	it('scrolls to the bottom as new messages arrive while already at the bottom', async () => {

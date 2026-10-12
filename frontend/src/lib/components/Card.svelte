@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { api } from '../api/client';
 	import Badge from './Badge.svelte';
+	import CardPreview from './CardPreview.svelte';
 	import Text from './Text.svelte';
 
 	interface Props {
@@ -26,11 +27,55 @@
 		delta,
 		accessibleLabel
 	}: Props = $props();
+
+	// Long enough that sweeping the mouse across a row of cards doesn't flash
+	// previews, short enough to feel responsive to someone who actually wants one.
+	const PREVIEW_DELAY_MS = 600;
+
+	let previewAnchor = $state<DOMRect | null>(null);
+
+	function hoverPreview(node: HTMLElement) {
+		let timer: ReturnType<typeof setTimeout> | undefined;
+
+		function hide(): void {
+			clearTimeout(timer);
+			previewAnchor = null;
+		}
+
+		function onEnter(event: PointerEvent): void {
+			if (event.pointerType !== 'mouse') return;
+			clearTimeout(timer);
+			timer = setTimeout(() => (previewAnchor = node.getBoundingClientRect()), PREVIEW_DELAY_MS);
+		}
+
+		function onKeydown(event: KeyboardEvent): void {
+			if (event.key === 'Escape') hide();
+		}
+
+		node.addEventListener('pointerenter', onEnter);
+		node.addEventListener('pointerleave', hide);
+		node.addEventListener('pointerdown', hide);
+		// Capture: the carousel scrolls inside its own container, and scroll
+		// events don't bubble.
+		window.addEventListener('scroll', hide, true);
+		window.addEventListener('keydown', onKeydown);
+
+		return {
+			destroy() {
+				hide();
+				node.removeEventListener('pointerenter', onEnter);
+				node.removeEventListener('pointerleave', hide);
+				node.removeEventListener('pointerdown', hide);
+				window.removeEventListener('scroll', hide, true);
+				window.removeEventListener('keydown', onKeydown);
+			}
+		};
+	}
 </script>
 
 <div class="card-wrap">
 	{#if label}<Text as="span" variant="tag" class="card-name">{label}</Text>{/if}
-	<div class="frame">
+	<div class="frame" use:hoverPreview>
 		{#if selectable}
 			<button
 				type="button"
@@ -47,6 +92,9 @@
 			<div class="card" class:selected class:dimmed>
 				<img src={api.cardImageUrl(cardId)} alt="" loading="lazy" />
 			</div>
+		{/if}
+		{#if previewAnchor}
+			<CardPreview {cardId} anchor={previewAnchor} />
 		{/if}
 		{#if selected}
 			<Badge tone="solid" shape="circle" class="check" ariaHidden>&check;</Badge>

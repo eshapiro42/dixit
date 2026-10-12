@@ -6,6 +6,7 @@ class GameState {
 	view = $state<SessionView | null>(null);
 	messages = $state<GameMessage[]>([]);
 	lastOutcome = $state<RoundOutcome | null>(null);
+	outcomes = $state<RoundOutcome[]>([]);
 	error = $state<string | null>(null);
 
 	private connected = false;
@@ -82,6 +83,7 @@ class GameState {
 		this.view = null;
 		this.messages = [];
 		this.lastOutcome = null;
+		this.outcomes = [];
 		this.error = null;
 	}
 
@@ -91,6 +93,7 @@ class GameState {
 		if (resetHistory) {
 			this.messages = [...view.messages];
 			this.lastOutcome = view.previous_round_outcome;
+			this.outcomes = [...view.round_outcomes];
 		}
 		if (!this.connected) {
 			this.subscribe();
@@ -111,6 +114,7 @@ class GameState {
 		});
 		socket.on('round_outcome', (data) => {
 			this.lastOutcome = data;
+			this.outcomes = [...this.outcomes.filter((o) => o.round_number !== data.round_number), data];
 		});
 		socket.on('message', (data) => {
 			this.messages.push(data);

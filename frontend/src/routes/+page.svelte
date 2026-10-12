@@ -10,13 +10,14 @@
 	import PageShell from '$lib/components/PageShell.svelte';
 	import ScoreBoard from '$lib/components/ScoreBoard.svelte';
 	import TopBar from '$lib/components/TopBar.svelte';
-	import Waiting from '$lib/components/Waiting.svelte';
+	import WaitingBar from '$lib/components/WaitingBar.svelte';
 	import GameLobby from '$lib/components/game/GameLobby.svelte';
 	import HostTurn from '$lib/components/game/HostTurn.svelte';
 	import Outcome from '$lib/components/game/Outcome.svelte';
 	import OtherTurn from '$lib/components/game/OtherTurn.svelte';
 	import Voting from '$lib/components/game/Voting.svelte';
 	import YourHandPanel from '$lib/components/game/YourHandPanel.svelte';
+	import { waitingMessage } from '$lib/game/phase';
 	import { gameState } from '$lib/game/state.svelte';
 
 	let checkingSession = $state(true);
@@ -58,6 +59,7 @@
 
 	let view = $derived(gameState.view);
 	let isHost = $derived(view !== null && view.host === view.player_name);
+	let waiting = $derived(view ? waitingMessage(view) : null);
 
 	$effect(() => {
 		if (!view) return;
@@ -123,14 +125,10 @@
 							<HostTurn {view} />
 						{:else}
 							<YourHandPanel {view} />
-							<Divider spacing="section" />
-							<Waiting detail="Waiting for {view.host} to write a prompt." />
 						{/if}
 					{:else if view.phase === 'others_choosing'}
 						{#if isHost}
 							<YourHandPanel {view} />
-							<Divider spacing="section" />
-							<Waiting detail="Waiting for the other players to choose a card." />
 						{:else}
 							<OtherTurn {view} />
 						{/if}
@@ -154,7 +152,7 @@
 			</div>
 
 			<Dialog title="Game Log" open={logOpen} wide onclose={() => (logOpen = false)}>
-				<MessageLog messages={gameState.messages} open={logOpen} />
+				<MessageLog messages={gameState.messages} outcomes={gameState.outcomes} open={logOpen} />
 			</Dialog>
 
 			<ConfirmDialog
@@ -166,6 +164,7 @@
 				oncancel={() => (confirmingLeave = false)}
 			/>
 		</PageShell>
+		<WaitingBar message={waiting} />
 	{/if}
 {/if}
 

@@ -72,9 +72,7 @@
 			required
 		/>
 		<div class="actions">
-			<Button type="submit" disabled={submitting || !selected || !prompt.trim()}
-				>Submit</Button
-			>
+			<Button type="submit" disabled={submitting || !selected || !prompt.trim()}>Submit</Button>
 			{#if view.mulligan_available}
 				<Button kind="ghost" disabled={!selected} onclick={askMulligan}>Mulligan</Button>
 			{/if}

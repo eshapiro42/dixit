@@ -1,11 +1,13 @@
 <script lang="ts">
-	import type { GameMessage } from '../api/types';
+	import type { GameMessage, RoundOutcome } from '../api/types';
 	import Badge from './Badge.svelte';
 	import Button from './Button.svelte';
+	import RoundResultStrip from './RoundResultStrip.svelte';
 	import Text from './Text.svelte';
 
 	interface Props {
 		messages: GameMessage[];
+		outcomes?: RoundOutcome[];
 		open: boolean;
 	}
 
@@ -13,9 +15,10 @@
 		messages: GameMessage[];
 		isRound: boolean;
 		roundNumber: number;
+		outcome: RoundOutcome | undefined;
 	}
 
-	let { messages, open }: Props = $props();
+	let { messages, outcomes = [], open }: Props = $props();
 	let listEl: HTMLElement | undefined;
 	// Only follow new messages while already reading the bottom of the log;
 	// once the user scrolls up to read history, leave them where they are.
@@ -59,7 +62,14 @@
 		for (const message of messages) {
 			if (message.round_start || !current) {
 				if (message.round_start) roundNumber += 1;
-				current = { messages: [], isRound: message.round_start, roundNumber };
+				current = {
+					messages: [],
+					isRound: message.round_start,
+					roundNumber,
+					outcome: message.round_start
+						? outcomes.find((o) => o.round_number === roundNumber)
+						: undefined
+				};
 				result.push(current);
 			}
 			current.messages.push(message);
@@ -80,7 +90,9 @@
 	<div class="log" bind:this={listEl} onscroll={trackScrollPosition}>
 		{#each groups as group, index (index)}
 			<section class="group" class:round={group.isRound}>
-				{#if group.isRound}
+				{#if !group.isRound}
+					<h3 class="group-title">Lobby</h3>
+				{:else}
 					<button
 						type="button"
 						class="round-toggle"
@@ -91,7 +103,14 @@
 						<svg class="chevron" class:open={isOpen(index)} viewBox="0 0 16 16" aria-hidden="true">
 							<path d="M6 4l4 4-4 4" />
 						</svg>
-						<span class="round-title">Round {group.roundNumber}</span>
+						<span class="round-heading">
+							<span class="round-title">Round {group.roundNumber}</span>
+							{#if group.outcome && !isOpen(index)}
+								<span class="round-summary">
+									{group.outcome.host}'s prompt: &ldquo;{group.outcome.prompt}&rdquo;
+								</span>
+							{/if}
+						</span>
 						<Badge tone="soft" class="count">{group.messages.length}</Badge>
 					</button>
 				{/if}
@@ -104,6 +123,12 @@
 								<Text as="p" variant="caption">{message.text}</Text>
 							{/if}
 						{/each}
+						{#if group.outcome}
+							<div class="results">
+								<Text as="span" variant="tag">Results</Text>
+								<RoundResultStrip outcome={group.outcome} />
+							</div>
+						{/if}
 					</div>
 				{/if}
 			</section>
@@ -230,8 +255,43 @@
 		transform: rotate(90deg);
 	}
 
-	.round-title {
+	.round-heading {
+		display: flex;
+		flex-direction: column;
 		flex: 1 1 auto;
+		min-width: 0;
+		gap: 2px;
+	}
+
+	.round-title {
+		line-height: 1.3;
+	}
+
+	.round-summary {
+		overflow: hidden;
+		font-size: var(--size-xs);
+		font-weight: var(--weight-normal);
+		color: var(--color-text-quiet);
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.group-title {
+		margin: 0;
+		padding: var(--space-2) 0;
+		font-family: var(--font-sans);
+		font-size: var(--size-sm);
+		font-weight: var(--weight-bold);
+		color: var(--color-text);
+	}
+
+	.results {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+		margin-top: var(--space-2);
+		padding-top: var(--space-2);
+		border-top: var(--border-width) dashed var(--color-border);
 	}
 
 	.round-toggle :global(.count) {

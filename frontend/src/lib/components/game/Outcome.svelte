@@ -50,13 +50,13 @@
 <section>
 	<PanelHeader>
 		<Text variant="heading">Round {outcome.round_number} Results</Text>
-		<ZoomControl kind="results" />
+		<ZoomControl kind="table" />
 	</PanelHeader>
 	<PromptCaption host={outcome.host} prompt={outcome.prompt} />
 	{#if showZeroRuleExplainer}
 		<Text as="p" variant="caption" class="callout">{zeroRuleMessage}</Text>
 	{/if}
-	<CardRow kind="results" {cardIds} {labels} {votes} />
+	<CardRow kind="table" {cardIds} {labels} {votes} />
 </section>
 
 <style>

@@ -38,13 +38,7 @@
 		selectedId={selected}
 		onselect={(id) => (selected = selected === id ? null : id)}
 	/>
-	{#if isHost}
-		<Text as="p" variant="caption"
-			>Waiting for votes ({view.votes_cast} of {view.votes_needed}).</Text
-		>
-	{:else if view.has_voted}
-		<Text as="p" variant="caption">Waiting for the other players to vote.</Text>
-	{:else}
+	{#if canVote}
 		<Button disabled={submitting || !selected} onclick={submit}>Submit Vote</Button>
 	{/if}
 </section>

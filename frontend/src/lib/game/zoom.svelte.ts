@@ -1,7 +1,7 @@
 export const ZOOM_MIN = 0.6;
 export const ZOOM_MAX = 2;
 
-export type ZoomKind = 'hand' | 'table' | 'results';
+export type ZoomKind = 'hand' | 'table';
 
 const STORAGE_PREFIX = 'dixit:zoom:';
 
@@ -14,9 +14,10 @@ function loadStoredZoom(kind: ZoomKind): number {
 	}
 }
 
-/** One independent zoom preference per card carousel kind (hand/table/results)
- * rather than a single shared one, so sizing the results carousel doesn't
- * also resize the hand. Persists per kind via local storage and stays shared
+/** One independent zoom preference per card carousel kind (hand/table)
+ * rather than a single shared one, so sizing the table doesn't also resize
+ * the hand. A round's results continue the table it was voted on, so both
+ * share "table". Persists per kind via local storage and stays shared
  * across whichever components currently show that kind (e.g. HostTurn and
  * OtherTurn both show "hand"), so it holds steady across rounds instead of
  * resetting whenever the showing component remounts.

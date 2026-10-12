@@ -4,6 +4,7 @@
 	import BunnyIcon from './BunnyIcon.svelte';
 	import Button from './Button.svelte';
 	import Text from './Text.svelte';
+	import ThemeToggle from './ThemeToggle.svelte';
 
 	interface Props {
 		view: SessionView | null;
@@ -33,8 +34,13 @@
 				{/key}
 			</span>
 			<div class="meta">
+				<ThemeToggle />
 				<Button kind="secondary" onclick={onOpenLog}>Game Log</Button>
 				<Button kind="ghost" onclick={onLeave}>Leave Game</Button>
+			</div>
+		{:else}
+			<div class="meta meta--solo">
+				<ThemeToggle />
 			</div>
 		{/if}
 	</div>
@@ -151,6 +157,17 @@
 		white-space: nowrap;
 	}
 
+	/* In-game, the buttons (--tap tall) set the bar's height; without a game
+	 * there are none, so the wordmark alone would leave the bar shorter on the
+	 * create/join screen. Matching its minimum to the buttons keeps the bar one
+	 * height throughout. (On narrow screens the buttons wrap to their own row,
+	 * so there's nothing to match.) */
+	@media (min-width: 481px) {
+		.wordmark-wrap {
+			min-height: var(--tap);
+		}
+	}
+
 	@media (max-width: 480px) {
 		.inner {
 			padding: var(--space-2) var(--space-3);
@@ -161,6 +178,12 @@
 			flex-wrap: wrap;
 			margin-left: 0;
 			justify-content: flex-start;
+		}
+
+		/* Just the theme toggle (no game yet): nothing to wrap onto its own row. */
+		.meta--solo {
+			flex-basis: auto;
+			margin-left: auto;
 		}
 	}
 
