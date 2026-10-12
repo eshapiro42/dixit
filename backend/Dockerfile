@@ -13,8 +13,10 @@ ENV VIRTUAL_ENV=/opt/venv \
     PYTHONDONTWRITEBYTECODE=1 \
     CARDS_DIR=/app/cards
 
-RUN groupadd --gid 1000 app && useradd --uid 1000 --gid app --create-home app
+RUN groupadd --gid 1000 app && useradd --uid 1000 --gid app --create-home app \
+    && mkdir -p /app /opt/venv && chown app:app /app /opt/venv
 WORKDIR /app
+USER app
 
 EXPOSE 8000
 HEALTHCHECK --interval=5s --timeout=3s --start-period=10s --retries=12 \
@@ -22,13 +24,11 @@ HEALTHCHECK --interval=5s --timeout=3s --start-period=10s --retries=12 \
 
 FROM base AS dev
 
-COPY backend/pyproject.toml backend/uv.lock ./
+COPY --chown=app:app backend/pyproject.toml backend/uv.lock ./
 RUN uv sync --locked --all-groups --no-install-project
-COPY backend/ .
-COPY cards/ ./cards/
+COPY --chown=app:app backend/ .
+COPY --chown=app:app cards/ ./cards/
 RUN uv sync --locked --all-groups
-RUN chown -R app:app /app /opt/venv
-USER app
 
 CMD ["gunicorn", "-k", "geventwebsocket.gunicorn.workers.GeventWebSocketWorker", \
      "--reload", "--bind", "0.0.0.0:8000", "dixit.wsgi:app"]
@@ -36,13 +36,11 @@ CMD ["gunicorn", "-k", "geventwebsocket.gunicorn.workers.GeventWebSocketWorker",
 # Keep runtime last: it is the default target when callers omit --target.
 FROM base AS runtime
 
-COPY backend/pyproject.toml backend/uv.lock ./
+COPY --chown=app:app backend/pyproject.toml backend/uv.lock ./
 RUN uv sync --locked --no-dev --no-install-project
-COPY backend/ .
-COPY cards/ ./cards/
+COPY --chown=app:app backend/ .
+COPY --chown=app:app cards/ ./cards/
 RUN uv sync --locked --no-dev
-RUN chown -R app:app /app /opt/venv
-USER app
 
 CMD ["gunicorn", "-k", "geventwebsocket.gunicorn.workers.GeventWebSocketWorker", \
      "-w", "4", "--bind", "0.0.0.0:8000", "dixit.wsgi:app"]
