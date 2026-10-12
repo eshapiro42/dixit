@@ -34,9 +34,9 @@
 			<Text variant="heading">Players</Text>
 			<Text as="span" variant="label">{view.players.length} joined</Text>
 		</PanelHeader>
-		<ul class="players">
+		<ul class="players" class:manage={view.is_creator}>
 			{#each view.players as player (player.name)}
-				<li class:removable={view.is_creator && player.name !== view.creator_name}>
+				<li>
 					<span class="player-name" title={player.name}>{player.name}</span>
 					<span class="tags">
 						{#if player.is_cpu}<Badge>CPU</Badge>{/if}
@@ -93,17 +93,19 @@
 	}
 
 	.players li {
-		display: flex;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
 		align-items: center;
-		justify-content: space-between;
 		gap: var(--space-3);
 		min-height: var(--tap);
 		padding: var(--space-2) var(--space-3);
 		border-bottom: var(--border-width) solid var(--color-border);
 	}
 
-	/* The remove button brings its own padding. */
-	.players li.removable {
+	/* Room for a remove button on every row, so the tags line up whether or not it has one. */
+	.players.manage li {
+		grid-template-columns: minmax(0, 1fr) auto var(--tap);
+		min-height: calc(var(--tap) + 2 * var(--space-2) + var(--border-width));
 		padding-inline-end: var(--space-1);
 	}
 
