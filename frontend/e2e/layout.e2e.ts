@@ -102,3 +102,29 @@ test('the menu holds Game Log, the theme switch and Leave Game', async ({ page }
 	await expect(page.getByRole('button', { name: /theme/i })).toBeVisible();
 	await expect(page.getByRole('button', { name: 'Leave Game', exact: true })).toBeVisible();
 });
+
+for (const [name, size, overrides] of [
+	[
+		'a short page on desktop',
+		{ width: 1280, height: 800 },
+		{ phase: 'host_choosing', host: 'bob' }
+	],
+	[
+		'a long page on a phone',
+		{ width: 360, height: 640 },
+		{ phase: 'others_choosing', host: 'alice' }
+	]
+] as const) {
+	test(`the waiting message sits at the bottom of the screen on ${name}`, async ({ page }) => {
+		await page.setViewportSize(size);
+		await mockSession(page, view(overrides));
+
+		await page.goto('/');
+		const pill = page.locator('.waiting-bar');
+		await expect(pill).toBeVisible();
+
+		const gap = await pill.evaluate((el) => innerHeight - el.getBoundingClientRect().bottom);
+		expect(gap).toBeGreaterThanOrEqual(8);
+		expect(gap).toBeLessThanOrEqual(24);
+	});
+}

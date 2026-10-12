@@ -6,7 +6,7 @@
 <div class="sr-only" role="status">{message ?? ''}</div>
 
 {#if message}
-	<!-- Sticky, not fixed, so it never covers the end of the page. -->
+	<!-- Pushed to the bottom of a full-height page, then sticky once the page scrolls. -->
 	<div class="dock">
 		<div class="waiting-bar">
 			<span class="pulse" aria-hidden="true"></span>
@@ -24,7 +24,8 @@
 		z-index: var(--z-pill);
 		display: flex;
 		justify-content: center;
-		margin-top: var(--space-4);
+		margin-top: auto;
+		padding-top: var(--space-4);
 		pointer-events: none;
 	}
 

@@ -61,6 +61,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-4);
+		width: 100%;
 		max-width: var(--measure-lobby);
 		margin: 0 auto;
 	}

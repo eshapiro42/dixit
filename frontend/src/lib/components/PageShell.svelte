@@ -15,6 +15,9 @@
 
 <style>
 	.shell {
+		display: flex;
+		flex-direction: column;
+		min-height: calc(100dvh - var(--topbar-h) - var(--border-width));
 		max-width: 60rem;
 		margin: 0 auto;
 		padding: var(--space-4) var(--page-gutter);
