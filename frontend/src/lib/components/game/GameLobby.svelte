@@ -1,28 +1,32 @@
 <script lang="ts">
 	import type { SessionView } from '../../api/types';
+	import { startHint } from '../../game/phase';
 	import { gameState } from '../../game/state.svelte';
 	import Badge from '../Badge.svelte';
 	import Button from '../Button.svelte';
+	import IconButton from '../IconButton.svelte';
 	import InviteCode from '../InviteCode.svelte';
 	import PanelHeader from '../PanelHeader.svelte';
 	import Text from '../Text.svelte';
 
 	let { view }: { view: SessionView } = $props();
+
+	let hint = $derived(startHint(view));
 </script>
 
 <section class="lobby">
 	<InviteCode gameId={view.game_id} />
 
 	{#if view.is_creator}
-		<div class="actions">
-			<Button kind="secondary" onclick={() => gameState.addCpu()}>Add CPU</Button>
-			<Button disabled={!view.playable} onclick={() => gameState.start()}>Start Game</Button>
+		<div class="start">
+			<div class="actions">
+				<Button kind="secondary" onclick={() => gameState.addCpu()}>Add CPU</Button>
+				<Button disabled={!view.playable} onclick={() => gameState.start()}>Start Game</Button>
+			</div>
+			{#if hint}<Text as="p" variant="caption">{hint}</Text>{/if}
 		</div>
-	{/if}
-	{#if !view.playable}
-		<Text as="p" variant="caption">
-			Need at least {view.min_players} players, {view.min_human_players} of them human.
-		</Text>
+	{:else if hint}
+		<Text as="p" variant="caption">{hint}</Text>
 	{/if}
 
 	<div>
@@ -32,13 +36,20 @@
 		</PanelHeader>
 		<ul class="players">
 			{#each view.players as player (player.name)}
-				<li>
+				<li class:removable={view.is_creator && player.name !== view.creator_name}>
 					<span class="player-name" title={player.name}>{player.name}</span>
 					<span class="tags">
 						{#if player.is_cpu}<Badge>CPU</Badge>{/if}
 						{#if player.name === view.creator_name}<Badge>Creator</Badge>{/if}
 						{#if player.name === view.player_name}<Badge tone="solid">You</Badge>{/if}
 					</span>
+					{#if view.is_creator && player.name !== view.creator_name}
+						<IconButton
+							icon="close"
+							label="Remove {player.name}"
+							onclick={() => gameState.removePlayer(player.name)}
+						/>
+					{/if}
 				</li>
 			{/each}
 		</ul>
@@ -55,6 +66,16 @@
 	}
 
 	.lobby > :global(p) {
+		margin: 0;
+	}
+
+	.start {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.start > :global(p) {
 		margin: 0;
 	}
 
@@ -79,6 +100,11 @@
 		min-height: var(--tap);
 		padding: var(--space-2) var(--space-3);
 		border-bottom: var(--border-width) solid var(--color-border);
+	}
+
+	/* The remove button brings its own padding. */
+	.players li.removable {
+		padding-inline-end: var(--space-1);
 	}
 
 	.player-name {

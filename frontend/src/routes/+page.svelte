@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
 	import Dialog from '$lib/components/Dialog.svelte';
-	import ErrorBanner from '$lib/components/ErrorBanner.svelte';
+	import Banner from '$lib/components/Banner.svelte';
 	import LobbyForm from '$lib/components/LobbyForm.svelte';
 	import MessageLog from '$lib/components/MessageLog.svelte';
 	import PageShell from '$lib/components/PageShell.svelte';
@@ -47,7 +47,7 @@
 		</PageShell>
 	{:else}
 		<PageShell wide>
-			<ErrorBanner message={gameState.error} ondismiss={() => gameState.clearError()} />
+			<Banner message={gameState.error} ondismiss={() => gameState.clearError()} />
 
 			{#if !view.started}
 				<GameLobby {view} />

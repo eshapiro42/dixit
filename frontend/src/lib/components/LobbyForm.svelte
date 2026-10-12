@@ -5,7 +5,7 @@
 	import { gameIdFromUrl } from '../game/invite';
 	import { gameState } from '../game/state.svelte';
 	import Button from './Button.svelte';
-	import ErrorBanner from './ErrorBanner.svelte';
+	import Banner from './Banner.svelte';
 	import Field from './Field.svelte';
 	import Tabs from './Tabs.svelte';
 
@@ -52,7 +52,16 @@
 </script>
 
 <div class="lobby-form">
-	<Tabs tabs={TABS} bind:value={mode} label="Game options" onchange={() => gameState.clearError()}>
+	<Banner message={gameState.notice} tone="notice" ondismiss={() => gameState.clearNotice()} />
+	<Tabs
+		tabs={TABS}
+		bind:value={mode}
+		label="Game options"
+		onchange={() => {
+			gameState.clearError();
+			gameState.clearNotice();
+		}}
+	>
 		<form onsubmit={submit}>
 			{#if mode === 'join'}
 				<Field
@@ -78,7 +87,7 @@
 				enterkeyhint="go"
 				oninput={() => gameState.clearError()}
 			/>
-			<ErrorBanner message={gameState.error} ondismiss={() => gameState.clearError()} />
+			<Banner message={gameState.error} ondismiss={() => gameState.clearError()} />
 			<Button type="submit" disabled={!canSubmit}>
 				{mode === 'create' ? "Let's Move It" : "Let's Groove It"}
 			</Button>
@@ -88,6 +97,9 @@
 
 <style>
 	.lobby-form {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
 		width: 100%;
 		max-width: var(--measure-form);
 		margin: 0 auto;

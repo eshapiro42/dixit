@@ -37,6 +37,8 @@ export const api = {
 	session: () => request<SessionView>('/api/session'),
 	leave: () => post<{ ok: true }>('/api/session/leave'),
 	addCpu: () => post<{ ok: true }>('/api/session/add-cpu'),
+	removePlayer: (playerName: string) =>
+		post<{ ok: true }>('/api/session/remove-player', { player_name: playerName }),
 	start: () => post<{ ok: true }>('/api/session/start'),
 	hostChoice: (cardId: string, prompt: string) =>
 		post<{ ok: true }>('/api/session/host-choice', { card_id: cardId, prompt }),
