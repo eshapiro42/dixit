@@ -5,7 +5,14 @@ import re
 
 from flask import Blueprint, Response, jsonify, request, send_from_directory
 
-from dixit.domain import MIN_HUMAN_PLAYERS, CardLibrary, DixitError, Game, Phase
+from dixit.domain import (
+    MIN_HUMAN_PLAYERS,
+    CardLibrary,
+    DixitError,
+    Game,
+    GameAlreadyStartedError,
+    Phase,
+)
 from dixit.store import GameStore
 
 from . import views
@@ -84,6 +91,12 @@ def build_routes_blueprint(
         text = next_host_text(game)
         if text is not None:
             notifier.message(game.id, text, round_start=True)
+
+    def next_cpu_name(game: Game) -> str:
+        number = 1
+        while game.has_player(f"CPU {number}"):
+            number += 1
+        return f"CPU {number}"
 
     def table_names(game: Game) -> set[str]:
         round_ = game.current_round
@@ -169,10 +182,30 @@ def build_routes_blueprint(
         player_name = current_player_name()
         with store.transaction(game_id) as game:
             require_creator(game, player_name)
-            cpu_name = f"CPU {game.num_cpu_players + 1}"
+            cpu_name = next_cpu_name(game)
             game.add_player(cpu_name, is_cpu=True)
             game.log(f"{cpu_name} has joined the game.")
         notifier.message(game_id, f"{cpu_name} has joined the game.")
+        notifier.state_changed(game)
+        return jsonify(ok=True)
+
+    @bp.post("/session/remove-player")
+    def remove_player() -> Response:
+        game_id = current_game_id()
+        creator_name = current_player_name()
+        target = str(json_body().get("player_name", "")).strip()
+        with store.transaction(game_id) as game:
+            require_creator(game, creator_name)
+            if game.started:
+                raise GameAlreadyStartedError(game.id)
+            if target == game.creator_name:
+                raise DixitError("The creator can't be removed from their own game.")
+            removed = game.player(target)
+            game.remove_player(target)
+            game.log(f"{target} was removed from the game.")
+        if not removed.is_cpu:
+            notifier.player_removed(game_id, target, creator_name)
+        notifier.message(game_id, f"{target} was removed from the game.")
         notifier.state_changed(game)
         return jsonify(ok=True)
 
