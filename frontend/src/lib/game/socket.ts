@@ -12,7 +12,7 @@ let socket: Socket<ServerToClientEvents> | undefined;
 
 export function connectSocket(): Socket<ServerToClientEvents> {
 	if (!socket) {
-		socket = io({ path: '/socket.io' });
+		socket = io({ path: '/socket.io', transports: ['websocket'] });
 	}
 	return socket;
 }

@@ -42,5 +42,7 @@ COPY --chown=app:app backend/ .
 COPY --chown=app:app cards/ ./cards/
 RUN uv sync --locked --no-dev
 
+ENV WEB_CONCURRENCY=2
+
 CMD ["gunicorn", "-k", "geventwebsocket.gunicorn.workers.GeventWebSocketWorker", \
-     "-w", "4", "--bind", "0.0.0.0:8000", "dixit.wsgi:app"]
+     "--bind", "0.0.0.0:8000", "dixit.wsgi:app"]
