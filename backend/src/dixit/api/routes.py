@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import random
+import re
 import string
 
 from flask import Blueprint, Response, jsonify, request, send_from_directory
@@ -16,6 +17,7 @@ GAME_ID_ALPHABET = string.ascii_uppercase + string.digits
 GAME_ID_LENGTH = 4
 MAX_NAME_LENGTH = 32
 MAX_PROMPT_LENGTH = 200
+RESERVED_CPU_NAME = re.compile(r"cpu[\s_-]*\d+", re.IGNORECASE)
 
 
 def build_routes_blueprint(
@@ -40,6 +42,8 @@ def build_routes_blueprint(
         name = str(payload.get("player_name", "")).strip()[:MAX_NAME_LENGTH]
         if not name:
             raise DixitError("A player name is required.")
+        if RESERVED_CPU_NAME.fullmatch(name):
+            raise DixitError('Names like "CPU 1" are reserved for CPU players.')
         return name
 
     def card_id_from(payload: dict) -> str:

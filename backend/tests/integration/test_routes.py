@@ -21,6 +21,22 @@ def test_create_game_requires_a_player_name(client) -> None:
     assert response.status_code == 400
 
 
+def test_cpu_style_names_are_reserved(app: Flask, client) -> None:
+    for name in ["CPU 1", "cpu 12", "CPU-3", "cpu7", "CPU  2"]:
+        response = client.post("/api/games", json={"player_name": name})
+        assert response.status_code == 400, name
+
+    created = create_game(client, "alice")
+    other = app.test_client()
+    response = other.post(f"/api/games/{created['game_id']}/join", json={"player_name": "CPU 1"})
+    assert response.status_code == 400
+
+
+def test_names_merely_containing_cpu_are_allowed(client) -> None:
+    response = client.post("/api/games", json={"player_name": "CPU Chris"})
+    assert response.status_code == 200
+
+
 def test_join_game_adds_a_second_player(app: Flask, client) -> None:
     created = create_game(client, "alice")
     bob = app.test_client()
@@ -413,3 +429,33 @@ def test_two_cpus_playing_together_are_joined_with_and(card_library) -> None:
 
     texts = [e.payload["text"] for e in broadcaster.emissions if e.event == "message"]
     assert "CPU 1 and CPU 2 played cards." in texts
+
+
+def test_session_view_lists_every_finished_round_outcome(app: Flask) -> None:
+    lobby = _started_lobby(app)
+    clients = lobby["clients"]
+
+    def play_round() -> None:
+        host_name, host = _current_host(clients)
+        others = [c for name, c in clients.items() if name != host_name]
+        host_hand = host.get("/api/session").get_json()["hand"]
+        host.post("/api/session/host-choice", json={"card_id": host_hand[0], "prompt": "x"})
+        own = {}
+        for other in others:
+            hand = other.get("/api/session").get_json()["hand"]
+            own[other] = hand[0]
+            other.post("/api/session/play", json={"card_id": hand[0]})
+        for other in others:
+            table = other.get("/api/session").get_json()["table"]
+            other.post(
+                "/api/session/vote",
+                json={"card_id": next(c for c in table if c != own[other])},
+            )
+
+    play_round()
+    play_round()
+
+    state = next(iter(clients.values())).get("/api/session").get_json()
+    outcomes = state["round_outcomes"]
+    assert [o["round_number"] for o in outcomes] == [1, 2]
+    assert state["previous_round_outcome"]["round_number"] == 2

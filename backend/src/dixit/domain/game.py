@@ -31,6 +31,7 @@ class Game:
     host_index: int = 0
     current_round: Round | None = None
     previous_round: Round | None = None
+    finished_rounds: list[Round] = field(default_factory=list)
     min_human_players: int = MIN_HUMAN_PLAYERS
     messages: list[dict] = field(default_factory=list)
 
@@ -132,6 +133,8 @@ class Game:
 
     def _begin_round(self) -> None:
         self.previous_round = self.current_round
+        if self.current_round is not None:
+            self.finished_rounds.append(self.current_round)
         host_name = self.host_order[self.host_index % len(self.host_order)]
         self.host_index += 1
         self.current_round = Round(host_name=host_name, round_number=self.host_index)
@@ -192,6 +195,7 @@ class Game:
             "host_index": self.host_index,
             "current_round": self.current_round.to_dict() if self.current_round else None,
             "previous_round": self.previous_round.to_dict() if self.previous_round else None,
+            "finished_rounds": [round_.to_dict() for round_ in self.finished_rounds],
             "min_human_players": self.min_human_players,
             "messages": [dict(message) for message in self.messages],
         }
@@ -210,6 +214,7 @@ class Game:
             previous_round=(
                 Round.from_dict(data["previous_round"]) if data["previous_round"] else None
             ),
+            finished_rounds=[Round.from_dict(r) for r in data.get("finished_rounds", [])],
             min_human_players=data["min_human_players"],
             messages=[dict(message) for message in data["messages"]],
         )
