@@ -36,9 +36,9 @@
 		{#if canPlay}
 			<ActionBar hint={selection.selectedId ? null : 'Pick the card that best matches the prompt.'}>
 				{#snippet primary()}
-					<Button disabled={submission.pending || !selection.selectedId} onclick={submit}
-						>Submit</Button
-					>
+					<Button disabled={submission.pending || !selection.selectedId} onclick={submit}>
+						Submit
+					</Button>
 				{/snippet}
 				{#snippet secondary()}
 					{#if view.mulligan_available}

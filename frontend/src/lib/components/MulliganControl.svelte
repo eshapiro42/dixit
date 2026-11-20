@@ -17,9 +17,9 @@
 	}
 </script>
 
-<Button kind="ghost" disabled={!selection.selectedId} onclick={() => (confirming = true)}
-	>Mulligan</Button
->
+<Button kind="ghost" disabled={!selection.selectedId} onclick={() => (confirming = true)}>
+	Mulligan
+</Button>
 
 <ConfirmDialog
 	open={confirming}

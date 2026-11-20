@@ -38,9 +38,9 @@
 				hint={selection.selectedId ? null : "Pick the card you think is the storyteller's."}
 			>
 				{#snippet primary()}
-					<Button disabled={submission.pending || !selection.selectedId} onclick={submit}
-						>Submit Vote</Button
-					>
+					<Button disabled={submission.pending || !selection.selectedId} onclick={submit}>
+						Submit Vote
+					</Button>
 				{/snippet}
 			</ActionBar>
 		{/if}

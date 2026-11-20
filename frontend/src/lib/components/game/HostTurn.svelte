@@ -60,8 +60,10 @@
 			{#snippet primary()}
 				<Button
 					type="submit"
-					disabled={submission.pending || !selection.selectedId || !prompt.trim()}>Submit</Button
+					disabled={submission.pending || !selection.selectedId || !prompt.trim()}
 				>
+					Submit
+				</Button>
 			{/snippet}
 			{#snippet secondary()}
 				{#if view.mulligan_available}

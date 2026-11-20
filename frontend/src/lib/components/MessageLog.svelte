@@ -94,8 +94,9 @@
 						<path d="M6 4l4 4-4 4" />
 					</svg>
 					<span class="round-heading">
-						<span class="round-title">{group.isRound ? `Round ${group.roundNumber}` : 'Lobby'}</span
-						>
+						<span class="round-title">
+							{group.isRound ? `Round ${group.roundNumber}` : 'Lobby'}
+						</span>
 						{#if group.outcome && !isOpen(index)}
 							<span class="round-summary">
 								{group.outcome.host}'s prompt: &ldquo;{group.outcome.prompt}&rdquo;
